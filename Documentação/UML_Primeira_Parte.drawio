@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2024-03-02T18:33:29.565Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Falkon/3.2.0 Chrome/87.0.4280.144 Safari/537.36" etag="afySOSj-pgMqgPVUNm3s" version="24.0.1" type="github">
+<mxfile host="app.diagrams.net" modified="2024-03-02T18:33:52.176Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Falkon/3.2.0 Chrome/87.0.4280.144 Safari/537.36" etag="CmuDhH9xKuFHs5cad6xI" version="24.0.1" type="github">
   <diagram id="C5RBs43oDa-KdzZeNtuy" name="Page-1">
     <mxGraphModel dx="858" dy="474" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
@@ -97,6 +97,9 @@
         </mxCell>
         <mxCell id="zO5-gemIBGxygTYU7Dtz-3" value="Adicionar" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="zO5-gemIBGxygTYU7Dtz-0">
           <mxGeometry y="88" width="160" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="zO5-gemIBGxygTYU7Dtz-5" value="Actor" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="85" y="40" width="30" height="60" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
