@@ -1,3 +1,4 @@
+package Controle;
 import java.sql.*;
 
 public class ControlaBD {
