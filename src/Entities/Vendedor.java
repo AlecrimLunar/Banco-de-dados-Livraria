@@ -203,10 +203,10 @@ public class Vendedor {
                     }
 
                     /* adiciona todo o carrinho no banco */
-                    //tem q fazer um update para decrementar a quantidade d livros no banco
                     for (int i = 0; i < c.getsize(); i++){
                         controle.Insert("carrinho_livro", id_carrinho + ", " +
                                 c.getLivro(i).getId().toString() + ", " + c.getQuantidade(i) ,false);
+                        livroFoiAdquirido(); //função sem implementação
                     }
 
                     if (controle.Insert("compra", "DEFAULT, " + formaPagamento
