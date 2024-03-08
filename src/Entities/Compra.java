@@ -3,13 +3,19 @@ package Entities;
 import java.util.LinkedList;
 
 public class Compra {
-    private LinkedList<Livro> compra = new <Livro>LinkedList();
+    private LinkedList<Livro> compra;
+    private LinkedList<Integer> quantidade;
 
     public Compra() {
+        compra = new LinkedList<Livro>();
+        quantidade = new LinkedList<Integer>();
     }
 
-    public void addLivro(Livro livro){
+    /*adicionei esse quantidade pq é importante saber a quantidade d um determinado livro
+    que foi comprado*/
+    public void addLivro(Livro livro, int quantidade){
         compra.add(livro);
+        this.quantidade.add(quantidade);
     }
 
     public void remove (){
@@ -24,6 +30,9 @@ public class Compra {
 
     public int getsize(){
         return compra.size();
+    }
+    public int getQuantidade(int index){
+        return quantidade.get(index);
     }
 
     public Livro getLivro(int index){

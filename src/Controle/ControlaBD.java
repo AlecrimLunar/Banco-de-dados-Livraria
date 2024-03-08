@@ -19,18 +19,26 @@ public class ControlaBD {
         }
     }
 
-    public boolean Insert(String tabela, String infos) {
+    /* o insert agr retorna o ID do negocio inserido, caso tenha dado erro, retorna -2, e caso
+    * não queira retronar nenhum valor, só colocar false como último argumento, caso queira que
+    * retorne, so colocar true */
+    public int Insert(String tabela, String infos, boolean querRetornar) {
         try {
-            Statement st = con.createStatement();
-            String consulta = "INSERT INTO " + tabela + " VALUES (" + infos + ");";
+            if (querRetornar) {
+                Statement st = con.createStatement();
+                String consulta = "INSERT INTO " + tabela + " VALUES (" + infos + ") RETURNING id_" + tabela;
 
-            int a = st.executeUpdate(consulta);
-            if (a == 1)
-                return true;
+                return st.executeUpdate(consulta);
+            } else {
+                Statement st = con.createStatement();
+                String consulta = "INSERT INTO " + tabela + " VALUES (" + infos + ")";
+
+                return st.executeUpdate(consulta);
+            }
         } catch (Exception e) {
             System.out.println("ERRO - INSERT: " + e);
         }
-        return false;
+        return -2;
     }
 
     public boolean Existe(String pesquisa, String tabela, String coluna) {
