@@ -4,7 +4,7 @@ public class ControlaBD {
 
     private Connection con;
 
-    public ControlaBD(){
+    public ControlaBD() {
         String dbURL = "jdbc:postgresql://localhost:5432/livraria";
         String login = "alecrim";
         String password = "21092004nicolas";
@@ -12,27 +12,27 @@ public class ControlaBD {
 
             con = DriverManager.getConnection(dbURL, login, password);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println("Falha na conexão com o banco de dados: " + e);
             System.exit(1);
         }
     }
 
-    public boolean Insert(String tabela, String infos){
-        try{
+    public boolean Insert(String tabela, String infos) {
+        try {
             Statement st = con.createStatement();
             String consulta = "INSERT INTO " + tabela + " VALUES (" + infos + ");";
 
             int a = st.executeUpdate(consulta);
             if (a == 1)
                 return true;
-        }catch(Exception e){
+        } catch (Exception e) {
             System.out.println("ERRO - INSERT: " + e);
         }
         return false;
     }
 
-    public boolean Existe(String pesquisa, String tabela, String coluna){
+    public boolean Existe(String pesquisa, String tabela, String coluna) {
         try {
             Statement st = con.createStatement();
             String consulta = "SELECT * FROM " + tabela + " WHERE " + coluna + " = " + pesquisa + ";";
@@ -42,14 +42,14 @@ public class ControlaBD {
             /*se rt for nulo, nada foi retornado da consulta, logo não existe nada no
              banco de dados com o valor pesquisado, então retorna false*/
             return (rt != null);
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println("ERRO - QUERRY: " + e);
             return false;
         }
     }
 
-    public int Quantos(String pesquisa, String tabela){
-        try{
+    public int Quantos(String pesquisa, String tabela) {
+        try {
 
             /*caso não seja especificado um campo para procurar, sera realizada a consulta
              * utilizando o *, o que significa que ele ira contar todas as linhas da tabela*/
@@ -65,7 +65,7 @@ public class ControlaBD {
             /*Nico: tive que adicionar a linha acima pq tava dando erro aqui. basicamente onde eu
              * posso botar .next eu coloco pra funcionar*/
 
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println("ERRO - QUERRY: " + e);
         }
         return -1;
@@ -73,7 +73,7 @@ public class ControlaBD {
 
     /*Nico:tive que criar pra fazer o login e ta funfando certinho, só add a coluna usuario na
      * tua tabela visse*/
-    public boolean login(String user, String password){
+    public boolean login(String user, String password) {
         try {
             Statement st = con.createStatement();
             String consulta = "SELECT senha FROM vendedor WHERE usuario = '" + user + "';";
@@ -81,42 +81,40 @@ public class ControlaBD {
             ResultSet rt = st.executeQuery(consulta);
 
             rt.next();
-            /*esse next ta ajeitando o "ponteiro" pra pegar a string. Sabe o index de quando se
-             * lê um arquivo .txt? então aquele bagulho lá*/
+            /*Esse next ta ajeitando o "ponteiro" para pegar a string. Sabe o index de quando se
+             * lê um arquivo .txt? Então aquele bagulho lá*/
             return password.equalsIgnoreCase(rt.getString(1));
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println("ERRO - QUERRY: " + e);
             return false;
         }
     }
 
-    public boolean alter(String tabela, String coluna,String novo, String antigo){
-        try{
+    public boolean alter(String tabela, String coluna, String novo, String antigo) {
+        try {
             Statement st = con.createStatement();
             String consulta = "UPDATE " + tabela + " SET " + coluna + " = '" + novo + "' WHERE " + coluna + " '" + antigo + "';";
 
+
             int a = st.executeUpdate(consulta);
-            if(a == 1)
+            if (a == 1)
                 return true;
-        } catch (Exception e){
+        } catch (Exception e) {
             System.out.println("ERRO - UPDATE: " + e);
         }
         return false;
     }
-    /*Nico: Esses são os UPDATES, como até agora a gente só tem string e long da pra deixar assim.
-     * to usando o bagulho de overwrite ou sobre-escrita. Onde só mudando oq a função recebe o programa escolhe a certa
-     * só pude fazer isso hoje... amanha (segunda) pego nesse cod de novo*/
-    public boolean alter(String tabela, String coluna, long novo, long antigo){
-        try{
-            Statement st = con.createStatement();
-            String consulta = "UPDATE " + tabela + " SET " + coluna + " = '" + novo + "' WHERE " + coluna + " '" + antigo + "';";
 
-            int a = st.executeUpdate(consulta);
-            if(a == 1)
-                return true;
-        } catch (Exception e){
-            System.out.println("ERRO - UPDATE: " + e);
+    public ResultSet Select(String atributos, String tabela, String infopesquisa, String pesquisa){
+        try {
+            Statement st = con.createStatement();
+            String consulta = "SELECT " + atributos + " FROM " + tabela + " WHERE " + pesquisa + " = " + infopesquisa + ";";
+
+            ResultSet rt = st.executeQuery(consulta);
+            return rt;
+        } catch (Exception e) {
+            System.out.println("ERRO - SELECT: " + e);
         }
-        return false;
+        return null;
     }
 }
