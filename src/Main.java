@@ -20,10 +20,10 @@ public class Main {
             System.out.println("QUAL A LEITURA DE HOJE?\n(ESCOLHA UMA DAS OPÇÕES ABAIXO)\n" +
                     "-----------------------------------------------------------------------------\n" +
                     "1 - Cadastrar compra\n" +
-                    "2 - Cadastrar Cliente\n" +
-                    "3 - Alterar informação de cliente\n" +
-                    "4 - Alterar informação de vendedor\n" +
-                    "5 - Gerar relatório de vendas\n" +
+                    "2 - Cadastrar cliente\n" +
+                    "3 - Cadastrar livro\n" +
+                    "4 - Alterar informação de um cliente\n" +
+                    "5 - Alterar informações do vendedor\n" +
                     "6 - Gerar relatório de um vendedor\n" +
                     "7 - Consultar estoque\n" +
                     "8 - Consultar cliente\n" +
@@ -44,11 +44,11 @@ public class Main {
                         System.out.println("Deu errado");
                 }
 
-                case 3 -> {}
+                case 3 -> vendedor.cadastraLivro(tc);
 
-                case 4 -> {}
+                case 4 -> vendedor.alteraCliente(tc);
 
-                case 5 -> {}
+                case 5 -> vendedor.alteraVendedor(tc);
 
                 case 6 -> {}
 
