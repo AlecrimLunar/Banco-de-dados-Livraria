@@ -1,14 +1,15 @@
+
 CREATE TABLE Vendedor(
     id_vendedor SMALLSERIAL PRIMARY KEY,
     nome text,
-    login_vendedor text UNIQUE,
+    usuario text UNIQUE,
     cpf bigint UNIQUE,
-    senha_vendedor text
+    senha text
 );
 CREATE TABLE Cliente(
     id_cliente SMALLSERIAL PRIMARY KEY,
-    senha_cliente text,
-    login_cliente text UNIQUE,
+    senha text,
+    usuario text UNIQUE,
     nome text,
     cpf bigint UNIQUE,
     login text,
