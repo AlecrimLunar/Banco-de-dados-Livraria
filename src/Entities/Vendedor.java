@@ -126,7 +126,7 @@ public class Vendedor {
                 System.out.println("LIVRO NÃO ENCONTRADO! DESEJA ADICIONAR UM LIVRO?\n" +
                         "ATENÇÃO!! ISSO IRÁ CANCELAR A OPERAÇÃO ANTERIOR");
                 if (tc.nextLine().equalsIgnoreCase("sim")){
-                    adicionaLivro();
+                    cadastraLivro(tc);
                     return false;
                 }
 
@@ -219,16 +219,53 @@ public class Vendedor {
     }
 
     /* ta faltando implementar esses métodos */
-    public void adicionaLivro(){}
+    public void cadastraLivro(Scanner tc){
+        System.out.print("-------------------------------ADICIONAR LIVRO------------------------------\n"+
+                "DIGITE O NOME DO LIVRO: ");
+        String nome = tc.nextLine();
+
+        System.out.print("O LIVRO É NOVO OU USADO? ");
+        String tipo = tc.nextLine();
+
+        System.out.print("QUANTOS SÃO? ");
+        int quantidade = Integer.parseInt(tc.nextLine());
+
+        System.out.print("O LIVRO FOI FEITO EM MARI? ");
+        boolean from_mari = tc.nextLine().equalsIgnoreCase("sim");
+
+        System.out.print("DIGITE O NOME DO AUTOR: ");
+        String autor = tc.nextLine();
+
+        System.out.print("DIGITE O GÊNERO: ");
+        String genero = tc.nextLine();
+
+        System.out.print("DIGITE O PREÇO (apenas números): ");
+        Double preco = Double.parseDouble(tc.nextLine());
+
+        String info = "DEFAULT, '" + tipo + "', '" + nome + "', " + Integer.toString(quantidade) + ", "
+                + Boolean.toString(from_mari) + ", '" + autor + "', '" + genero + "', " + Double.toString(preco);
+        int idLivro = controle.Insert("livro", info, true);
+        if (idLivro != -2) {
+            System.out.println("\nLIVRO ADICIONADO COM SUCESSO!\nSEU NÚMERO DE CADASTRO É: " + idLivro + "\n");
+        } else {
+            System.out.println("ERRO NA INSERÇÃO DO LIVRO");
+        }
+    }
     public void removeLivro () {}
     public void livroFoiAdquirido () {} //essa função faz update no banco sobre a quantidade dos livros
 
     public void adicionaLivro_noEstoque() {} //aqui adiciona quando já existe
-    public void adicionaNovoLivro_noEstoque() {} //aqui adiciona quando n existe. pode ser uma função privada
-    //que só é chamada da adicionaLivro_noEstoque
 
     public void alteraCliente(){}
     public void removeCliente() {}
+
+    public void printLivro(){controle.printa("livro");}
+
+    public void printCliente(){controle.printa("cliente");}
+
+    public void printVendedor(){controle.printa("vendedor");}
+
+    public void printCompra(){controle.printa("compra");}
 
 
     public Integer getId() {

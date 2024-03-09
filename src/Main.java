@@ -21,9 +21,9 @@ public class Main {
                     "-----------------------------------------------------------------------------\n" +
                     "1 - Cadastrar compra\n" +
                     "2 - Cadastrar Cliente\n" +
-                    "3 - Alterar informação de cliente\n" +
+                    "3 - Cadastrar Livro\n" +
                     "4 - Alterar informação de vendedor\n" +
-                    "5 - Gerar relatório de vendas\n" +
+                    "5 - Alterar informação de cliente\n" +
                     "6 - Gerar relatório de um vendedor\n" +
                     "7 - Consultar estoque\n" +
                     "8 - Consultar cliente\n" +
@@ -44,7 +44,7 @@ public class Main {
                         System.out.println("Deu errado");
                 }
 
-                case 3 -> {}
+                case 3 -> {vendedor.cadastraLivro(tc);}
 
                 case 4 -> {}
 
