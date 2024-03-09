@@ -13,7 +13,7 @@ public class Main {
         Vendedor vendedor = FuncoesEstaticas.IniciaSistema(tc);
 
         System.out.println("-----------------------------------------------------------------------------\n" +
-                "BEM-VINDO AO MENU DE VENDEDOR\n\n");
+                "BEM-VINDO AO MENU DE VENDEDOR\n");
 
         do{
 
@@ -22,14 +22,14 @@ public class Main {
                     "1 - Cadastrar compra\n" +
                     "2 - Cadastrar Cliente\n" +
                     "3 - Alterar informação de cliente\n" +
-                    "4 - Alterar informação de vendedor\n" +
-                    "5 - Gerar relatório de vendas\n" +
+                    "4 - Alterar informação de um cliente\n" +
+                    "5 - Alterar informações do vendedor\n" +
                     "6 - Gerar relatório de um vendedor\n" +
                     "7 - Consultar estoque\n" +
                     "8 - Consultar cliente\n" +
-                    "9 - sair\n" +
-                    "-----------------------------------------------------------------------------\n");
+                    "9 - sair\n");
             int a = Integer.parseInt(tc.nextLine());
+            System.out.println("---------------------------------------------------------------------------");
 
             /* levei tudo pra classe vendedor. nesse nosso codigo, é o vendedor que está realizando todas
             * as ações, por isso ele deveria realizar elas. alem disso o codigo fica bem mais clean né? */
@@ -46,9 +46,9 @@ public class Main {
 
                 case 3 -> {}
 
-                case 4 -> {}
+                case 4 -> vendedor.alteraCliente(tc);
 
-                case 5 -> {}
+                case 5 -> vendedor.alteraVendedor(tc);
 
                 case 6 -> {}
 

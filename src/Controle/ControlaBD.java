@@ -27,7 +27,7 @@ public class ControlaBD {
         try {
             if (querRetornar) {
                 Statement st = con.createStatement();
-                String consulta = "INSERT INTO " + tabela + " VALUES (" + infos + ") RETURNING id_" + tabela;
+                String consulta = "INSERT INTO " + tabela + " VALUES (" + infos + ") RETURNING id_" + tabela + ";";
 
                 return st.executeUpdate(consulta);
             } else {
@@ -92,11 +92,11 @@ public class ControlaBD {
         }
         return null;
     }
-    public boolean alter(String tabela, String coluna, String novo, String antigo) {
+    public boolean update(String tabela, String coluna, String novo, String condicao) {
         try {
             Statement st = con.createStatement();
-            String consulta = "UPDATE " + tabela + " SET " + coluna + " = '" + novo + "' WHERE " + coluna + " '" + antigo + "';";
-
+            String consulta = "UPDATE " + tabela + " SET " + coluna + " = " + novo +
+                    " " + condicao + ";";
 
             int a = st.executeUpdate(consulta);
             if (a == 1)

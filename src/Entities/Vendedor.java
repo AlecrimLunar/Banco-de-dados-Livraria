@@ -170,7 +170,7 @@ public class Vendedor {
                 while (true) {
                     System.out.print("Usuário: ");
                     user = tc.nextLine();
-                    System.out.print("\nSenha: ");
+                    System.out.print("Senha: ");
                     senha = tc.nextLine();
                     rs = controle.login(user, senha, "cliente");
                     if (!rs.equals(null))
@@ -221,13 +221,292 @@ public class Vendedor {
     /* ta faltando implementar esses métodos */
     public void adicionaLivro(){}
     public void removeLivro () {}
+
+    public void alteraLivro(Scanner tc){
+        try {
+            while (true) {
+                System.out.println("----------------------------------------------------------------------" +
+                        "SELECIONE O CAMPO QUE DESEJA ALTERAR \n1 - Nome \n2 - Autor \n3 - Gênero \n 4 - Tipo" +
+                        "\n5 - É de Mari? \n6 - Preço \n7 - Voltar ao menu principal");
+                int escolha = Integer.parseInt(tc.nextLine());
+                System.out.println("---------------------------------------------------------------------------");
+
+                switch (escolha) {
+                    case 1 -> {
+                        System.out.print("ID DO LIVRO QUE DESEJA ALTERAR: ");
+                        String id = tc.nextLine();
+
+                        System.out.print("Insira o novo nome: ");
+                        String novo = tc.nextLine();
+
+                        if (controle.update("livro", "nome", "'" + novo + "'",
+                                "WHERE id_livro = " + id)) {
+                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
+                        } else
+                            System.out.println("ERRO! TENTE NOVAMENTE");
+                    }
+
+                    case 2 -> {
+                        System.out.print("ID DO LIVRO QUE DESEJA ALTERAR: ");
+                        String id = tc.nextLine();
+
+                        System.out.print("Insira o novo nome do autor: ");
+                        String novo = tc.nextLine();
+
+                        if (controle.update("livro", "autor", "'" + novo + "'",
+                                "WHERE id_livro = " + id)) {
+                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
+                        } else
+                            System.out.println("ERRO! TENTE NOVAMENTE");
+                    }
+
+                    case 3 -> {
+                        System.out.print("ID DO LIVRO QUE DESEJA ALTERAR: ");
+                        String id = tc.nextLine();
+
+                        System.out.print("Insira o novo gênero: ");
+                        String novo = tc.nextLine();
+
+                        if (controle.update("livro", "genero", "'" + novo + "'",
+                                "WHERE id_livro = " + id)) {
+                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
+                        } else
+                            System.out.println("ERRO! TENTE NOVAMENTE");
+                    }
+
+                    case 4 -> {
+                        System.out.print("ID DO LIVRO QUE DESEJA ALTERAR: ");
+                        String id = tc.nextLine();
+
+                        System.out.print("Insira o novo tipo: ");
+                        String novo = tc.nextLine();
+
+                        if (controle.update("livro", "tipo", "'" + novo + "'",
+                                "WHERE id_livro = " + id)) {
+                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
+                        } else
+                            System.out.println("ERRO! TENTE NOVAMENTE");
+                    }
+
+                    case 5 -> {
+                        System.out.print("ID DO LIVRO QUE DESEJA ALTERAR: ");
+                        String id = tc.nextLine();
+
+                        System.out.println("RESPONDA COM 'sim' OU 'não'");
+                        System.out.print("O livro foi escrito em Mari? ");
+                        boolean novo = tc.nextLine().equalsIgnoreCase("sim");
+
+                        if (controle.update("livro", "nome", Boolean.toString(novo),
+                                "WHERE id_livro = " + id)) {
+                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
+                        } else
+                            System.out.println("ERRO! TENTE NOVAMENTE");
+                    }
+
+                    case 6 -> {
+                        System.out.println("DESEJA ALTERAR O PREÇO DE TODOS OS LIVROS?");
+                        if (tc.nextLine().equalsIgnoreCase("sim")){
+                            System.out.println("EM QUANTOS PORCENTO (%) O PREÇO DOS LIVROS IRÃO AUMENTAR?");
+                            double aumento = Integer.parseInt(tc.nextLine());
+                            aumento = aumento/100 + 1;
+
+                            if (controle.update("livro", "preco", "preco * " +
+                                    Double.toString(aumento), "")) {
+                                System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
+                            } else
+                                System.out.println("ERRO! TENTE NOVAMENTE");
+                        } else {
+                            System.out.print("ID DO LIVRO QUE DESEJA ALTERAR: ");
+                            String id = tc.nextLine();
+
+                            System.out.print("Insira o novo preço do livro: ");
+                            double novo = Double.parseDouble(tc.nextLine());
+
+                            if (controle.update("livro", "nome", Double.toString(novo),
+                                    "WHERE id_livro = " + id)) {
+                                System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
+                            } else
+                                System.out.println("ERRO! TENTE NOVAMENTE");
+                        }
+                    }
+
+                    case 7 -> {
+                        return;
+                    }
+                    default -> System.out.println("OPÇÃO INVÁLIDA!");
+                }
+            }
+        }catch (Exception e){
+            System.out.println("ERRO: " + e);
+        }
+    }
     public void livroFoiAdquirido () {} //essa função faz update no banco sobre a quantidade dos livros
 
     public void adicionaLivro_noEstoque() {} //aqui adiciona quando já existe
     public void adicionaNovoLivro_noEstoque() {} //aqui adiciona quando n existe. pode ser uma função privada
     //que só é chamada da adicionaLivro_noEstoque
 
-    public void alteraCliente(){}
+    public void removeVendedor(){}
+
+    public void alteraVendedor(Scanner tc){
+        try {
+            while (true) {
+                System.out.println("----------------------------------------------------------------------" +
+                        "SELECIONE O CAMPO QUE DESEJA ALTERAR \n1 - Nome \n2 - CPF" +
+                        "\n3. Voltar ao menu principal");
+                int escolha = Integer.parseInt(tc.nextLine());
+                System.out.println("---------------------------------------------------------------------------");
+
+                switch (escolha) {
+                    case 1 -> {
+                        System.out.print("Insira o novo nome: ");
+                        String novo = tc.nextLine();
+                        if (controle.update("vendedor", "nome", "'" + novo + "'",
+                                "WHERE id_vendedor = " + Integer.toString(this.id))) {
+                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
+                        } else
+                            System.out.println("ERRO! TENTE NOVAMENTE");
+                    }
+
+                    case 2 -> {
+                        System.out.print("Insira o novo CPF: ");
+                        int novo = Integer.parseInt(tc.nextLine());
+                        if (controle.update("vendedor", "cpf", Integer.toString(novo),
+                                "WHERE id_vendedor = " + Integer.toString(this.id))) {
+                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
+                        } else
+                            System.out.println("ERRO! TENTE NOVAMENTE");
+                    }
+
+                    case 3 -> {
+                        return;
+                    }
+                    default -> System.out.println("OPÇÃO INVÁLIDA!");
+                }
+            }
+        }catch (Exception e){
+            System.out.println("ERRO: " + e);
+        }
+    }
+    public void alteraCliente(Scanner tc){
+        try {
+            System.out.println("----------------------------------------------------" +
+                    "\nLOGIN CLIENTE:");
+            String user;
+            String senha;
+            ResultSet rs;
+            while (true) {
+                System.out.print("Usuário: ");
+                user = tc.nextLine();
+                System.out.print("Senha: ");
+                senha = tc.nextLine();
+                rs = controle.login(user, senha, "cliente");
+                if (!rs.equals(null))
+                    break;
+                else
+                    System.out.print("INFORMAÇÕES INCORRETAS! TENTE NOVAMENTE");
+            }
+            System.out.println("LOGIN REALIZADO COM SUCESSO\n" +
+                    "---------------------------------------------------");
+            while (true) {
+                System.out.println("SELECIONE O CAMPO QUE DESEJA ALTERAR \n1 - Nome \n2 - CPF \n3 - Rua \n4 - Número " +
+                        "\n5 - Email \n6 - Torcer para o Flamengo \n7 - Nascer em Sousa \n8 - Assistir a One Piece " +
+                        "\n9 - Voltar ao menu principal");
+                int escolha = Integer.parseInt(tc.nextLine());
+                System.out.println("---------------------------------------------------------------------------");
+
+                switch (escolha) {
+                    case 1 -> {
+                        System.out.print("Insira o novo nome: ");
+                        String novo = tc.nextLine();
+                        if (controle.update("cliente", "nome", "'" + novo + "'",
+                                "WHERE id_cliente = " + rs.getString("id_cliente"))) {
+                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
+                        } else
+                            System.out.println("ERRO! TENTE NOVAMENTE");
+                    }
+
+                    case 2 -> {
+                        System.out.print("Insira o novo CPF: ");
+                        int novo = Integer.parseInt(tc.nextLine());
+                        if (controle.update("cliente", "cpf", Integer.toString(novo),
+                                "WHERE id_cliente = " + rs.getString("id_cliente"))) {
+                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
+                        } else
+                            System.out.println("ERRO! TENTE NOVAMENTE");
+                    }
+
+                    case 3 -> {
+                        System.out.print("Insira a nova rua: ");
+                        String novo = tc.nextLine();
+                        if (controle.update("cliente", "rua", "'" + novo + "'",
+                                "WHERE id_cliente = " + rs.getString("id_cliente"))) {
+                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
+                        } else
+                            System.out.println("ERRO! TENTE NOVAMENTE");
+                    }
+
+                    case 4 -> {
+                        System.out.print("Insira o novo número de residência: ");
+                        int novo = Integer.parseInt(tc.nextLine());
+                        if (controle.update("cliente", "numero", Integer.toString(novo),
+                                "WHERE id_cliente = " + rs.getString("id_cliente"))) {
+                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
+                        } else
+                            System.out.println("ERRO! TENTE NOVAMENTE");
+                    }
+
+                    case 5 -> {
+                        System.out.print("Insira o novo email: ");
+                        String novo = tc.nextLine();
+                        if (controle.update("cliente", "email", "'" + novo + "'",
+                                "WHERE id_cliente = " + rs.getString("id_cliente"))) {
+                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
+                        } else
+                            System.out.println("ERRO! TENTE NOVAMENTE");
+                    }
+
+                    case 6 -> {
+                        System.out.print("RESPONDA COM 'sim' OU 'não'\nTorce para o flamengo? ");
+                        boolean novo = tc.nextLine().equalsIgnoreCase("sim");
+                        if (controle.update("cliente", "is_flamengo",  Boolean.toString(novo),
+                                "WHERE id_cliente = " + rs.getString("id_cliente"))) {
+                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
+                        } else
+                            System.out.println("ERRO! TENTE NOVAMENTE");
+                    }
+
+                    case 7 -> {
+                        System.out.print("RESPONDA COM 'sim' OU 'não'\nNasceu em Sousa? ");
+                        boolean novo = tc.nextLine().equalsIgnoreCase("sim");
+                        if (controle.update("cliente", "is_sousa",  Boolean.toString(novo),
+                                "WHERE id_cliente = " + rs.getString("id_cliente"))) {
+                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
+                        } else
+                            System.out.println("ERRO! TENTE NOVAMENTE");
+                    }
+
+                    case 8 -> {
+                        System.out.print("RESPONDA COM 'sim' OU 'não'\nAssiste a One Piece? ");
+                        boolean novo = tc.nextLine().equalsIgnoreCase("sim");
+                        if (controle.update("cliente", "one_piece",  Boolean.toString(novo),
+                                "WHERE id_cliente = " + rs.getString("id_cliente"))) {
+                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
+                        } else
+                            System.out.println("ERRO! TENTE NOVAMENTE");
+                    }
+
+                    case 9 -> {
+                        return;
+                    }
+                    default -> System.out.println("OPÇÃO INVÁLIDA!");
+                }
+            }
+        }catch (Exception e){
+            System.out.println("ERRO: " + e);
+        }
+    }
+
     public void removeCliente() {}
 
 
