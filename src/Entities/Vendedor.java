@@ -18,51 +18,41 @@ public class Vendedor {
 
     public boolean cadastraCliente(Scanner tc) {
 
-        loop:
+
         while (true) {
             System.out.println("Insira a seguir as seguintes informações do cliente:");
 
             System.out.print("Nome: ");
             String nome = tc.nextLine();
 
-            System.out.print("\nCPF: ");
+            System.out.print("CPF: ");
             long cpf = Long.parseLong(tc.nextLine());
 
-            System.out.print("\nRua: ");
+            System.out.print("Rua: ");
             String rua = tc.nextLine();
 
-            System.out.print("\nNúmero: ");
+            System.out.print("Número: ");
             int numero = Integer.parseInt(tc.nextLine());
 
-            System.out.print("\nEmail: ");
+            System.out.print("Email: ");
             String email = tc.nextLine();
 
-            System.out.print("\nTorce para o Flamengo? ");
-            boolean flamengo;
-            if (tc.nextLine().equalsIgnoreCase("sim"))
-                flamengo = true;
-            else
-                flamengo = false;
+            System.out.println("\nRESPONDA AS PERGUNTAS ABAIXO COM SIM OU NÃO");
+            System.out.print("Torce para o Flamengo? ");
+            boolean flamengo = tc.nextLine().equalsIgnoreCase("sim");
 
-            System.out.print("\nÉ nascido em Sousa? ");
-            boolean sousa;
-            if (tc.nextLine().equalsIgnoreCase("sim"))
-                sousa = true;
-            else
-                sousa = false;
+            System.out.print("É nascido em Sousa? ");
+            boolean sousa = tc.nextLine().equalsIgnoreCase("sim");
 
-            System.out.print("\nAssiste a One Piece? ");
-            boolean onePiece;
-            if (tc.nextLine().equalsIgnoreCase("sim"))
-                onePiece = true;
-            else
-                onePiece = false;
+            System.out.print("Assiste a One Piece? ");
+            boolean onePiece = tc.nextLine().equalsIgnoreCase("sim");
 
-            String user = "";
+            System.out.println("\nINSIRA ABAIXO SUAS INFORMAÇÕES PARA LOGIN");
+            String user;
             while (true) {
-                System.out.print("\nNome para login no sistema: ");
+                System.out.print("Nome para login no sistema: ");
                 user = tc.nextLine();
-                if (controle.Existe(user, "cliente", "user"))
+                if (controle.Existe(user, "cliente", "usuario"))
                     System.out.print("\nJÁ EXISTE UM USUÁRIO COM ESSE NOME");
                 else
                     break;
@@ -71,11 +61,11 @@ public class Vendedor {
             System.out.print("\nSenha para acesso ao sistema: ");
             String senha = tc.nextLine();
 
-            System.out.println("\nAS INFORMAÇÕES ABAIXO ESTÃO CORRETAS?\n Nome: " + nome + "\nCPF: " +
+            System.out.println("\nAS INFORMAÇÕES ABAIXO ESTÃO CORRETAS?\nNome: " + nome + "\nCPF: " +
                     cpf + "\nEndereço: " + rua + " " + numero);
             if (tc.nextLine().equalsIgnoreCase("sim")) {
 
-                String adiciona = user + ", " + nome + ", " + cpf + ", " + senha + ", " + rua + ", " +
+                String adiciona = senha + ", " + user +  ", " + nome + ", " + cpf + ", " + rua + ", " +
                         numero + ", " + email + ", " + flamengo + ", " + sousa + ", " + onePiece;
 
                 if (controle.Insert("cliente", adiciona, false) != -2) {
@@ -89,7 +79,7 @@ public class Vendedor {
             } else {
                 System.out.println("DESEJA INSERIR AS INFORMAÇÕES NOVAMENTE?");
                 if (!tc.nextLine().equalsIgnoreCase("sim")) {
-                    break loop;
+                    break;
                 }
 
 
@@ -111,7 +101,7 @@ public class Vendedor {
                 try {
 
                     ResultSet rt = controle.Select("nome, preco, autor, genero, tipo, from_mari",
-                            "livro", "" + idLivro + "", "id");
+                            "livro", "id_livro", Integer.toString(idLivro));
 
                     Livro l1 = new Livro(idLivro, rt.getString("nome"), rt.getDouble("preco"),
                             rt.getString("autor"), rt.getString("genero"),
@@ -174,12 +164,14 @@ public class Vendedor {
 
                 String user;
                 String senha;
+                ResultSet rs;
                 while (true) {
                     System.out.print("Usuário: ");
                     user = tc.nextLine();
                     System.out.print("\nSenha: ");
                     senha = tc.nextLine();
-                    if (controle.login(user, senha))
+                    rs = controle.login(user, senha, "cliente");
+                    if (!rs.equals(null))
                         break;
                     else
                         System.out.print("INFORMAÇÕES INCORRETAS! TENTE NOVAMENTE");
@@ -187,8 +179,6 @@ public class Vendedor {
 
                 try {
                 //pega o id do cliente
-                    ResultSet rs = controle.Select("id_cliente", "cliente",
-                        "login_cliente", user);
                     String id_cliente = rs.getString("id_cliente");
                     rs.close();
 
@@ -206,7 +196,7 @@ public class Vendedor {
                     for (int i = 0; i < c.getsize(); i++){
                         controle.Insert("carrinho_livro", id_carrinho + ", " +
                                 c.getLivro(i).getId().toString() + ", " + c.getQuantidade(i) ,false);
-                        livroFoiAdquirido(); //função sem implementação
+                        //livroFoiAdquirido(); //função sem implementação
                     }
 
                     if (controle.Insert("compra", "DEFAULT, " + formaPagamento

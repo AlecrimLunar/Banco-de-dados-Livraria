@@ -1,5 +1,6 @@
 package Controle;
 import java.sql.*;
+import java.util.StringJoiner;
 
 public class ControlaBD {
 
@@ -7,8 +8,8 @@ public class ControlaBD {
 
     public ControlaBD() {
         String dbURL = "jdbc:postgresql://localhost:5432/livraria";
-        String login = "alecrim";
-        String password = "21092004nicolas";
+        String login = "lutero";
+        String password = "123456";
         try {
 
             con = DriverManager.getConnection(dbURL, login, password);
@@ -43,10 +44,8 @@ public class ControlaBD {
 
     public boolean Existe(String pesquisa, String tabela, String coluna) {
         try {
-            Statement st = con.createStatement();
-            String consulta = "SELECT * FROM " + tabela + " WHERE " + coluna + " = " + pesquisa + ";";
-
-            ResultSet rt = st.executeQuery(consulta);
+            ResultSet rt = pesquisa(tabela, "*", "WHERE " + coluna +
+                    " = " + pesquisa);
 
             /*se rt for nulo, nada foi retornado da consulta, logo não existe nada no
              banco de dados com o valor pesquisado, então retorna false*/
@@ -80,25 +79,33 @@ public class ControlaBD {
         return -1;
     }
 
-    /*Nico:tive que criar pra fazer o login e ta funfando certinho, só add a coluna usuario na
-     * tua tabela visse*/
-    public boolean login(String user, String password) {
-        try {
-            Statement st = con.createStatement();
-            String consulta = "SELECT senha FROM vendedor WHERE usuario = '" + user + "';";
+    private ResultSet pesquisa(String tabela, String argumentos, String pesquisa) throws Exception{
+        Statement st = con.createStatement();
+        String consulta = "SELECT " + argumentos + " FROM " + tabela + " " + pesquisa + ";";
 
-            ResultSet rt = st.executeQuery(consulta);
-
-            rt.next();
-            /*Esse next ta ajeitando o "ponteiro" para pegar a string. Sabe o index de quando se
-             * lê um arquivo .txt? Então aquele bagulho lá*/
-            return password.equalsIgnoreCase(rt.getString(1));
-        } catch (Exception e) {
-            System.out.println("ERRO - QUERRY: " + e);
-            return false;
-        }
+        ResultSet rt = st.executeQuery(consulta);
+        return rt;
     }
 
+    /*Nico:tive que criar pra fazer o login e ta funfando certinho, só add a coluna usuario na
+     * tua tabela visse*/
+    public ResultSet login(String user, String password, String quem) {
+        try {
+            ResultSet rt = pesquisa(quem, "*", " WHERE usuario = '" + user + "'");
+
+            if (rt.next()){
+                if (password.equalsIgnoreCase(rt.getString("senha")))
+                    return rt;
+            } else
+                return null;
+            /*Esse next ta ajeitando o "ponteiro" para pegar a string. Sabe o index de quando se
+             * lê um arquivo .txt? Então aquele bagulho lá*/
+
+        } catch (Exception e) {
+            System.out.println("ERRO - QUERRY: " + e);
+        }
+        return null;
+    }
     public boolean alter(String tabela, String coluna, String novo, String antigo) {
         try {
             Statement st = con.createStatement();
@@ -116,14 +123,32 @@ public class ControlaBD {
 
     public ResultSet Select(String atributos, String tabela, String infopesquisa, String pesquisa){
         try {
-            Statement st = con.createStatement();
-            String consulta = "SELECT " + atributos + " FROM " + tabela + " WHERE " + pesquisa + " = " + infopesquisa + ";";
-
-            ResultSet rt = st.executeQuery(consulta);
-            return rt;
+            return pesquisa(tabela, atributos, " WHERE " + pesquisa +
+                    " = " + infopesquisa);
         } catch (Exception e) {
             System.out.println("ERRO - SELECT: " + e);
         }
         return null;
+    }
+
+    public void testes(String tabela){
+        try{
+            ResultSet rt = pesquisa(tabela, "*", "");
+
+            ResultSetMetaData rtMetaData = rt.getMetaData();
+            int numeroDeColunas = rtMetaData.getColumnCount();
+
+            while (rt.next()) {
+                StringJoiner joiner = new StringJoiner(", ", "[", "]");
+                for (int coluna = 1; coluna <= numeroDeColunas; coluna++) {
+                    String nomeDaColuna = rtMetaData.getColumnName(coluna);
+                    joiner.add(nomeDaColuna + " = " + rt.getObject(coluna));
+                }
+                System.out.println(joiner.toString());
+            }
+
+        } catch (Exception e){
+
+        }
     }
 }
