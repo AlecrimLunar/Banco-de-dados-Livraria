@@ -42,20 +42,6 @@ public class ControlaBD {
         return -2;
     }
 
-    public boolean Existe(String pesquisa, String tabela, String coluna) {
-        try {
-            ResultSet rt = pesquisa(tabela, "*", "WHERE " + coluna +
-                    " = " + pesquisa);
-
-            /*se rt for nulo, nada foi retornado da consulta, logo não existe nada no
-             banco de dados com o valor pesquisado, então retorna false*/
-            return (rt != null);
-        } catch (Exception e) {
-            System.out.println("ERRO - QUERRY: " + e);
-            return false;
-        }
-    }
-
     public int Quantos(String pesquisa, String tabela) {
         try {
 

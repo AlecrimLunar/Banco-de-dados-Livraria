@@ -17,7 +17,7 @@ public class Main {
 
         do{
 
-            System.out.println("QUAL A LEITURA DE HOJE?\n(ESCOLHA UMA DAS OPÇÕES ABAIXO)" +
+            System.out.println("QUAL A LEITURA DE HOJE?\n(ESCOLHA UMA DAS OPÇÕES ABAIXO)\n" +
                     "-----------------------------------------------------------------------------\n" +
                     "1 - Cadastrar compra\n" +
                     "2 - Cadastrar Cliente\n" +

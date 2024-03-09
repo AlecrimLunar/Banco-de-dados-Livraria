@@ -49,11 +49,12 @@ public class Vendedor {
 
             System.out.println("\nINSIRA ABAIXO SUAS INFORMAÇÕES PARA LOGIN");
             String user;
+
             while (true) {
                 System.out.print("Nome para login no sistema: ");
                 user = tc.nextLine();
-                if (controle.Existe(user, "cliente", "usuario"))
-                    System.out.print("\nJÁ EXISTE UM USUÁRIO COM ESSE NOME");
+                if (controle.Quantos( "usuario = " + "'" + user + "'", "cliente") > 0)
+                    System.out.println("\nJÁ EXISTE UM USUÁRIO COM ESSE NOME");
                 else
                     break;
             }
@@ -65,8 +66,9 @@ public class Vendedor {
                     cpf + "\nEndereço: " + rua + " " + numero);
             if (tc.nextLine().equalsIgnoreCase("sim")) {
 
-                String adiciona = senha + ", " + user +  ", " + nome + ", " + cpf + ", " + rua + ", " +
-                        numero + ", " + email + ", " + flamengo + ", " + sousa + ", " + onePiece;
+                String adiciona = "DEFAULT, '" + senha + "', '" + user +  "', '" + nome + "', " +
+                        cpf + ", '" + rua + "', " + numero + ", '" + email + "', " + flamengo + ", " +
+                        sousa + ", " + onePiece;
 
                 if (controle.Insert("cliente", adiciona, false) != -2) {
                     System.out.println("CADASTRO CONCLUÍDO COM SUCESSO\n" +
@@ -96,7 +98,7 @@ public class Vendedor {
                     "\nDigite o codigo do livro: ");
             int idLivro = tc.nextInt();
 
-            if(controle.Existe(idLivro + "", "livro", "id")){
+            if(controle.Quantos( "id_livro = '" + idLivro + "'", "livro") > 0){
 
                 try {
 
