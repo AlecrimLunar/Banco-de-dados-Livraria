@@ -77,7 +77,7 @@ public class FuncoesEstaticas {
             String senha = tc.nextLine();
 
             ResultSet rt = controle.login(user, senha, "vendedor");
-            if (!rt.equals(null)) {
+            if (rt != null) {
                 try {
                     vendedor.setNome(rt.getString("nome"));
                     vendedor.setId(rt.getInt("id_vendedor"));

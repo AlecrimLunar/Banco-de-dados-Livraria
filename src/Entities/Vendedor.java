@@ -173,7 +173,7 @@ public class Vendedor {
                     System.out.print("Senha: ");
                     senha = tc.nextLine();
                     rs = controle.login(user, senha, "cliente");
-                    if (!rs.equals(null))
+                    if (rs != null)
                         break;
                     else
                         System.out.print("INFORMAÇÕES INCORRETAS! TENTE NOVAMENTE");
@@ -251,7 +251,39 @@ public class Vendedor {
             System.out.println("ERRO NA INSERÇÃO DO LIVRO");
         }
     }
-    public void removeLivro () {}
+    public void removeLivro (Scanner tc) {
+        while (true) {
+            System.out.print("------------------------------------------------------------------" +
+                    "\nID DO LIVRO A SER REMOVIDO: ");
+            String idLivro = tc.nextLine();
+
+            if (controle.Quantos(idLivro, "livro") > 0) {
+                try {
+                    ResultSet rt = controle.Select("nome, autor, tipo", "livro", idLivro, "id_livro");
+                    System.out.println("O LIVRO ABAIXO É O LIVRO QUE DESEJA REMOVER? REPONDA COM 'Sim' ou 'Não' " +
+                            "\nNome: " + rt.getString("nome") + "\nAutor: " + rt.getString("autor") +
+                            "\nTipo: " + rt.getString("tipo"));
+
+                    if (tc.nextLine().equalsIgnoreCase("sim")) {
+                        if (controle.delete("livro", "id_livro", idLivro, false))
+                            System.out.println("REMOÇÃO FEITA COM SUCESSO!!" +
+                                    "\n---------------------------------------------------------------------");
+                        else
+                            System.out.println("ERRO!! TENTE NOVAMENTE" +
+                                    "\n---------------------------------------------------------------------");
+                    }
+
+                } catch (Exception e) {
+                    System.out.println("ERRO: " + e);
+                }
+
+                System.out.println("DESEJA REMOVER OUTRO LIVRO? REPONDA COM 'Sim' ou 'Não'");
+                if (!tc.nextLine().equalsIgnoreCase("sim")) {
+                    return;
+                }
+            }
+        }
+    }
 
     public void alteraLivro(Scanner tc){
         try {
@@ -375,7 +407,39 @@ public class Vendedor {
 
     public void adicionaLivro_noEstoque() {} //aqui adiciona quando já existe
 
-    public void removeVendedor(){}
+    public void removeVendedor(Scanner tc){
+        while (true) {
+            System.out.print("------------------------------------------------------------------" +
+                    "\nID DO VENDEDOR A SER REMOVIDO: ");
+            String idVendedor = tc.nextLine();
+
+            if (controle.Quantos(idVendedor, "vendedor") > 0) {
+                try {
+                    ResultSet rt = controle.Select("nome, cpf", "vendedor", idVendedor,
+                            "id_vendedor");
+                    System.out.println("O VENDEDOR ABAIXO É O VENDEDOR QUE DESEJA REMOVER? REPONDA COM 'Sim' ou 'Não' " +
+                            "\nNome: " + rt.getString("nome") + "\nCPF: " + rt.getString("cpf"));
+
+                    if (tc.nextLine().equalsIgnoreCase("sim")) {
+                        if (controle.delete("vendedor", "id_vendedor", idVendedor, false))
+                            System.out.println("REMOÇÃO FEITA COM SUCESSO!!" +
+                                    "\n---------------------------------------------------------------------");
+                        else
+                            System.out.println("ERRO!! TENTE NOVAMENTE" +
+                                    "\n---------------------------------------------------------------------");
+                    }
+
+                } catch (Exception e) {
+                    System.out.println("ERRO: " + e);
+                }
+
+                System.out.println("DESEJA REMOVER OUTRO VENDEDOR? REPONDA COM 'Sim' ou 'Não'");
+                if (!tc.nextLine().equalsIgnoreCase("sim")) {
+                    return;
+                }
+            }
+        }
+    }
 
     public void alteraVendedor(Scanner tc){
         try {
@@ -536,7 +600,39 @@ public class Vendedor {
         }
     }
 
-    public void removeCliente() {}
+    public void removeCliente(Scanner tc) {
+        System.out.println("------------------------------------------------------------------------------" +
+                "\nLOGIN CLIENTE");
+        String user;
+        String senha;
+        ResultSet rs;
+        while (true) {
+            System.out.print("Usuário: ");
+            user = tc.nextLine();
+            System.out.print("Senha: ");
+            senha = tc.nextLine();
+            rs = controle.login(user, senha, "cliente");
+            if (rs != null)
+                break;
+            else
+                System.out.print("INFORMAÇÕES INCORRETAS! TENTE NOVAMENTE");
+        }
+
+        System.out.println("RESPONDA COM 'Sim' OU 'Não' \nDESEJA REMOVER SEU CADASTRO DA LOJA? ISSO NÃO" +
+                " IRÁ REMOVER SEU HISTÓRICO DE COMPRAS NO SISTEMA DA LOJA");
+        if (tc.nextLine().equalsIgnoreCase("sim")){
+            try {
+                if (controle.delete("cliente", "id_cliente", rs.getString("id_cliente"),
+                        false))
+                    System.out.println("REMOÇÃO FEITA COM SUCESSO!");
+                else
+                    System.out.println("ERRO! TENTE NOVAMENTE");
+            }catch (Exception e){
+                System.out.println("ERRO: " + e);
+            }
+        }
+
+    }
 
     public void printLivro(){controle.printa("livro");}
 

@@ -50,7 +50,7 @@ public class Main {
 
                 case 5 -> vendedor.alteraVendedor(tc);
 
-                case 6 -> {}
+                case 6 -> {vendedor.removeCliente(tc);}
 
                 case 7 -> {}
 

@@ -8,8 +8,8 @@ public class ControlaBD {
 
     public ControlaBD() {
         String dbURL = "jdbc:postgresql://localhost:5432/livraria";
-        String login = "alecrim";
-        String password = "21092004nicolas";
+        String login = "lutero";
+        String password = "123456";
         try {
 
             con = DriverManager.getConnection(dbURL, login, password);
@@ -84,8 +84,7 @@ public class ControlaBD {
             if (rt.next()){
                 if (password.equalsIgnoreCase(rt.getString("senha")))
                     return rt;
-            } else
-                return null;
+            }
             /*Esse next ta ajeitando o "ponteiro" para pegar a string. Sabe o index de quando se
              * lê um arquivo .txt? Então aquele bagulho lá*/
 
@@ -138,5 +137,24 @@ public class ControlaBD {
         } catch (Exception e){
 
         }
+    }
+
+    public boolean delete(String tabela, String condicao1, String condicao2, boolean deletaTudo){
+        try {
+            Statement st = con.createStatement();
+            if (deletaTudo){
+                String consulta = "DELETE FROM " + tabela + ";";
+
+                return st.execute(consulta);
+            } else {
+
+                String consulta = "DELETE FROM " + tabela + " WHERE " + condicao1 + " = " + condicao2 + ";";
+
+                return st.execute(consulta);
+            }
+        } catch (Exception e){
+            System.out.println("ERRO: " + e);
+        }
+        return false;
     }
 }
