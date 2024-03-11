@@ -8,8 +8,8 @@ public class ControlaBD {
 
     public ControlaBD() {
         String dbURL = "jdbc:postgresql://localhost:5432/livraria";
-        String login = "lutero";
-        String password = "123456";
+        String login = "alecrim";
+        String password = "21092004nicolas";
         try {
 
             con = DriverManager.getConnection(dbURL, login, password);
@@ -126,7 +126,7 @@ public class ControlaBD {
             int numeroDeColunas = rtMetaData.getColumnCount();
 
             while (rt.next()) {
-                StringJoiner joiner = new StringJoiner(", ", "[", "]");
+                StringJoiner joiner = new StringJoiner(", ", "[", "]\n");
                 for (int coluna = 1; coluna <= numeroDeColunas; coluna++) {
                     String nomeDaColuna = rtMetaData.getColumnName(coluna);
                     joiner.add(nomeDaColuna + " = " + rt.getObject(coluna));

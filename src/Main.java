@@ -19,45 +19,109 @@ public class Main {
 
             System.out.println("QUAL A LEITURA DE HOJE?\n(ESCOLHA UMA DAS OPÇÕES ABAIXO)\n" +
                     "-----------------------------------------------------------------------------\n" +
-                    "1 - Cadastrar compra\n" +
-                    "2 - Cadastrar cliente\n" +
-                    "3 - Cadastrar livro\n" +
-                    "4 - Alterar informação de um cliente\n" +
-                    "5 - Alterar informações do vendedor\n" +
-                    "6 - Gerar relatório de um vendedor\n" +
-                    "7 - Consultar estoque\n" +
-                    "8 - Consultar cliente\n" +
-                    "9 - sair\n" +
+                    "1 - Cadastrar\n" +
+                    "2 - Alterar informação\n" +
+                    "3 - Remover\n" +
+                    "4 - Consultar\n" +
+                    "6 - sair\n" +
                     "-----------------------------------------------------------------------------\n");
             int a = Integer.parseInt(tc.nextLine());
 
             /* levei tudo pra classe vendedor. nesse nosso codigo, é o vendedor que está realizando todas
             * as ações, por isso ele deveria realizar elas. alem disso o codigo fica bem mais clean né? */
+
             switch (a){
                 case 1 -> {
-                    if (!vendedor.cadastraCompra(tc))
-                        System.out.println("Deu errado");
-                }
+                    System.out.println("O que você deseja cadastrar?\n\n" +
+                            "1 - Cliente\n" +
+                            "2 - Compra\n" +
+                            "3 - Livro\n");
+                    a = Integer.parseInt(tc.nextLine());
 
+                    switch (a){
+                        case 1 -> vendedor.cadastraCliente(tc);
+                        case 2 -> vendedor.cadastraCompra(tc);
+                        case 3 -> vendedor.cadastraLivro(tc);
+                        case 4 -> {} //casdastrar vendedor
+                        default -> System.out.println("OPÇÃO INVÁLIDA!");
+                    }
+                }
                 case 2 -> {
-                    if (!vendedor.cadastraCliente(tc))
-                        System.out.println("Deu errado");
+                    System.out.println("O que você deseja alterar?\n\n" +
+                            "1 - Cliente\n" +
+                            "2 - Vendedor\n" +
+                            "3 - Livro\n");
+                    a = Integer.parseInt(tc.nextLine());
+
+                    switch (a){
+                        case 1 -> vendedor.alteraCliente(tc);
+                        case 2 -> vendedor.alteraVendedor(tc);
+                        case 3 -> vendedor.alteraLivro(tc);
+                        case 4 -> {} //alterar compra
+                        default -> System.out.println("OPÇÃO INVÁLIDA!");
+                    }
+
                 }
+                case 3 ->{
+                    System.out.println("O que você deseja remover?\n\n" +
+                            "1 - Cliente\n" +
+                            "2 - Vendedor\n" +
+                            "3 - Livro\n");
+                    a = Integer.parseInt(tc.nextLine());
 
-                case 3 -> vendedor.cadastraLivro(tc);
+                    switch (a){
+                        case 1 -> vendedor.removeCliente(tc);
+                        case 2 -> vendedor.removeVendedor(tc);
+                        case 3 -> vendedor.removeLivro(tc);
+                        case 4 -> {} //remover compra
+                        default -> System.out.println("OPÇÃO INVÁLIDA!");
+                    }
+                }
+                case 4 -> {
+                    System.out.println("O que você deseja remover?\n\n" +
+                            "1 - Cliente\n" +
+                            "2 - Vendedor\n" +
+                            "3 - Livro\n" +
+                            "4 - Compra\n");
+                    a = Integer.parseInt(tc.nextLine());
 
-                case 4 -> vendedor.alteraCliente(tc);
+                    System.out.println("Deseja consultar só um ou todos?");
+                    boolean all = tc.nextLine().equalsIgnoreCase("todos");
 
-                case 5 -> vendedor.alteraVendedor(tc);
-
-                case 6 -> {}
-
-                case 7 -> {}
-
-                case 8 -> {}
-
-                case 9 -> {
-                    System.out.println("Desligando...");
+                    switch (a){
+                        case 1 -> {
+                            if(all)
+                                vendedor.printCliente();
+                            else
+                                System.out.println("aaaaaaaaaaaaa");
+                                /*função de consultar só um :D*/
+                        }
+                        case 2 -> {
+                            if(all)
+                                vendedor.printVendedor();
+                            else
+                                System.out.println("aaaaaaaaaaaaa");
+                            /*função de consultar só um :D*/
+                        }
+                        case 3 -> {
+                            if(all)
+                                vendedor.printLivro();
+                            else
+                                System.out.println("aaaaaaaaaaaaa");
+                            /*função de consultar só um :D*/
+                        }
+                        case 4 -> {
+                            if(all)
+                                vendedor.printCompra();
+                            else
+                                System.out.println("aaaaaaaaaaaaa");
+                            /*função de consultar só um :D*/
+                        }
+                        default -> System.out.println("OPÇÃO INVÁLIDA!");
+                    }
+                }
+                case 6 -> {
+                    System.out.println("DESLIGANDO...");
                     System.exit(0);
                 }
                 default -> System.out.println("OPÇÃO INVÁLIDA!");
