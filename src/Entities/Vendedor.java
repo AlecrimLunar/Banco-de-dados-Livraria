@@ -4,6 +4,7 @@ import Controle.*;
 import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.Scanner;
 
 public class Vendedor {
@@ -123,15 +124,14 @@ public class Vendedor {
             } else {
 
                 //adicionei isso aqui pra ter um redirecionamento pra parte de adição de livro
-                System.out.println("LIVRO NÃO ENCONTRADO! DESEJA ADICIONAR UM LIVRO?\n" +
-                        "ATENÇÃO!! ISSO IRÁ CANCELAR A OPERAÇÃO ANTERIOR");
+                System.out.println("LIVRO NÃO ENCONTRADO! DESEJA ADICIONAR UM LIVRO?\n");
                 if (tc.nextLine().equalsIgnoreCase("sim")){
                     cadastraLivro(tc);
-                    return false;
+                    continue;
                 }
 
             }
-            c.getcompra();
+            c.getcompra(); //printa as informaões do livro
 
             System.out.println("O livro adicionado é o correto? ");
 
@@ -141,79 +141,77 @@ public class Vendedor {
 
             System.out.println("\nJá adicionou todos os livros da compra? ");
 
-            //a partir daqui a compra está finalizada e precisamos pegar as informações para
-            //atualizar o banco de dados
-            if(tc.nextLine().equalsIgnoreCase("sim")){
-                double precoT = 0;
+        }while(tc.nextLine().equalsIgnoreCase("sim"));
+        //a partir daqui a compra está finalizada e precisamos pegar as informações para
+        //atualizar o banco de dados
+        double precoT = 0;
 
-                for(int i = 0; i < c.getsize(); i++){
-                    precoT = precoT + c.getLivro(i).getPreco();
-                }
+        for(int i = 0; i < c.getsize(); i++){
+            precoT = precoT + c.getLivro(i).getPreco();
+        }
 
-                System.out.println("Preço total: R$" + precoT + "\nQual a forma de pagamento? ");
-                String formaPagamento = tc.nextLine();
+        System.out.println("Preço total: R$" + precoT + "\nQual a forma de pagamento? ");
+        String formaPagamento = tc.nextLine();
 
-                //verifica o cadastro do cliente pra pegar o id dele pra adicionar na compra
-                System.out.println("O cliente possui cadastro na loja?\n");
-                if (!tc.nextLine().equalsIgnoreCase("sim")){
-                    System.out.println("PARA REALIZAÇÃO DA COMPRA É NECESSÁRIO ESTAR CADASTRADO!\n" +
-                            "REALIZE O CADASTRO DO CLIENTE");
+        //verifica o cadastro do cliente pra pegar o id dele pra adicionar na compra
+        System.out.println("O cliente possui cadastro na loja?\n");
+        if (!tc.nextLine().equalsIgnoreCase("sim")){
+            System.out.println("PARA REALIZAÇÃO DA COMPRA É NECESSÁRIO ESTAR CADASTRADO!\n" +
+                    "REALIZE O CADASTRO DO CLIENTE");
 
-                    cadastraCliente(tc);
+            cadastraCliente(tc);
 
-                    System.out.print("-----------------------------------------------------------\n");
-                }
+            System.out.print("-----------------------------------------------------------\n");
+        }
 
-                String user;
-                String senha;
-                ResultSet rs;
-                while (true) {
-                    System.out.print("Usuário: ");
-                    user = tc.nextLine();
-                    System.out.print("Senha: ");
-                    senha = tc.nextLine();
-                    rs = controle.login(user, senha, "cliente");
-                    if (rs != null)
-                        break;
-                    else
-                        System.out.print("INFORMAÇÕES INCORRETAS! TENTE NOVAMENTE");
-                }
-
-                try {
-                //pega o id do cliente
-                    String id_cliente = rs.getString("id_cliente");
-                    rs.close();
-
-                    Date date = new Date();
-                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-
-                    //insere no carrinho e pega o id dele
-                    int id_carrinho = controle.Insert("carrinho", id_cliente + ", 0", true);
-                    if (id_carrinho == -2) {
-                        System.out.print("\nERRO");
-                        return false;
-                    }
-
-                    /* adiciona todo o carrinho no banco */
-                    for (int i = 0; i < c.getsize(); i++){
-                        controle.Insert("carrinho_livro", id_carrinho + ", " +
-                                c.getLivro(i).getId().toString() + ", " + c.getQuantidade(i) ,false);
-                        //livroFoiAdquirido(); //função sem implementação
-                    }
-
-                    if (controle.Insert("compra", "DEFAULT, " + formaPagamento
-                            + ", " + sdf.format(date) + ", " + precoT + ", " + this.id + ", " + id_carrinho +
-                            ", " + id_cliente, false) != -2) {
-                        System.out.println("Compra efetuada");
-                        c = null;
-                        return true;
-                    }
-                } catch (Exception e){
-                    System.out.print("ERRO: " + e);
-                }
+        String user;
+        String senha;
+        ResultSet rs;
+        while (true) {
+            System.out.print("Usuário: ");
+            user = tc.nextLine();
+            System.out.print("Senha: ");
+            senha = tc.nextLine();
+            rs = controle.login(user, senha, "cliente");
+            if (rs != null)
                 break;
+            else
+                System.out.print("INFORMAÇÕES INCORRETAS! TENTE NOVAMENTE");
+        }
+
+        try {
+            //pega o id do cliente
+            String id_cliente = rs.getString("id_cliente");
+            rs.close();
+
+            Date date = new Date();
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
+            //insere no carrinho e pega o id dele
+            int id_carrinho = controle.Insert("carrinho", id_cliente + ", 0", true);
+            if (id_carrinho == -2) {
+                System.out.print("\nERRO");
+                return false;
             }
-        }while(true);
+
+            /* adiciona todo o carrinho no banco e decrementa a quantidade de livros no banco*/
+            for (int i = 0; i < c.getsize(); i++){
+                controle.Insert("carrinho_livro", id_carrinho + ", " +
+                        c.getLivro(i).getId().toString() + ", " + c.getQuantidade(i) ,false);
+                livroFoiAdquirido(c.getLivro(i).getId());
+            }
+
+            if (controle.Insert("compra", "DEFAULT, " + formaPagamento
+                    + ", " + sdf.format(date) + ", " + precoT + ", " + this.id + ", " + id_carrinho +
+                    ", " + id_cliente, false) != -2) {
+                System.out.println("Compra efetuada");
+                c = null;
+                return true;
+            }
+        } catch (Exception e){
+            System.out.print("ERRO: " + e);
+        }
+
         c = null;
         return false;
     }
@@ -403,9 +401,34 @@ public class Vendedor {
             System.out.println("ERRO: " + e);
         }
     }
-    public void livroFoiAdquirido () {} //essa função faz update no banco sobre a quantidade dos livros
+    private void livroFoiAdquirido (int id_livro) {//essa função faz update no banco sobre a quantidade dos livros
+        controle.update("livro", "quantidade", "quantidade - 1",
+                "id_livro = " + id_livro);
+    }
 
-    public void adicionaLivro_noEstoque() {} //aqui adiciona quando já existe
+    public void adicionaLivro_noEstoque(Scanner tc) {
+        LinkedList<Integer> livros = new LinkedList<>();
+        LinkedList<Integer> quantidade = new LinkedList<>();
+        while (true){
+            System.out.println("Qual o ID do livro recebido?");
+            livros.add(Integer.parseInt(tc.nextLine()));
+
+            System.out.println("Qual a quantidade de livros com esse ID que foram recebidos?");
+            quantidade.add(Integer.parseInt(tc.nextLine()));
+
+            System.out.println("Foram recebidos outros livros com IDs diferentes?");
+            if (!tc.nextLine().equalsIgnoreCase("sim"))
+                break;
+        }
+        while (!livros.isEmpty()){
+            if (!controle.update("livro", "quantidade", "quantidade + " +
+                    quantidade.pop().toString(), "id_livro = " + livros.pop()))
+                return;
+
+            System.out.println("ATUALIZAÇÃO FEITA COM SUCESSO!");
+        }
+
+    }
 
     public void removeVendedor(Scanner tc){
         while (true) {

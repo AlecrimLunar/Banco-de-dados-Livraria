@@ -1,9 +1,5 @@
-import Controle.*;
 import Entities.*;
 
-import java.sql.ResultSet;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Scanner;
 
 public class Main {
@@ -35,14 +31,16 @@ public class Main {
                     System.out.println("O que você deseja cadastrar?\n\n" +
                             "1 - Cliente\n" +
                             "2 - Compra\n" +
-                            "3 - Livro\n");
+                            "3 - Livro\n" +
+                            "4 - Voltar ao menu principal");
                     a = Integer.parseInt(tc.nextLine());
 
                     switch (a){
                         case 1 -> vendedor.cadastraCliente(tc);
                         case 2 -> vendedor.cadastraCompra(tc);
                         case 3 -> vendedor.cadastraLivro(tc);
-                        case 4 -> {} //casdastrar vendedor
+                        case 4 -> {/*n faz nada, logo vai pra próxima execução do do/while*/}
+                         //casdastrar vendedor
                         default -> System.out.println("OPÇÃO INVÁLIDA!");
                     }
                 }
@@ -50,14 +48,16 @@ public class Main {
                     System.out.println("O que você deseja alterar?\n\n" +
                             "1 - Cliente\n" +
                             "2 - Vendedor\n" +
-                            "3 - Livro\n");
+                            "3 - Livro\n" +
+                            "4 - Voltar ao menu principal");
                     a = Integer.parseInt(tc.nextLine());
 
                     switch (a){
                         case 1 -> vendedor.alteraCliente(tc);
                         case 2 -> vendedor.alteraVendedor(tc);
                         case 3 -> vendedor.alteraLivro(tc);
-                        case 4 -> {} //alterar compra
+                        case 4 -> {/*n faz nada, logo vai pra próxima execução do do/while*/}
+                        //alterar compra
                         default -> System.out.println("OPÇÃO INVÁLIDA!");
                     }
 
@@ -66,23 +66,26 @@ public class Main {
                     System.out.println("O que você deseja remover?\n\n" +
                             "1 - Cliente\n" +
                             "2 - Vendedor\n" +
-                            "3 - Livro\n");
+                            "3 - Livro\n" +
+                            "4 - Voltar ao menu principal");
                     a = Integer.parseInt(tc.nextLine());
 
                     switch (a){
                         case 1 -> vendedor.removeCliente(tc);
                         case 2 -> vendedor.removeVendedor(tc);
                         case 3 -> vendedor.removeLivro(tc);
-                        case 4 -> {} //remover compra
+                        case 4 -> {/*n faz nada, logo vai pra próxima execução do do/while*/}
+                        //remover compra
                         default -> System.out.println("OPÇÃO INVÁLIDA!");
                     }
                 }
                 case 4 -> {
-                    System.out.println("O que você deseja remover?\n\n" +
+                    System.out.println("O que você deseja consultar?\n\n" +
                             "1 - Cliente\n" +
                             "2 - Vendedor\n" +
                             "3 - Livro\n" +
-                            "4 - Compra\n");
+                            "4 - Compra\n" +
+                            "5 - Voltar ao menu principal");
                     a = Integer.parseInt(tc.nextLine());
 
                     System.out.println("Deseja consultar só um ou todos?");
@@ -117,6 +120,7 @@ public class Main {
                                 System.out.println("aaaaaaaaaaaaa");
                             /*função de consultar só um :D*/
                         }
+                        case 5 -> {/*n faz nada, logo vai pra próxima execução do do/while*/}
                         default -> System.out.println("OPÇÃO INVÁLIDA!");
                     }
                 }
