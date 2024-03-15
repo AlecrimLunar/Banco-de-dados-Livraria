@@ -40,22 +40,13 @@ CREATE TABLE Compra(
 
 CREATE TABLE livro(
     id_livro SMALLSERIAL PRIMARY KEY,
-    tipo char(1) NOT NULL CHECK ('N' OR 'U'),
+    tipo text NOT NULL CHECK (tipo in ('n', 'u')),
     nome varchar(30) NOT NULL,
     quantidade_estoque int NOT NULL CHECK (quantidade_estoque >= 0),
     from_mari boolean NOT NULL,
     autor varchar(30) NOT NULL,
     genero varchar(20) NOT NULL,
-    preco money NOT NULL CHECK (preco >= 0)
-);
-
-CREATE TABLE carrinho_livro(
-    id_carrinho int,
-    id_livro int,
-    quantidade int CHECK (quantidade > 0),
-    PRIMARY KEY (id_carrinho, id_livro),
-    FOREIGN KEY (id_carrinho) REFERENCES carrinho(id_carrinho) ON UPDATE CASCADE,
-    FOREIGN KEY (id_livro) REFERENCES livro(id_livro) ON UPDATE CASCADE
+    preco money NOT NULL CHECK (preco >= money(0))
 );
 
 CREATE TABLE carrinho(
@@ -66,4 +57,13 @@ CREATE TABLE carrinho(
     PRIMARY KEY (id_carrinho),
     FOREIGN KEY (id_carrinho) REFERENCES carrinho(id_carrinho) ON UPDATE CASCADE,
     FOREIGN KEY (id_compra) REFERENCES compra(id_compra) ON UPDATE CASCADE
-)
+);
+
+CREATE TABLE carrinho_livro(
+    id_carrinho int,
+    id_livro int,
+    quantidade int CHECK (quantidade > 0),
+    PRIMARY KEY (id_carrinho, id_livro),
+    FOREIGN KEY (id_carrinho) REFERENCES carrinho(id_carrinho) ON UPDATE CASCADE,
+    FOREIGN KEY (id_livro) REFERENCES livro(id_livro) ON UPDATE CASCADE
+);
