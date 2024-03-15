@@ -27,7 +27,7 @@ public class Vendedor {
             String nome = tc.nextLine();
 
             System.out.print("CPF: ");
-            long cpf = Long.parseLong(tc.nextLine());
+            String cpf = tc.nextLine();
 
             System.out.print("Rua: ");
             String rua = tc.nextLine();
@@ -67,8 +67,8 @@ public class Vendedor {
                     cpf + "\nEndereço: " + rua + " " + numero);
             if (tc.nextLine().equalsIgnoreCase("sim")) {
 
-                String adiciona = "DEFAULT, '" + senha + "', '" + user +  "', '" + nome + "', " +
-                        cpf + ", '" + rua + "', " + numero + ", '" + email + "', " + flamengo + ", " +
+                String adiciona = "DEFAULT, '" + senha + "', '" + user +  "', '" + nome + "', '" +
+                        cpf + "', '" + rua + "', " + numero + ", '" + email + "', " + flamengo + ", " +
                         sousa + ", " + onePiece;
 
                 if (controle.Insert("cliente", adiciona, false) != -2) {

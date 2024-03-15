@@ -28,7 +28,7 @@ public class FuncoesEstaticas {
                     String nome = tc.nextLine();
 
                     System.out.print("CFP (Apenas números): ");
-                    long CPF = Long.parseLong(tc.nextLine());
+                    String CPF = tc.nextLine();
 
                     System.out.print("Nome de acesso: ");
                     String user = tc.nextLine();
@@ -43,7 +43,7 @@ public class FuncoesEstaticas {
                             "'Sim', SE NÃO DIGITE 'Não'\nNome: " + nome + "\nCPF: " + CPF + "\n");
 
                     if (tc.nextLine().equalsIgnoreCase("sim")) {
-                        String insert = "DEFAULT, '" + nome + "', '" + user + "', " + CPF + ", '" + senha + "'";
+                        String insert = "DEFAULT, '" + nome + "', '" + user + "', '" + CPF + "', '" + senha + "'";
                         //como ce pode ver o nome de usuario fica no final ->-->-->-->-->-->-->-->-->-^
                         if (controle.Insert("vendedor", insert, false) != -2) {
                             System.out.println("CADASTRO CONCLUÍDO COM SUCESSO! PARA LOGAR, UTILIZE O USUÁRIO:" +
