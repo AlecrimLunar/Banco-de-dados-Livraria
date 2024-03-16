@@ -224,6 +224,10 @@ public class Vendedor {
 
         System.out.print("O LIVRO É NOVO OU USADO? ");
         String tipo = tc.nextLine();
+        if (tipo.equalsIgnoreCase("novo"))
+            tipo = "n";
+        else
+            tipo = "u";
 
         System.out.print("QUANTOS SÃO? ");
         int quantidade = Integer.parseInt(tc.nextLine());
