@@ -8,8 +8,8 @@ public class ControlaBD {
 
     public ControlaBD() {
         String dbURL = "jdbc:postgresql://localhost:5432/livraria";
-        String login = "lutero";
-        String password = "123456";
+        String login = "alecrim";
+        String password = "21092004nicolas";
         try {
 
             con = DriverManager.getConnection(dbURL, login, password);
@@ -121,6 +121,27 @@ public class ControlaBD {
     public void printa(String tabela){
         try{
             ResultSet rt = pesquisa(tabela, "*", "");
+
+            ResultSetMetaData rtMetaData = rt.getMetaData();
+            int numeroDeColunas = rtMetaData.getColumnCount();
+
+            while (rt.next()) {
+                StringJoiner joiner = new StringJoiner(", ", "[", "]\n");
+                for (int coluna = 1; coluna <= numeroDeColunas; coluna++) {
+                    String nomeDaColuna = rtMetaData.getColumnName(coluna);
+                    joiner.add(nomeDaColuna + " = " + rt.getString(coluna));
+                }
+                System.out.println(joiner.toString());
+            }
+
+        } catch (Exception e){
+            System.out.println("ERRO: " + e);
+        }
+    }
+
+    public void printa(String tabela, String id){
+        try{
+            ResultSet rt = pesquisa(tabela, "*", " WHERE id_" + tabela + " = " + id);
 
             ResultSetMetaData rtMetaData = rt.getMetaData();
             int numeroDeColunas = rtMetaData.getColumnCount();
