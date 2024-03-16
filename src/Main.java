@@ -8,12 +8,12 @@ public class Main {
         Scanner tc = new Scanner(System.in);
         Vendedor vendedor = FuncoesEstaticas.IniciaSistema(tc);
 
-        System.out.println("-----------------------------------------------------------------------------\n" +
+        System.out.print("-----------------------------------------------------------------------------\n" +
                 "BEM-VINDO AO MENU DE VENDEDOR\n\n");
 
         do{
 
-            System.out.println("QUAL A LEITURA DE HOJE?\n(ESCOLHA UMA DAS OPÇÕES ABAIXO)\n" +
+            System.out.print("QUAL A LEITURA DE HOJE?\n(ESCOLHA UMA DAS OPÇÕES ABAIXO)\n" +
                     "-----------------------------------------------------------------------------\n" +
                     "1 - Cadastrar\n" +
                     "2 - Alterar informação\n" +

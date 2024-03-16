@@ -93,25 +93,53 @@ public class Vendedor {
 
     public boolean cadastraCompra(Scanner tc){
         Compra c = new Compra();
-        do{
+        while(true){
 
             System.out.print("--------------------------------------------------------------" +
                     "\nDigite o codigo do livro: ");
-            int idLivro = tc.nextInt();
+            int idLivro = Integer.parseInt(tc.nextLine());
 
             if(controle.Quantos( "id_livro = '" + idLivro + "'", "livro") > 0){
 
                 try {
 
-                    ResultSet rt = controle.Select("nome, preco, autor, genero, tipo, from_mari",
-                            "livro", "id_livro", Integer.toString(idLivro));
+                    ResultSet rt = controle.Select("nome, preco, autor, genero, tipo, " +
+                                    "from_mari, quantidade_estoque", "livro",
+                            "id_livro", Integer.toString(idLivro));
+                    rt.next();
 
-                    Livro l1 = new Livro(idLivro, rt.getString("nome"), rt.getDouble("preco"),
+                    //pega a quantidade de livros que tem em estoque
+                    int quantidadeEstoque = rt.getInt("quantidade_estoque");
+                    //verifica se tem esse livro em estoque
+                    if (quantidadeEstoque == 0){
+                        System.out.println("ESSE LIVRO NÃO POSSUI CÓPIAS EM ESTOQUE!");
+                        continue;
+                    }
+
+                    //remove o R$
+                    String trataPreco = rt.getString("preco").substring(3);
+                    //troca a vírgula por ponto
+                    trataPreco = trataPreco.replaceAll(",", ".");
+
+                    Livro l1 = new Livro(idLivro, rt.getString("nome"), Double.parseDouble(trataPreco),
                             rt.getString("autor"), rt.getString("genero"),
                             rt.getString("tipo"), rt.getBoolean("from_mari"));
 
-                    System.out.print("\nQuantidade do livro " + l1.getNome() + ": ");
-                    c.addLivro(l1, Integer.parseInt(tc.nextLine()));
+                    while (true) {
+                        System.out.print("\nQuantidade adquirida do livro " + l1.getNome() + ": ");
+                        int quantidadeAdiquirida = Integer.parseInt(tc.nextLine());
+
+                        if (quantidadeAdiquirida <= quantidadeEstoque) {
+                            c.addLivro(l1, quantidadeAdiquirida);
+                            livroFoiAdquirido(idLivro, quantidadeAdiquirida);
+                            break;
+                        } else {
+                            System.out.println("O NÚMERO DE LIVROS ADQUIRIDOS É MAIOR QUE O NÚMERO" +
+                                    "EM ESTOQUE!\nDESEJA TENTAR NOVAMENTE?");
+                            if (!tc.nextLine().equalsIgnoreCase("sim"))
+                                break;
+                        }
+                    }
 
                     rt.close();
 
@@ -140,8 +168,11 @@ public class Vendedor {
             }
 
             System.out.println("\nJá adicionou todos os livros da compra? ");
+            if (tc.nextLine().equalsIgnoreCase("sim")){
+                break;
+            }
 
-        }while(tc.nextLine().equalsIgnoreCase("sim"));
+        }
         //a partir daqui a compra está finalizada e precisamos pegar as informações para
         //atualizar o banco de dados
         double precoT = 0;
@@ -198,7 +229,6 @@ public class Vendedor {
             for (int i = 0; i < c.getsize(); i++){
                 controle.Insert("carrinho_livro", id_carrinho + ", " +
                         c.getLivro(i).getId().toString() + ", " + c.getQuantidade(i) ,false);
-                livroFoiAdquirido(c.getLivro(i).getId());
             }
 
             if (controle.Insert("compra", "DEFAULT, " + formaPagamento
@@ -405,9 +435,9 @@ public class Vendedor {
             System.out.println("ERRO: " + e);
         }
     }
-    private void livroFoiAdquirido (int id_livro) {//essa função faz update no banco sobre a quantidade dos livros
-        controle.update("livro", "quantidade", "quantidade - 1",
-                "id_livro = " + id_livro);
+    private void livroFoiAdquirido (int id_livro, int quantidade) {//essa função faz update no banco sobre a quantidade dos livros
+        controle.update("livro", "quantidade_estoque", "quantidade_estoque - "
+                        + quantidade, " WHERE id_livro = " + id_livro);
     }
 
     public void adicionaLivro_noEstoque(Scanner tc) {
@@ -425,7 +455,7 @@ public class Vendedor {
                 break;
         }
         while (!livros.isEmpty()){
-            if (!controle.update("livro", "quantidade", "quantidade + " +
+            if (!controle.update("livro", "quantidade_estoque", "quantidade_estoque + " +
                     quantidade.pop().toString(), "id_livro = " + livros.pop()))
                 return;
 
