@@ -692,12 +692,16 @@ public class Vendedor {
     }
 
     public void printLivro(){controle.printa("livro");}
+    public void printLivro(String id){controle.printa("livro", id);}
 
     public void printCliente(){controle.printa("cliente");}
+    public void printCliente(String id){controle.printa("cliente", id);}
 
     public void printVendedor(){controle.printa("vendedor");}
+    public void printVendedor(String id){controle.printa("vendedor", id);}
 
     public void printCompra(){controle.printa("compra");}
+    public void printCompra(String id){controle.printa("compra", id);}
 
 
     public Integer getId() {

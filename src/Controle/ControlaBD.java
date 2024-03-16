@@ -23,19 +23,18 @@ public class ControlaBD {
     /* o insert agr retorna o ID do negocio inserido, caso tenha dado erro, retorna -2, e caso
     * não queira retronar nenhum valor, só colocar false como último argumento, caso queira que
     * retorne, so colocar true */
-    public int Insert(String tabela, String infos, boolean querRetornar, String atributos) {
+    public int Insert(String tabela, String infos, boolean querRetornar) {
         try {
             if (querRetornar) {
                 Statement st = con.createStatement();
-                String consulta = "INSERT INTO " + tabela + " (" + atributos + ") VALUES (" +
-                        infos + ") RETURNING id_" + tabela + ";";
+                String consulta = "INSERT INTO " + tabela + " VALUES (" + infos + ") RETURNING id_" + tabela + ";";
 
                 ResultSet rt = st.executeQuery(consulta);
                 if (rt.next())
                     return rt.getInt("id_" + tabela);
             } else {
                 Statement st = con.createStatement();
-                String consulta = "INSERT INTO " + tabela + " (" + atributos + ") VALUES (" + infos + ")";
+                String consulta = "INSERT INTO " + tabela + " VALUES (" + infos + ")";
 
                 return st.executeUpdate(consulta);
             }
@@ -130,7 +129,7 @@ public class ControlaBD {
                 StringJoiner joiner = new StringJoiner(", ", "[", "]\n");
                 for (int coluna = 1; coluna <= numeroDeColunas; coluna++) {
                     String nomeDaColuna = rtMetaData.getColumnName(coluna);
-                    joiner.add(nomeDaColuna + " = " + rt.getString(coluna));
+                    joiner.add(nomeDaColuna + " = " + rt.getObject(coluna));
                 }
                 System.out.println(joiner.toString());
             }
