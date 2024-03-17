@@ -181,7 +181,7 @@ public class Vendedor {
         double precoT = 0;
 
         for(int i = 0; i < c.getsize(); i++){
-            precoT = precoT + c.getLivro(i).getPreco() * c.getQuantidade(i);
+            precoT = precoT + c.getLivro(i).getPreco();
         }
 
         System.out.println("Preço total: R$" + precoT + "\nQual a forma de pagamento? ");
@@ -229,7 +229,7 @@ public class Vendedor {
                 return false;
             }
 
-            /* adiciona todo o carrinho no banco */
+            /* adiciona todo o carrinho no banco e decrementa a quantidade de livros no banco*/
             for (int i = 0; i < c.getsize(); i++){
                 controle.Insert("carrinho_livro", id_carrinho + ", " +
                                 c.getLivro(i).getId().toString() + ", " + c.getQuantidade(i) ,false,
@@ -335,7 +335,6 @@ public class Vendedor {
             if (controle.Quantos(idLivro, "livro") > 0) {
                 try {
                     ResultSet rt = controle.Select("nome, autor, tipo", "livro", idLivro, "id_livro");
-                    rt.next();
                     System.out.println("O LIVRO ABAIXO É O LIVRO QUE DESEJA REMOVER? REPONDA COM 'Sim' ou 'Não' " +
                             "\nNome: " + rt.getString("nome") + "\nAutor: " + rt.getString("autor") +
                             "\nTipo: " + rt.getString("tipo"));
