@@ -17,6 +17,8 @@ public class Vendedor {
         controle = new ControlaBD();
     }
 
+    //Cadastros
+
     public boolean cadastraCliente(Scanner tc) {
 
 
@@ -230,7 +232,7 @@ public class Vendedor {
             /* adiciona todo o carrinho no banco e decrementa a quantidade de livros no banco*/
             for (int i = 0; i < c.getsize(); i++){
                 controle.Insert("carrinho_livro", id_carrinho + ", " +
-                        c.getLivro(i).getId().toString() + ", " + c.getQuantidade(i) ,false,
+                                c.getLivro(i).getId().toString() + ", " + c.getQuantidade(i) ,false,
                         "id_carrinho, id_livro, quantidade");
             }
 
@@ -253,7 +255,6 @@ public class Vendedor {
         return false;
     }
 
-    /* ta faltando implementar esses métodos */
     public void cadastraLivro(Scanner tc){
         System.out.print("-------------------------------ADICIONAR LIVRO------------------------------\n"+
                 "DIGITE O NOME DO LIVRO: ");
@@ -290,6 +291,41 @@ public class Vendedor {
             System.out.println("ERRO NA INSERÇÃO DO LIVRO");
         }
     }
+
+    public void cadastraVendedor(Scanner tc){
+        while (true) {
+            System.out.print("INSIRA AS INFORMAÇÕES:\nNome: ");
+            String nome = tc.nextLine();
+
+            System.out.print("CPF (Apenas números): ");
+            String CPF = tc.nextLine();
+
+            System.out.print("Nome de acesso: ");
+            String user = tc.nextLine();
+
+            System.out.print("Senha de acesso: ");
+            String senha = tc.nextLine();
+
+
+            System.out.print("-------------------------------------------------------------------------" +
+                    "\n\nMUITO BEM, VERIFIQUE SE AS INFORMAÇÕES ESTÃO CORRETAS. SE SIM DIGITE " +
+                    "'Sim', SE NÃO DIGITE 'Não'\nNome: " + nome + "\nCPF: " + CPF + "\n");
+
+            if (tc.nextLine().equalsIgnoreCase("sim")) {
+                String insert = "DEFAULT, '" + nome + "', '" + user + "', '" + CPF + "', '" + senha + "'";
+
+                if (controle.Insert("vendedor", insert, false, "nome, usuario, cpf, senha") != -2) {
+                    System.out.println("CADASTRO CONCLUÍDO COM SUCESSO! PARA LOGAR, UTILIZE O USUÁRIO: " +
+                            user + " E A " +
+                            "SENHA INFORMADA.");
+                    break;
+                }
+            }
+        }
+    }
+
+    //Remove
+
     public void removeLivro (Scanner tc) {
         while (true) {
             System.out.print("------------------------------------------------------------------" +
@@ -324,6 +360,76 @@ public class Vendedor {
             }
         }
     }
+
+    public void removeVendedor(Scanner tc){
+        while (true) {
+            System.out.print("------------------------------------------------------------------" +
+                    "\nID DO VENDEDOR A SER REMOVIDO: ");
+            String idVendedor = tc.nextLine();
+
+            if (controle.Quantos(idVendedor, "vendedor") > 0) {
+                try {
+                    ResultSet rt = controle.Select("nome, cpf", "vendedor", idVendedor,
+                            "id_vendedor");
+                    System.out.println("O VENDEDOR ABAIXO É O VENDEDOR QUE DESEJA REMOVER? REPONDA COM 'Sim' ou 'Não' " +
+                            "\nNome: " + rt.getString("nome") + "\nCPF: " + rt.getString("cpf"));
+
+                    if (tc.nextLine().equalsIgnoreCase("sim")) {
+                        if (controle.delete("vendedor", "id_vendedor", idVendedor, false))
+                            System.out.println("REMOÇÃO FEITA COM SUCESSO!!" +
+                                    "\n---------------------------------------------------------------------");
+                        else
+                            System.out.println("ERRO!! TENTE NOVAMENTE" +
+                                    "\n---------------------------------------------------------------------");
+                    }
+
+                } catch (Exception e) {
+                    System.out.println("ERRO: " + e);
+                }
+
+                System.out.println("DESEJA REMOVER OUTRO VENDEDOR? REPONDA COM 'Sim' ou 'Não'");
+                if (!tc.nextLine().equalsIgnoreCase("sim")) {
+                    return;
+                }
+            }
+        }
+    }
+
+    public void removeCliente(Scanner tc) {
+        System.out.println("------------------------------------------------------------------------------" +
+                "\nLOGIN CLIENTE");
+        String user;
+        String senha;
+        ResultSet rs;
+        while (true) {
+            System.out.print("Usuário: ");
+            user = tc.nextLine();
+            System.out.print("Senha: ");
+            senha = tc.nextLine();
+            rs = controle.login(user, senha, "cliente");
+            if (rs != null)
+                break;
+            else
+                System.out.print("INFORMAÇÕES INCORRETAS! TENTE NOVAMENTE");
+        }
+
+        System.out.println("RESPONDA COM 'Sim' OU 'Não' \nDESEJA REMOVER SEU CADASTRO DA LOJA? ISSO NÃO" +
+                " IRÁ REMOVER SEU HISTÓRICO DE COMPRAS NO SISTEMA DA LOJA");
+        if (tc.nextLine().equalsIgnoreCase("sim")){
+            try {
+                if (controle.delete("cliente", "id_cliente", rs.getString("id_cliente"),
+                        false))
+                    System.out.println("REMOÇÃO FEITA COM SUCESSO!");
+                else
+                    System.out.println("ERRO! TENTE NOVAMENTE");
+            }catch (Exception e){
+                System.out.println("ERRO: " + e);
+            }
+        }
+
+    }
+
+    //Alteração
 
     public void alteraLivro(Scanner tc){
         try {
@@ -443,69 +549,6 @@ public class Vendedor {
             System.out.println("ERRO: " + e);
         }
     }
-    private void livroFoiAdquirido (int id_livro, int quantidade) {//essa função faz update no banco sobre a quantidade dos livros
-        controle.update("livro", "quantidade_estoque", "quantidade_estoque - "
-                        + quantidade, " WHERE id_livro = " + id_livro);
-    }
-
-    public void adicionaLivro_noEstoque(Scanner tc) {
-        LinkedList<Integer> livros = new LinkedList<>();
-        LinkedList<Integer> quantidade = new LinkedList<>();
-        while (true){
-            System.out.println("Qual o ID do livro recebido?");
-            livros.add(Integer.parseInt(tc.nextLine()));
-
-            System.out.println("Qual a quantidade de livros com esse ID que foram recebidos?");
-            quantidade.add(Integer.parseInt(tc.nextLine()));
-
-            System.out.println("Foram recebidos outros livros com IDs diferentes?");
-            if (!tc.nextLine().equalsIgnoreCase("sim"))
-                break;
-        }
-        while (!livros.isEmpty()){
-            if (!controle.update("livro", "quantidade_estoque", "quantidade_estoque + " +
-                    quantidade.pop().toString(), "id_livro = " + livros.pop()))
-                return;
-
-            System.out.println("ATUALIZAÇÃO FEITA COM SUCESSO!");
-        }
-
-    }
-
-    public void removeVendedor(Scanner tc){
-        while (true) {
-            System.out.print("------------------------------------------------------------------" +
-                    "\nID DO VENDEDOR A SER REMOVIDO: ");
-            String idVendedor = tc.nextLine();
-
-            if (controle.Quantos(idVendedor, "vendedor") > 0) {
-                try {
-                    ResultSet rt = controle.Select("nome, cpf", "vendedor", idVendedor,
-                            "id_vendedor");
-                    System.out.println("O VENDEDOR ABAIXO É O VENDEDOR QUE DESEJA REMOVER? REPONDA COM 'Sim' ou 'Não' " +
-                            "\nNome: " + rt.getString("nome") + "\nCPF: " + rt.getString("cpf"));
-
-                    if (tc.nextLine().equalsIgnoreCase("sim")) {
-                        if (controle.delete("vendedor", "id_vendedor", idVendedor, false))
-                            System.out.println("REMOÇÃO FEITA COM SUCESSO!!" +
-                                    "\n---------------------------------------------------------------------");
-                        else
-                            System.out.println("ERRO!! TENTE NOVAMENTE" +
-                                    "\n---------------------------------------------------------------------");
-                    }
-
-                } catch (Exception e) {
-                    System.out.println("ERRO: " + e);
-                }
-
-                System.out.println("DESEJA REMOVER OUTRO VENDEDOR? REPONDA COM 'Sim' ou 'Não'");
-                if (!tc.nextLine().equalsIgnoreCase("sim")) {
-                    return;
-                }
-            }
-        }
-    }
-
     public void alteraVendedor(Scanner tc){
         try {
             while (true) {
@@ -665,40 +708,7 @@ public class Vendedor {
         }
     }
 
-    public void removeCliente(Scanner tc) {
-        System.out.println("------------------------------------------------------------------------------" +
-                "\nLOGIN CLIENTE");
-        String user;
-        String senha;
-        ResultSet rs;
-        while (true) {
-            System.out.print("Usuário: ");
-            user = tc.nextLine();
-            System.out.print("Senha: ");
-            senha = tc.nextLine();
-            rs = controle.login(user, senha, "cliente");
-            if (rs != null)
-                break;
-            else
-                System.out.print("INFORMAÇÕES INCORRETAS! TENTE NOVAMENTE");
-        }
-
-        System.out.println("RESPONDA COM 'Sim' OU 'Não' \nDESEJA REMOVER SEU CADASTRO DA LOJA? ISSO NÃO" +
-                " IRÁ REMOVER SEU HISTÓRICO DE COMPRAS NO SISTEMA DA LOJA");
-        if (tc.nextLine().equalsIgnoreCase("sim")){
-            try {
-                if (controle.delete("cliente", "id_cliente", rs.getString("id_cliente"),
-                        false))
-                    System.out.println("REMOÇÃO FEITA COM SUCESSO!");
-                else
-                    System.out.println("ERRO! TENTE NOVAMENTE");
-            }catch (Exception e){
-                System.out.println("ERRO: " + e);
-            }
-        }
-
-    }
-
+    //Prints
     public void printLivro(){controle.printa("livro");}
     public void printLivro(String id){controle.printa("livro", id);}
 
@@ -710,6 +720,35 @@ public class Vendedor {
 
     public void printCompra(){controle.printa("compra");}
     public void printCompra(String id){controle.printa("compra", id);}
+
+    private void livroFoiAdquirido (int id_livro, int quantidade) {//essa função faz update no banco sobre a quantidade dos livros
+        controle.update("livro", "quantidade_estoque", "quantidade_estoque - "
+                + quantidade, " WHERE id_livro = " + id_livro);
+    }
+
+    public void adicionaLivro_noEstoque(Scanner tc) {
+        LinkedList<Integer> livros = new LinkedList<>();
+        LinkedList<Integer> quantidade = new LinkedList<>();
+        while (true){
+            System.out.println("Qual o ID do livro recebido?");
+            livros.add(Integer.parseInt(tc.nextLine()));
+
+            System.out.println("Qual a quantidade de livros com esse ID que foram recebidos?");
+            quantidade.add(Integer.parseInt(tc.nextLine()));
+
+            System.out.println("Foram recebidos outros livros com IDs diferentes?");
+            if (!tc.nextLine().equalsIgnoreCase("sim"))
+                break;
+        }
+        while (!livros.isEmpty()){
+            if (!controle.update("livro", "quantidade_estoque", "quantidade_estoque + " +
+                    quantidade.pop().toString(), "id_livro = " + livros.pop()))
+                return;
+
+            System.out.println("ATUALIZAÇÃO FEITA COM SUCESSO!");
+        }
+
+    }
 
 
     public Integer getId() {

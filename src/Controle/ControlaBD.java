@@ -20,9 +20,6 @@ public class ControlaBD {
         }
     }
 
-    /* o insert agr retorna o ID do negocio inserido, caso tenha dado erro, retorna -2, e caso
-    * não queira retronar nenhum valor, só colocar false como último argumento, caso queira que
-    * retorne, so colocar true */
     public int Insert(String tabela, String infos, boolean querRetornar, String atributos) {
         try {
             if (querRetornar) {

@@ -24,8 +24,8 @@ public class Compra {
 
     public void getcompra(){
         for(int i=0; i<compra.size(); i++)
-            System.out.println("ID:" + compra.get(i).getId() +
-                    " Nome:" + compra.get(i).getNome() + " Preço: R$" + compra.get(i).getPreco() + "\n");
+            System.out.println("ID: " + compra.get(i).getId() +
+                    " | Nome: " + compra.get(i).getNome() + " | Preço: R$" + compra.get(i).getPreco() + "\n");
     }
 
     public int getsize(){
