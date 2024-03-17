@@ -282,7 +282,8 @@ public class Vendedor {
 
         String info = "'" + tipo + "', '" + nome + "', " + Integer.toString(quantidade) + ", "
                 + Boolean.toString(from_mari) + ", '" + autor + "', '" + genero + "', " + Double.toString(preco);
-        int idLivro = controle.Insert("livro", info, true, "tipo, nome, ");
+        int idLivro = controle.Insert("livro", info, true, "tipo, nome, " +
+                "quantidade_estoque, from_mari, autor, genero, preco");
         if (idLivro != -2) {
             System.out.println("\nLIVRO ADICIONADO COM SUCESSO!\nSEU NÚMERO DE CADASTRO É: " + idLivro + "\n");
         } else {
@@ -310,7 +311,7 @@ public class Vendedor {
                     "'Sim', SE NÃO DIGITE 'Não'\nNome: " + nome + "\nCPF: " + CPF + "\n");
 
             if (tc.nextLine().equalsIgnoreCase("sim")) {
-                String insert = "DEFAULT, '" + nome + "', '" + user + "', '" + CPF + "', '" + senha + "'";
+                String insert = "'" + nome + "', '" + user + "', '" + CPF + "', '" + senha + "'";
 
                 if (controle.Insert("vendedor", insert, false, "nome, usuario, cpf, senha") != -2) {
                     System.out.println("CADASTRO CONCLUÍDO COM SUCESSO! PARA LOGAR, UTILIZE O USUÁRIO: " +
@@ -706,17 +707,35 @@ public class Vendedor {
     }
 
     //Prints
-    public void printLivro(){controle.printa("livro");}
-    public void printLivro(String id){controle.printa("livro", id);}
+    public void printLivro(String colunas){controle.printa("livro", colunas);}
+    public void printLivro(String id, String colunas){controle.printa("livro", id, colunas);}
 
-    public void printCliente(){controle.printa("cliente");}
-    public void printCliente(String id){controle.printa("cliente", id);}
+    public void printCliente(String colunas){controle.printa("cliente", colunas);}
+    public void printCliente(String id, String colunas){controle.printa("cliente", id, colunas);}
 
-    public void printVendedor(){controle.printa("vendedor");}
-    public void printVendedor(String id){controle.printa("vendedor", id);}
+    public void printVendedor(String colunas){controle.printa("vendedor", colunas);}
+    public void printVendedor(String id, String colunas){controle.printa("vendedor", id, colunas);}
 
-    public void printCompra(){controle.printa("compra");}
-    public void printCompra(String id){controle.printa("compra", id);}
+    public void printCompra(String colunas){controle.printa("compra", colunas);}
+    public void printCompra(String id, String colunas){
+        try {
+            ResultSet rs = controle.Select("id_carrinho", "compra", id, "id_compra");
+            rs.next();
+
+            int idCarrinho = rs.getInt("id_carrinho");
+
+            rs = controle.Select("id_livro", "carrinho_livro", Integer.toString(idCarrinho),
+                    "id_carrinho");
+
+            controle.printa("compra", id, colunas);
+            System.out.println("LIVROS PERTENCENTES AO CARRINHO DESSA COMPRA:");
+            while (rs.next()) {
+                controle.printa("livro", rs.getString("id_livro"), "nome, autor, id_livro");
+            }
+        } catch (Exception e){
+            System.out.println("ERRO: " + e);
+        }
+    }
 
     private void livroFoiAdquirido (int id_livro, int quantidade) {//essa função faz update no banco sobre a quantidade dos livros
         controle.update("livro", "quantidade_estoque", "quantidade_estoque - "
