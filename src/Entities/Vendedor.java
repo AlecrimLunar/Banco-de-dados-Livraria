@@ -67,11 +67,12 @@ public class Vendedor {
                     cpf + "\nEndereço: " + rua + " " + numero);
             if (tc.nextLine().equalsIgnoreCase("sim")) {
 
-                String adiciona = "DEFAULT, '" + senha + "', '" + user +  "', '" + nome + "', '" +
+                String adiciona = "'" + senha + "', '" + user +  "', '" + nome + "', '" +
                         cpf + "', '" + rua + "', " + numero + ", '" + email + "', " + flamengo + ", " +
                         sousa + ", " + onePiece;
 
-                if (controle.Insert("cliente", adiciona, false) != -2) {
+                if (controle.Insert("cliente", adiciona, false, "senha, usuario, " +
+                        "nome, cpf, rua, numero, email, is_flamengo, is_sousa, one_piece") != -2) {
                     System.out.println("CADASTRO CONCLUÍDO COM SUCESSO\n" +
                             "----------------------------------------------------------------------------");
                     return true;
@@ -219,7 +220,8 @@ public class Vendedor {
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
             //insere no carrinho e pega o id dele
-            int id_carrinho = controle.Insert("carrinho", id_cliente + ", 0", true);
+            int id_carrinho = controle.Insert("carrinho", id_cliente + ", -1", true,
+                    "id_cliente, id_compra");
             if (id_carrinho == -2) {
                 System.out.print("\nERRO");
                 return false;
@@ -228,13 +230,18 @@ public class Vendedor {
             /* adiciona todo o carrinho no banco e decrementa a quantidade de livros no banco*/
             for (int i = 0; i < c.getsize(); i++){
                 controle.Insert("carrinho_livro", id_carrinho + ", " +
-                        c.getLivro(i).getId().toString() + ", " + c.getQuantidade(i) ,false);
+                        c.getLivro(i).getId().toString() + ", " + c.getQuantidade(i) ,false,
+                        "id_carrinho, id_livro, quantidade");
             }
 
-            if (controle.Insert("compra", "DEFAULT, " + formaPagamento
-                    + ", " + sdf.format(date) + ", " + precoT + ", " + this.id + ", " + id_carrinho +
-                    ", " + id_cliente, false) != -2) {
+            int id_compra = controle.Insert("compra", "'" + formaPagamento
+                    + "', date('" + sdf.format(date) + "'), " + precoT + ", " + this.id + ", " + id_carrinho +
+                    ", " + id_cliente, true, "forma_pagamento, data, valor," +
+                    " id_vendedor, id_carrinho, id_cliente");
+            if (id_compra != -2) {
                 System.out.println("Compra efetuada");
+                controle.update("carrinho", "id_compra", Integer.toString(id_compra),
+                        "WHERE id_compra = " + -1);
                 c = null;
                 return true;
             }
@@ -274,9 +281,9 @@ public class Vendedor {
         System.out.print("DIGITE O PREÇO (apenas números): ");
         Double preco = Double.parseDouble(tc.nextLine());
 
-        String info = "DEFAULT, '" + tipo + "', '" + nome + "', " + Integer.toString(quantidade) + ", "
+        String info = "'" + tipo + "', '" + nome + "', " + Integer.toString(quantidade) + ", "
                 + Boolean.toString(from_mari) + ", '" + autor + "', '" + genero + "', " + Double.toString(preco);
-        int idLivro = controle.Insert("livro", info, true);
+        int idLivro = controle.Insert("livro", info, true, "tipo, nome, ");
         if (idLivro != -2) {
             System.out.println("\nLIVRO ADICIONADO COM SUCESSO!\nSEU NÚMERO DE CADASTRO É: " + idLivro + "\n");
         } else {

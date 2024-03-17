@@ -43,9 +43,10 @@ public class FuncoesEstaticas {
                             "'Sim', SE NÃO DIGITE 'Não'\nNome: " + nome + "\nCPF: " + CPF + "\n");
 
                     if (tc.nextLine().equalsIgnoreCase("sim")) {
-                        String insert = "DEFAULT, '" + nome + "', '" + user + "', '" + CPF + "', '" + senha + "'";
+                        String insert = "'" + nome + "', '" + user + "', '" + CPF + "', '" + senha + "'";
                         //como ce pode ver o nome de usuario fica no final ->-->-->-->-->-->-->-->-->-^
-                        if (controle.Insert("vendedor", insert, false) != -2) {
+                        if (controle.Insert("vendedor", insert, false,
+                                "nome, usuario, cpf, senha") != -2) {
                             System.out.println("CADASTRO CONCLUÍDO COM SUCESSO! PARA LOGAR, UTILIZE O USUÁRIO: " +
                                     user + " E A " +
                                     "SENHA INFORMADA.");
