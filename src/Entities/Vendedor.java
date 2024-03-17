@@ -176,12 +176,10 @@ public class Vendedor {
             }
 
         }
-        //a partir daqui a compra está finalizada e precisamos pegar as informações para
-        //atualizar o banco de dados
         double precoT = 0;
 
         for(int i = 0; i < c.getsize(); i++){
-            precoT = precoT + c.getLivro(i).getPreco();
+            precoT = precoT + c.getLivro(i).getPreco() * c.getQuantidade(i);
         }
 
         System.out.println("Preço total: R$" + precoT + "\nQual a forma de pagamento? ");
@@ -741,7 +739,7 @@ public class Vendedor {
         }
         while (!livros.isEmpty()){
             if (!controle.update("livro", "quantidade_estoque", "quantidade_estoque + " +
-                    quantidade.pop().toString(), "id_livro = " + livros.pop()))
+                    quantidade.pop().toString(), "WHERE id_livro =" + livros.pop()))
                 return;
 
             System.out.println("ATUALIZAÇÃO FEITA COM SUCESSO!");

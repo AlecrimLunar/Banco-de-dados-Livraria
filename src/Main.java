@@ -19,7 +19,8 @@ public class Main {
                     "2 - Alterar informação\n" +
                     "3 - Remover\n" +
                     "4 - Consultar\n" +
-                    "5 - sair\n" +
+                    "5 - Adicionar no estoque\n" +
+                    "6 - sair\n" +
                     "-----------------------------------------------------------------------------");
             int a = Integer.parseInt(tc.nextLine());
 
@@ -136,6 +137,9 @@ public class Main {
                     }
                 }
                 case 5 -> {
+                    vendedor.adicionaLivro_noEstoque(tc);
+                }
+                case 6 -> {
                     System.out.println("DESLIGANDO...");
                     System.exit(0);
                 }

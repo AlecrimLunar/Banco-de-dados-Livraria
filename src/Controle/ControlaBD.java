@@ -8,8 +8,8 @@ public class ControlaBD {
 
     public ControlaBD() {
         String dbURL = "jdbc:postgresql://localhost:5432/livraria";
-        String login = "lutero";
-        String password = "123456";
+        String login = "alecrim";
+        String password = "21092004nicolas";
         try {
 
             con = DriverManager.getConnection(dbURL, login, password);
