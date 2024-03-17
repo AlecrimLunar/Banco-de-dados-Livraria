@@ -299,6 +299,7 @@ public class Vendedor {
             if (controle.Quantos(idLivro, "livro") > 0) {
                 try {
                     ResultSet rt = controle.Select("nome, autor, tipo", "livro", idLivro, "id_livro");
+                    rt.next();
                     System.out.println("O LIVRO ABAIXO É O LIVRO QUE DESEJA REMOVER? REPONDA COM 'Sim' ou 'Não' " +
                             "\nNome: " + rt.getString("nome") + "\nAutor: " + rt.getString("autor") +
                             "\nTipo: " + rt.getString("tipo"));

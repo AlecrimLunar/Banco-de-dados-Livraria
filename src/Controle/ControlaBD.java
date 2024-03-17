@@ -168,12 +168,12 @@ public class ControlaBD {
             if (deletaTudo){
                 String consulta = "DELETE FROM " + tabela + ";";
 
-                return st.execute(consulta);
+                return !st.execute(consulta);
             } else {
 
                 String consulta = "DELETE FROM " + tabela + " WHERE " + condicao1 + " = " + condicao2 + ";";
 
-                return st.execute(consulta);
+                return !st.execute(consulta);
             }
         } catch (Exception e){
             System.out.println("ERRO: " + e);
