@@ -181,7 +181,7 @@ public class Vendedor {
         double precoT = 0;
 
         for(int i = 0; i < c.getsize(); i++){
-            precoT = precoT + c.getLivro(i).getPreco();
+            precoT = precoT + c.getLivro(i).getPreco() * c.getQuantidade(i);
         }
 
         System.out.println("Preço total: R$" + precoT + "\nQual a forma de pagamento? ");
@@ -229,7 +229,7 @@ public class Vendedor {
                 return false;
             }
 
-            /* adiciona todo o carrinho no banco e decrementa a quantidade de livros no banco*/
+            /* adiciona todo o carrinho no banco */
             for (int i = 0; i < c.getsize(); i++){
                 controle.Insert("carrinho_livro", id_carrinho + ", " +
                                 c.getLivro(i).getId().toString() + ", " + c.getQuantidade(i) ,false,
