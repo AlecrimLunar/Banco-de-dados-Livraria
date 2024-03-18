@@ -15,7 +15,7 @@ public class FuncoesEstaticas {
     public static Vendedor IniciaSistema(Scanner tc) {
 
         ControlaBD controle = new ControlaBD();
-        if (controle.Quantos("", "vendedor") == 0) {
+        if (controle.Quantos("", "vendedor", "") == 1) {
             System.out.println("-----------------------------------------------------------------------------\n" +
                     "BEM VINDO AO SISTEMA! NENHUM REGISTRO DE VENDEDORES FOI ENCONTRADO." +
                     " PARA UTILIZAR O SISTEMA \nÉ NECESSÁRIO SER UM VENDEDOR. DESEJA CADASTRAR UM" +
@@ -27,7 +27,7 @@ public class FuncoesEstaticas {
                     System.out.print("MUITO BEM, INSIRA AS SEGUINTES INFORMAÇÕES:\nNome: ");
                     String nome = tc.nextLine();
 
-                    System.out.print("CFP (Apenas números): ");
+                    System.out.print("CPF (Apenas números): ");
                     String CPF = tc.nextLine();
 
                     System.out.print("Nome de acesso: ");

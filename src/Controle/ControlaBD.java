@@ -43,7 +43,7 @@ public class ControlaBD {
         return -2;
     }
 
-    public int Quantos(String pesquisa, String tabela) {
+    public int Quantos(String pesquisa, String tabela, String condicao) {
         try {
 
             /*caso não seja especificado um campo para procurar, sera realizada a consulta
@@ -52,13 +52,12 @@ public class ControlaBD {
             if (pesquisa.isEmpty())
                 pesquisa = "*";
 
+
             Statement st = con.createStatement();
-            String consulta = "SELECT COUNT(" + pesquisa + ") FROM " + tabela + ";";
+            String consulta = "SELECT COUNT(" + pesquisa + ") FROM " + tabela  + condicao + ";";
 
             ResultSet rt = st.executeQuery(consulta);
             return rt.next() ? rt.getInt(1) : -1;
-            /*Nico: tive que adicionar a linha acima pq tava dando erro aqui. basicamente onde eu
-             * posso botar .next eu coloco pra funcionar*/
 
         } catch (Exception e) {
             System.out.println("ERRO - QUERRY: " + e);
@@ -74,8 +73,6 @@ public class ControlaBD {
         return rt;
     }
 
-    /*Nico:tive que criar pra fazer o login e ta funfando certinho, só add a coluna usuario na
-     * tua tabela visse*/
     public ResultSet login(String user, String password, String quem) {
         try {
             ResultSet rt = pesquisa(quem, "*", " WHERE usuario = '" + user + "'");
@@ -117,9 +114,9 @@ public class ControlaBD {
         return null;
     }
 
-    public void printa(String tabela){
+    public void printa(String tabela, String colunas){
         try{
-            ResultSet rt = pesquisa(tabela, "*", "");
+            ResultSet rt = pesquisa(tabela, colunas, "WHERE id_" + tabela + " >= 0");
 
             ResultSetMetaData rtMetaData = rt.getMetaData();
             int numeroDeColunas = rtMetaData.getColumnCount();
@@ -130,7 +127,7 @@ public class ControlaBD {
                     String nomeDaColuna = rtMetaData.getColumnName(coluna);
                     joiner.add(nomeDaColuna + " = " + rt.getString(coluna));
                 }
-                System.out.println(joiner.toString());
+                System.out.print(joiner.toString());
             }
 
         } catch (Exception e){
@@ -138,9 +135,10 @@ public class ControlaBD {
         }
     }
 
-    public void printa(String tabela, String id){
+    public void printa(String tabela, String id, String colunas){
         try{
-            ResultSet rt = pesquisa(tabela, "*", " WHERE id_" + tabela + " = " + id);
+            ResultSet rt = pesquisa(tabela, colunas, " WHERE id_" + tabela + " = " + id +
+                    " AND id_" + tabela + " >= 0");
 
             ResultSetMetaData rtMetaData = rt.getMetaData();
             int numeroDeColunas = rtMetaData.getColumnCount();
@@ -151,7 +149,7 @@ public class ControlaBD {
                     String nomeDaColuna = rtMetaData.getColumnName(coluna);
                     joiner.add(nomeDaColuna + " = " + rt.getObject(coluna));
                 }
-                System.out.println(joiner.toString());
+                System.out.print(joiner.toString());
             }
 
         } catch (Exception e){

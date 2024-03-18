@@ -98,38 +98,38 @@ public class Main {
                     switch (a){
                         case 1 -> {
                             if(all)
-                                vendedor.printCliente();
+                                vendedor.printCliente("nome, cpf, email, is_flamengo, is_sousa, one_piece");
                             else{
                                 System.out.print("Digite o ID do cliente: ");
                                 String id = tc.nextLine();
-                                vendedor.printCliente(id);
+                                vendedor.printCliente(id, "nome, cpf, email, is_flamengo, is_sousa, one_piece");
                             }
                         }
                         case 2 -> {
                             if(all)
-                                vendedor.printVendedor();
+                                vendedor.printVendedor("nome, cpf");
                             else {
                                 System.out.print("Digite o ID do vendedor: ");
                                 String id = tc.nextLine();
-                                vendedor.printVendedor(id);
+                                vendedor.printVendedor(id, "nome, cpf");
                             }
                         }
                         case 3 -> {
                             if(all)
-                                vendedor.printLivro();
+                                vendedor.printLivro("*");
                             else{
                                 System.out.print("Digite o ID do livro: ");
                                 String id = tc.nextLine();
-                                vendedor.printLivro(id);
+                                vendedor.printLivro(id, "*");
                             }
                         }
                         case 4 -> {
                             if(all)
-                                vendedor.printCompra();
+                                vendedor.printCompra("*");
                             else{
                                 System.out.print("Digite o ID do compra: ");
                                 String id = tc.nextLine();
-                                vendedor.printCompra(id);
+                                vendedor.printCompra(id, "*");
                             }
                         }
                         case 5 -> {continue;}
