@@ -8,8 +8,8 @@ public class ControlaBD {
 
     public ControlaBD() {
         String dbURL = "jdbc:postgresql://localhost:5432/livraria";
-        String login = "lutero";
-        String password = "123456";
+        String login = "alecrim";
+        String password = "21092004nicolas";
         try {
 
             con = DriverManager.getConnection(dbURL, login, password);
@@ -43,7 +43,7 @@ public class ControlaBD {
         return -2;
     }
 
-    public int Quantos(String pesquisa, String tabela) {
+    public int Quantos(String pesquisa, String tabela, String condicao) {
         try {
 
             /*caso não seja especificado um campo para procurar, sera realizada a consulta
@@ -52,13 +52,12 @@ public class ControlaBD {
             if (pesquisa.isEmpty())
                 pesquisa = "*";
 
+
             Statement st = con.createStatement();
-            String consulta = "SELECT COUNT(" + pesquisa + ") FROM " + tabela + ";";
+            String consulta = "SELECT COUNT(" + pesquisa + ") FROM " + tabela  + condicao + ";";
 
             ResultSet rt = st.executeQuery(consulta);
             return rt.next() ? rt.getInt(1) : -1;
-            /*Nico: tive que adicionar a linha acima pq tava dando erro aqui. basicamente onde eu
-             * posso botar .next eu coloco pra funcionar*/
 
         } catch (Exception e) {
             System.out.println("ERRO - QUERRY: " + e);
@@ -74,8 +73,6 @@ public class ControlaBD {
         return rt;
     }
 
-    /*Nico:tive que criar pra fazer o login e ta funfando certinho, só add a coluna usuario na
-     * tua tabela visse*/
     public ResultSet login(String user, String password, String quem) {
         try {
             ResultSet rt = pesquisa(quem, "*", " WHERE usuario = '" + user + "'");
@@ -130,7 +127,7 @@ public class ControlaBD {
                     String nomeDaColuna = rtMetaData.getColumnName(coluna);
                     joiner.add(nomeDaColuna + " = " + rt.getString(coluna));
                 }
-                System.out.println(joiner.toString());
+                System.out.print(joiner.toString());
             }
 
         } catch (Exception e){
@@ -152,7 +149,7 @@ public class ControlaBD {
                     String nomeDaColuna = rtMetaData.getColumnName(coluna);
                     joiner.add(nomeDaColuna + " = " + rt.getObject(coluna));
                 }
-                System.out.println(joiner.toString());
+                System.out.print(joiner.toString());
             }
 
         } catch (Exception e){
