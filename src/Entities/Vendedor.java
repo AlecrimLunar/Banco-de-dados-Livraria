@@ -93,7 +93,6 @@ public class Vendedor {
         }
         return false;
     }
-
     public boolean cadastraCompra(Scanner tc){
         Compra c = new Compra();
         while(true){
@@ -252,7 +251,6 @@ public class Vendedor {
         c = null;
         return false;
     }
-
     public void cadastraLivro(Scanner tc){
         System.out.print("-------------------------------ADICIONAR LIVRO------------------------------\n"+
                 "DIGITE O NOME DO LIVRO: ");
@@ -290,7 +288,6 @@ public class Vendedor {
             System.out.println("ERRO NA INSERÇÃO DO LIVRO");
         }
     }
-
     public void cadastraVendedor(Scanner tc){
         while (true) {
             System.out.print("INSIRA AS INFORMAÇÕES:\nNome: ");
@@ -334,6 +331,7 @@ public class Vendedor {
             if (controle.Quantos(idLivro, "livro", "") > 0) {
                 try {
                     ResultSet rt = controle.Select("nome, autor, tipo", "livro", idLivro, "id_livro");
+                    rt.next();
                     System.out.println("O LIVRO ABAIXO É O LIVRO QUE DESEJA REMOVER? REPONDA COM 'Sim' ou 'Não' " +
                             "\nNome: " + rt.getString("nome") + "\nAutor: " + rt.getString("autor") +
                             "\nTipo: " + rt.getString("tipo"));
@@ -358,7 +356,6 @@ public class Vendedor {
             }
         }
     }
-
     public void removeVendedor(Scanner tc){
         while (true) {
             System.out.print("------------------------------------------------------------------" +
@@ -392,7 +389,6 @@ public class Vendedor {
             }
         }
     }
-
     public void removeCliente(Scanner tc) {
         System.out.println("------------------------------------------------------------------------------" +
                 "\nLOGIN CLIENTE");

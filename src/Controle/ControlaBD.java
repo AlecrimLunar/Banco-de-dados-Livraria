@@ -89,6 +89,7 @@ public class ControlaBD {
         }
         return null;
     }
+
     public boolean update(String tabela, String coluna, String novo, String condicao) {
         try {
             Statement st = con.createStatement();
