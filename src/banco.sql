@@ -159,3 +159,8 @@ GRANT INSERT ON Clientes_Info.cliente, Clientes_Info.carrinho,
     Clientes_Info.carrinho_livro TO cliente_role;
 GRANT UPDATE ON Clientes_Info.cliente, Clientes_Info.carrinho_livro TO cliente_role;
 GRANT DELETE ON Clientes_Info.carrinho_livro TO cliente_role;
+
+
+GRANT USAGE ON SCHEMA vendedores_info, Clientes_Info, Compras_Info, Estoque TO vendedor_role;
+GRANT USAGE ON SCHEMA Clientes_Info, Compras_Info, Estoque TO cliente_role;
+GRANT USAGE ON SCHEMA vendedores_info, Clientes_Info, Compras_Info, Estoque TO dono_livraria;
