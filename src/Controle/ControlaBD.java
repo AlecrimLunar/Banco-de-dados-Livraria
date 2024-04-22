@@ -1,46 +1,150 @@
 package Controle;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.StringJoiner;
 
 public class ControlaBD {
 
     private Connection con;
+    private int donoCon;
 
-    public ControlaBD() {
-        String dbURL = "jdbc:postgresql://localhost:5432/livraria";
-        String login = "alecrim";
-        String password = "21092004nicolas";
+
+    /**
+     * função responsável por criar as conexões com o banco de
+     * dados sempre que necessário.
+     * retorna o erro de não ter conexão caso ele não consiga criar
+     * a conexão
+     */
+    private boolean criaCon(int quem) throws ConexaoException{
+
+        String dbURL = "";
+        String login = "";
+        String password = "";
+
+        switch (quem){
+            case 0 -> {
+                dbURL = "jdbc:postgresql://localhost:5432/livraria";
+                login = "cliente_role";
+                password = "12345678";
+            }
+
+            case 1 -> {
+                dbURL = "jdbc:postgresql://localhost:5432/livraria";
+                login = "vendedor_role";
+                password = "123456";
+            }
+        }
         try {
-
             con = DriverManager.getConnection(dbURL, login, password);
-
-        } catch (Exception e) {
-            System.out.println("Falha na conexão com o banco de dados: " + e);
-            System.exit(1);
+            return true;
+        } catch (Exception e){
+            e.printStackTrace();
+            throw new ConexaoException();
         }
     }
 
-    public int Insert(String tabela, String infos, boolean querRetornar, String atributos) {
+    public ControlaBD(int quem) throws ConexaoException{
+        int donoCon = quem;
         try {
-            if (querRetornar) {
-                Statement st = con.createStatement();
-                String consulta = "INSERT INTO " + tabela + " (" + atributos +
-                        ") VALUES (" + infos + ") RETURNING id_" + tabela + ";";
-
-                ResultSet rt = st.executeQuery(consulta);
-                if (rt.next())
-                    return rt.getInt("id_" + tabela);
-            } else {
-                Statement st = con.createStatement();
-                String consulta = "INSERT INTO " + tabela + " (" + atributos +
-                        ") VALUES (" + infos + ")";
-
-                return st.executeUpdate(consulta);
-            }
-        } catch (Exception e) {
-            System.out.println("ERRO - INSERT: " + e);
+            criaCon(quem);
+        } catch (ConexaoException e){
+            /*
+            * dps tem q achar uma forma de lidar com essa exceção
+            */
+            throw new ConexaoException();
         }
-        return -2;
+    }
+
+    public int InsertRetornando(String tabela, String infos, String atributos) throws ConexaoException{
+        PreparedStatement st = null;
+        ResultSet rt = null;
+        try {
+            String consulta = "INSERT INTO " + tabela + " (" + atributos +
+                    ") VALUES (" + infos + ") RETURNING id_" + tabela + ";";
+
+
+            /*
+            * aqui é feito a consultal. utilizamos o 'executeQuerry' em vez do
+            * 'executeUpdate' porque queremos que a consulta nos retorne algo
+            */
+            st = con.prepareStatement(consulta);
+            rt = st.executeQuery();
+
+            if (rt.next())
+                return rt.getInt("id_" + tabela);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+
+            try {
+                con.rollback();
+                con.close();
+                criaCon(donoCon);
+            } catch (SQLException f) {
+                f.printStackTrace();
+
+            } catch (ConexaoException c){
+                throw new ConexaoException();
+            }
+        } finally {
+            try{
+                if (st != null)
+                    st.close();
+
+                if (rt != null)
+                    rt.close();
+            } catch (Exception e){}
+        }
+        return -1;
+    }
+
+    public int Insert(String tabela, ArrayList<String> infos, String atributos) throws ConexaoException{
+        PreparedStatement st = null;
+
+        try {
+            con.setAutoCommit(false);
+
+
+            String consulta = "INSERT INTO " + tabela + " (" + atributos +
+                    ") VALUES (?) RETURNING id_" + tabela + ";";
+
+            for (String s : infos) {
+                st = con.prepareStatement(consulta);
+                st.setString(1, s);
+
+                int numLinhasInseridas = st.executeUpdate();
+                if (numLinhasInseridas == 0) {
+                    /*
+                     * verificação de que algo foi realmente inserido no
+                     * banco de dados. caso nada tenha sido adicionado, o
+                     * processo precisa ser reiniciado
+                    */
+                    con.rollback();
+                    return -1;
+                }
+            }
+            con.commit();
+            return 1;
+        } catch (SQLException e) {
+            e.printStackTrace();
+
+            try {
+                con.rollback();
+                con.close();
+                criaCon(donoCon);
+            } catch (SQLException f) {
+                f.printStackTrace();
+
+            } catch (ConexaoException c){
+                throw new ConexaoException();
+        }
+        } finally {
+            try{
+                if (st != null)
+                    st.close();
+            } catch (Exception e){}
+        }
+        return -1;
     }
 
     public int Quantos(String pesquisa, String tabela, String condicao) {
