@@ -1,8 +1,13 @@
 package Controle;
+import org.jetbrains.annotations.NotNull;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.StringJoiner;
 
+/**
+ * Classe responsável pela comunicação com o banco de dados.
+ * */
 public class ControlaBD {
 
     private Connection con;
@@ -55,6 +60,20 @@ public class ControlaBD {
         }
     }
 
+    /**
+     * Função responsável pelos inserts quando se quer saber
+     * o id criado pelo banco para a linha inserida.
+     * @Retorna:
+     * <ul>
+     * <li>-1 caso um erro tenha acontecido;
+     * <li>0 caso não tenha conseguido inserir;
+     * <li>Qualquer outro inteiro positivo referente ao id atribuído pelo
+     * banco de dados àquela linha.</li>
+     * </ul>
+     * @Excessão: caso tenha havido algum erro com o SQL, e após encerrar
+     * a conexão não tenha sido possível criar outra, ele irá retornar
+     * ConexaoException
+     */
     public int InsertRetornando(String tabela, String infos, String atributos) throws ConexaoException{
         PreparedStatement st = null;
         ResultSet rt = null;
@@ -77,7 +96,6 @@ public class ControlaBD {
             e.printStackTrace();
 
             try {
-                con.rollback();
                 con.close();
                 criaCon(donoCon);
             } catch (SQLException f) {
@@ -98,6 +116,24 @@ public class ControlaBD {
         return -1;
     }
 
+    /**
+     * Função responsável pelos inserts onde não se quer saber
+     * o id criado pelo banco para a linha inserida.
+     * Por isso, essa função aceita uma lista de strings,
+     * possibilitando a inserção de várias (tanto a tabela
+     * quanto as colunas onde os valores serão inseridos
+     * precisam ser fixos).
+     * @Retorna:
+     * <ul>
+     * <li>-1 caso um erro tenha acontecido;
+     * <li>0 caso não tenha conseguido inserir todos os valores;
+     * <li>1 caso as inserções tenham acontecido.</li>
+     * </ul>
+     * @Excessão:
+     * Caso tenha ocorrido algum erro com o SQL e após o fechamento
+     * da conexão não tenha sido possível criar outra, ele irá retornar
+     * ConexaoException
+     */
     public int Insert(String tabela, ArrayList<String> infos, String atributos) throws ConexaoException{
         PreparedStatement st = null;
 
@@ -147,137 +183,315 @@ public class ControlaBD {
         return -1;
     }
 
-    public int Quantos(String pesquisa, String tabela, String condicao) {
+    /**
+     * Função responsável para saber se algo existe ou não no banco
+     * de dados. Irá executar o SQL "SELECT * FROM 'tabela' WHERE
+     * 'coluna' = 'condicao';".
+     * @Parâmetros: Recebe o nome da tabela, a coluna a ser usada como
+     * comparação e a condição que essa coluna precisa atender.
+     * @Retorna:
+     * <ul>
+     * <li>1 caso exista;
+     * <li>0 caso não exista;
+     * <li>-1 caso algum erro tenha acontecido.</li>
+     * </ul>
+     * @Excessão: Caso tenha havido algum erro com o SQL, e após encerrar
+     * a conexão não tenha sido possível criar outra, ele irá retornar
+     * ConexaoException
+     */
+    public int Existe(String tabela, String coluna, String condicao) throws ConexaoException{
+        ResultSet rt = null;
         try {
+            rt = Select(tabela, "*","WHERE "
+                    + coluna + " = " + condicao);
 
-            /*caso não seja especificado um campo para procurar, sera realizada a consulta
-             * utilizando o *, o que significa que ele ira contar todas as linhas da tabela*/
+            return rt.next() ? rt.getInt(1) : 0;
 
-            if (pesquisa.isEmpty())
-                pesquisa = "*";
+        } catch (SQLException e) {
+            e.printStackTrace();
 
+            try {
+                con.close();
+                criaCon(donoCon);
+            } catch (SQLException f) {
+                f.printStackTrace();
 
-            Statement st = con.createStatement();
-            String consulta = "SELECT COUNT(" + pesquisa + ") FROM " + tabela  + condicao + ";";
-
-            ResultSet rt = st.executeQuery(consulta);
-            return rt.next() ? rt.getInt(1) : -1;
-
-        } catch (Exception e) {
-            System.out.println("ERRO - QUERRY: " + e);
+            } catch (ConexaoException c){
+                throw new ConexaoException();
+            }
+        } finally {
+            try{
+                if (rt != null)
+                    rt.close();
+            } catch (Exception e){}
         }
         return -1;
     }
 
-    private ResultSet pesquisa(String tabela, String argumentos, String pesquisa) throws Exception{
-        Statement st = con.createStatement();
-        String consulta = "SELECT " + argumentos + " FROM " + tabela + " " + pesquisa + ";";
+    /**
+     * Função responsável por executar qualquer SELECT desejado no banco
+     * de dados. Irá executar o SQL "SELECT 'argumentos' FROM 'tabela'
+     * WHERE 'pesquisa';".
+     * @Parâmetros: Recebe o nome da tabela, as colunas que deseja receber
+     * e a condição para retorno das linhas.
+     * @Retorna: Um ResultSet com todas as linhas que a consulta devolveu
+     * @Excessão: Caso tenha havido algum erro com o SQL, e após encerrar
+     * a conexão não tenha sido possível criar outra, ele irá retornar
+     * ConexaoException
+     */
+    public ResultSet Select(String tabela, String coluna, String pesquisa) throws ConexaoException {
+        PreparedStatement st = null;
+        try {
+            String consulta = "SELECT " + coluna + " FROM " + tabela + " WHERE id_" +
+                    tabela + " >= 0 AND " + pesquisa + ";";
+            st = con.prepareStatement(consulta);
 
-        ResultSet rt = st.executeQuery(consulta);
-        return rt;
+            return st.executeQuery(consulta);
+        } catch (SQLException e) {
+            e.printStackTrace();
+
+            try {
+                con.close();
+                criaCon(donoCon);
+            } catch (SQLException f) {
+                f.printStackTrace();
+
+            } catch (ConexaoException c){
+                throw new ConexaoException();
+            }
+        } finally {
+            try{
+                if (st != null)
+                    st.close();
+            } catch (Exception e){}
+        }
+        return null;
     }
 
-    public ResultSet login(String user, String password, String quem) {
+    /**
+     * Função responsável por verificar se o login fornecido está
+     * ou não presente no banco de dados e se a senha informada equivale
+     * à senha desse login.
+     * @Parâmetros: recebe o nome da tabela, o nome do usário (nome de login)
+     * e a senha daquele login.
+     * @Retorna:
+     * <ul>
+     * <li>-1 caso algum erro tenha acontecido;</li>
+     * <li>0 caso não exista o login;
+     * <li>1 caso exista o login e senha esteja correta;
+     * <li>2 caso exista o login mas a senha fornecida estava incorreta.</li>
+     * </ul>
+     * @Excessão: caso tenha havido algum erro com o SQL, e após encerrar
+     * a conexão não tenha sido possível criar outra, ele irá retornar
+     * ConexaoException
+     */
+    public int login(String user, String password, String tabela) throws ConexaoException {
+        ResultSet rt = null;
         try {
-            ResultSet rt = pesquisa(quem, "*", " WHERE usuario = '" + user + "'");
+            rt = Select(tabela, "*", " WHERE usuario = '" + user + "'");
 
             if (rt.next()){
                 if (password.equalsIgnoreCase(rt.getString("senha")))
-                    return rt;
+                    return 1;
+                else
+                    return 2;
             }
-            /*Esse next ta ajeitando o "ponteiro" para pegar a string. Sabe o index de quando se
-             * lê um arquivo .txt? Então aquele bagulho lá*/
+            return 0;
 
-        } catch (Exception e) {
-            System.out.println("ERRO - QUERRY: " + e);
+        } catch (SQLException e) {
+            e.printStackTrace();
+
+            try {
+                con.close();
+                criaCon(donoCon);
+            } catch (SQLException f) {
+                f.printStackTrace();
+
+            } catch (ConexaoException c){
+                throw new ConexaoException();
+            }
+        } finally {
+            try{
+                if (rt != null)
+                    rt.close();
+            } catch (Exception e){}
         }
-        return null;
+        return -1;
     }
 
-    public boolean update(String tabela, String coluna, String novo, String condicao) {
+    /**
+     * Função responsável por realizar updates na tabela. Irá executar o SQL
+     * "UPDATE 'tabela' SET 'coluna' = 'novo' WHERE 'condicao';".
+     * <P>Essa função pode executar múltiplos updates de uma vez em forma de
+     * transações. Para isso, basta enviar os ArrayLists com o mesmo tamanho
+     * contendo todas as informações para cada UPDATE desejado.</P>
+     * <P>Note que essa função realiza o UPDATE em apenas uma coluna por
+     * vez.</P>
+     * @Parâmetros: Recebe o nome da tabela, um ArrayList contendo o nome da
+     * coluna que vai ser atualizada em cada update, um ArrayList contendo o
+     * novo valor que será atribuído a coluna em cada update e a condição das
+     * linhas que serão atualizadas em cada update.
+     * @Retorna:
+     * <ul>
+     * <li>-1 caso algum erro tenha acontecido;</li>
+     * <li>0 caso nenhum update tenha sido realizado;
+     * <li>Qualquer outro inteiro positivo correspondente ao número total de
+     * updates realizados.
+     * </ul>
+     * @Excessão: Caso tenha ocorrido algum erro com o SQL e após o fechamento
+     * da conexão não tenha sido possível criar outra, ele irá retornar
+     * ConexaoException
+     */
+    public int update(String tabela, @NotNull ArrayList<String> coluna, @NotNull ArrayList<String> novo,
+                      @NotNull ArrayList<String> condicao) throws ConexaoException{
+
+        PreparedStatement st = null;
         try {
-            Statement st = con.createStatement();
-            String consulta = "UPDATE " + tabela + " SET " + coluna + " = " + novo +
-                    " " + condicao + ";";
+            String consulta = "UPDATE " + tabela + " SET ? = ? WHERE id_" +
+            tabela + " >= 0 AND ?;";
+            con.setAutoCommit(false);
 
-            int a = st.executeUpdate(consulta);
-            if (a == 1)
-                return true;
-        } catch (Exception e) {
-            System.out.println("ERRO - UPDATE: " + e);
+            int quantosUpdatesTotal = 0;
+            for (int i = 0; i < coluna.size(); ++i){
+                st = con.prepareStatement(consulta);
+                st.setString(1, coluna.get(i));
+                st.setString(2, novo.get(i));
+                st.setString(3, condicao.get(i));
+
+                int quantosUpdate = st.executeUpdate();
+                quantosUpdatesTotal += quantosUpdate;
+            }
+            con.commit();
+            con.setAutoCommit(true);
+
+            return quantosUpdatesTotal;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+
+            try {
+                con.rollback();
+                con.close();
+                criaCon(donoCon);
+            } catch (SQLException f) {
+                f.printStackTrace();
+
+            } catch (ConexaoException c){
+                throw new ConexaoException();
+            }
+        } catch (ArrayIndexOutOfBoundsException e){
+            e.printStackTrace();
+
+        } finally{
+            try{
+                if (st != null)
+                    st.close();
+            } catch (Exception e){}
         }
-        return false;
+        return -1;
     }
 
-    public ResultSet Select(String atributos, String tabela, String infopesquisa, String pesquisa){
+
+    /**
+     * Função responsável por executar deletes que respeitem uma condição.
+     * Irá executar um SQL do tipo "DELETE FROM 'tabela' WHERE 'condição';".
+     * @Parâmetros: Recebe o nome da tabela e a condição (que não pode ser
+     * vazia) para o delete.
+     * @Retorna:
+     * <ul>
+     * <li>-1 caso algum erro tenha acontecido;</li>
+     * <li>0 caso nenhum delete tenha sido executado;
+     * <li>Qualquer outro valor inteiro positivo correspondente à quantidade
+     * de linhas deletadas da tabela.
+     * </ul>
+     * @Excessão: Caso tenha havido algum erro com o SQL e após encerrar
+     * a conexão não tenha sido possível criar outra, ele irá retornar
+     * ConexaoException
+     */
+    public int delete(String tabela,
+                      @NotNull String condicao) throws ConexaoException{
+        PreparedStatement st = null;
+
         try {
-            return pesquisa(tabela, atributos, " WHERE " + pesquisa +
-                    " = " + infopesquisa);
-        } catch (Exception e) {
-            System.out.println("ERRO - SELECT: " + e);
+            String consulta = "DELETE FROM " + tabela + " WHERE id_" +
+                    tabela + " >= 0 AND " + condicao;
+
+            st = con.prepareStatement(consulta);
+            return st.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+
+            try {
+                con.close();
+                criaCon(donoCon);
+
+            } catch (SQLException f) {
+                f.printStackTrace();
+
+            } catch (ConexaoException c){
+
+                throw new ConexaoException();
+            }
+        } catch (ArrayIndexOutOfBoundsException e){
+            e.printStackTrace();
+
+        } finally{
+            try{
+                if (st != null)
+                    st.close();
+            } catch (Exception e){}
         }
-        return null;
+        return -1;
     }
 
-    public void printa(String tabela, String colunas){
+    /**
+     * Função responsável por executar deletes sem restrição
+     * (apagar uma tabela toda).
+     * Irá executar um SQL do tipo "DELETE FROM 'tabela'".
+     * @Parâmetros: Recebe o nome da tabela.
+     * @Retorna:
+     * <ul>
+     * <li>-1 caso algum erro tenha acontecido;</li>
+     * <li>0 caso nenhum delete tenha sido executado;
+     * <li>Qualquer outro valor inteiro positivo correspondente à quantidade
+     * de linhas deletadas da tabela.
+     * </ul>
+     * @Excessão: Caso tenha havido algum erro com o SQL e após encerrar
+     * a conexão não tenha sido possível criar outra, ele irá retornar
+     * ConexaoException
+     */
+    public int deleteAll(String tabela) throws ConexaoException{
+        PreparedStatement st = null;
         try{
-            ResultSet rt = pesquisa(tabela, colunas, "WHERE id_" + tabela + " >= 0");
+            String consulta = "DELETE FROM " + tabela + " WHERE id_" + tabela + ">= 0;";
+            st = con.prepareStatement(consulta);
 
-            ResultSetMetaData rtMetaData = rt.getMetaData();
-            int numeroDeColunas = rtMetaData.getColumnCount();
+            return st.executeUpdate();
 
-            while (rt.next()) {
-                StringJoiner joiner = new StringJoiner(", ", "[", "]\n");
-                for (int coluna = 1; coluna <= numeroDeColunas; coluna++) {
-                    String nomeDaColuna = rtMetaData.getColumnName(coluna);
-                    joiner.add(nomeDaColuna + " = " + rt.getString(coluna));
-                }
-                System.out.print(joiner.toString());
+        }catch (SQLException e) {
+            e.printStackTrace();
+
+            try {
+                con.close();
+                criaCon(donoCon);
+
+            } catch (SQLException f) {
+                f.printStackTrace();
+
+            } catch (ConexaoException c){
+
+                throw new ConexaoException();
             }
+        } catch (ArrayIndexOutOfBoundsException e){
+            e.printStackTrace();
 
-        } catch (Exception e){
-            System.out.println("ERRO: " + e);
+        } finally{
+            try{
+                if (st != null)
+                    st.close();
+            } catch (Exception e){}
         }
-    }
-
-    public void printa(String tabela, String id, String colunas){
-        try{
-            ResultSet rt = pesquisa(tabela, colunas, " WHERE id_" + tabela + " = " + id +
-                    " AND id_" + tabela + " >= 0");
-
-            ResultSetMetaData rtMetaData = rt.getMetaData();
-            int numeroDeColunas = rtMetaData.getColumnCount();
-
-            while (rt.next()) {
-                StringJoiner joiner = new StringJoiner(", ", "[", "]\n");
-                for (int coluna = 1; coluna <= numeroDeColunas; coluna++) {
-                    String nomeDaColuna = rtMetaData.getColumnName(coluna);
-                    joiner.add(nomeDaColuna + " = " + rt.getObject(coluna));
-                }
-                System.out.print(joiner.toString());
-            }
-
-        } catch (Exception e){
-
-        }
-    }
-
-    public boolean delete(String tabela, String condicao1, String condicao2, boolean deletaTudo){
-        try {
-            Statement st = con.createStatement();
-            if (deletaTudo){
-                String consulta = "DELETE FROM " + tabela + ";";
-
-                return !st.execute(consulta);
-            } else {
-
-                String consulta = "DELETE FROM " + tabela + " WHERE " + condicao1 + " = " + condicao2 + ";";
-
-                return !st.execute(consulta);
-            }
-        } catch (Exception e){
-            System.out.println("ERRO: " + e);
-        }
-        return false;
+        return -1;
     }
 }

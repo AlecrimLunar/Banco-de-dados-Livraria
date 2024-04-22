@@ -56,7 +56,7 @@ public class Vendedor {
             while (true) {
                 System.out.print("Nome para login no sistema: ");
                 user = tc.nextLine();
-                if (controle.Quantos( "", "cliente", " WHERE usuario = " + "'" + user + "'") > 0)
+                if (controle.Existe( "", "cliente", " WHERE usuario = " + "'" + user + "'") > 0)
                     System.out.println("\nJÁ EXISTE UM USUÁRIO COM ESSE NOME");
                 else
                     break;
@@ -101,7 +101,7 @@ public class Vendedor {
                     "\nDigite o codigo do livro: ");
             int idLivro = Integer.parseInt(tc.nextLine());
 
-            if(controle.Quantos( "", "livro", " WHERE id_livro = '" + idLivro + "'") > 0){
+            if(controle.Existe( "", "livro", " WHERE id_livro = '" + idLivro + "'") > 0){
 
                 try {
 
@@ -328,7 +328,7 @@ public class Vendedor {
                     "\nID DO LIVRO A SER REMOVIDO: ");
             String idLivro = tc.nextLine();
 
-            if (controle.Quantos(idLivro, "livro", "") > 0) {
+            if (controle.Existe(idLivro, "livro", "") > 0) {
                 try {
                     ResultSet rt = controle.Select("nome, autor, tipo", "livro", idLivro, "id_livro");
                     rt.next();
@@ -362,7 +362,7 @@ public class Vendedor {
                     "\nID DO VENDEDOR A SER REMOVIDO: ");
             String idVendedor = tc.nextLine();
 
-            if (controle.Quantos(idVendedor, "vendedor", "") > 0) {
+            if (controle.Existe(idVendedor, "vendedor", "") > 0) {
                 try {
                     ResultSet rt = controle.Select("nome, cpf", "vendedor", idVendedor,
                             "id_vendedor");

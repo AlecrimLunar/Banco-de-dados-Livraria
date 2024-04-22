@@ -3,7 +3,10 @@ package Entities;
 import Controle.ControlaBD;
 
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.util.Scanner;
+import java.util.StringJoiner;
+import java.util.regex.*;
 
 public class FuncoesEstaticas {
     public static void clearBuffer(Scanner scanner) {
@@ -15,7 +18,7 @@ public class FuncoesEstaticas {
     public static Vendedor IniciaSistema(Scanner tc) {
 
         ControlaBD controle = new ControlaBD();
-        if (controle.Quantos("", "vendedor", "") == 1) {
+        if (controle.Existe("", "vendedor", "") == 1) {
             System.out.println("-----------------------------------------------------------------------------\n" +
                     "BEM VINDO AO SISTEMA! NENHUM REGISTRO DE VENDEDORES FOI ENCONTRADO." +
                     " PARA UTILIZAR O SISTEMA \nÉ NECESSÁRIO SER UM VENDEDOR. DESEJA CADASTRAR UM" +
@@ -94,5 +97,70 @@ public class FuncoesEstaticas {
         } while (true);
         controle = null;
         return vendedor;
+    }
+
+    /* esse método irá verificar se alguma palavra reservada
+     * do SQL está sendo utilizada */
+    private static boolean verificaComandoSQL(String s){
+        Pattern verificaComandoSQL = Pattern.compile(" *drop +| *insert +| *" +
+                "grant +| *update +| *delete +| *select +| *create +| *" +
+                "alter +| *union +", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = verificaComandoSQL.matcher(s);
+
+        if (matcher.find()){
+            System.out.println("PALAVRA NÃO PERMITIDA UTILIZADA! TENTE NOVAMENTE");
+            return false;
+        }
+        return true;
+    }
+    public static boolean regexEmail(String s){
+        //verifica se a string possui alguma palavra reservada sql
+        if (verificaComandoSQL(s)) {
+            //verifica se o email está dentro do padrão de emails
+            if (Pattern.matches("[a-zA-Z0-9.ç]+@(gmail.com|" +
+                    "yahoo.com.br|hotmail.com)", s))
+                return true;
+            else {
+                System.out.println("O EMAIL NÃO ESTÁ NO FORMATO SUPORTADO! TENTE NOVAMENTE\n" +
+                        "São suportados apenas: 'gmail.com', 'yahoo.com.br', " +
+                        "'hotmail.com.br'");
+                return false;
+            }
+        }
+        return false;
+    }
+    public static boolean regexCPF(String s){
+        if (Pattern.matches("[0-9]{11}", s))
+            return true;
+        else {
+            System.out.println("INSIRA APENAS 11 NÚMEROS!");
+            return false;
+        }
+    }
+
+    public static boolean regexNome(String s){
+        if (verificaComandoSQL(s)){
+            return Pattern.matches("[A-Za-z]+", s);
+        }
+        return false;
+    }
+
+    public static void printa(ResultSet rt){
+        try{
+            ResultSetMetaData rtMetaData = rt.getMetaData();
+            int numeroDeColunas = rtMetaData.getColumnCount();
+
+            while (rt.next()) {
+                StringJoiner joiner = new StringJoiner(", ", "[", "]\n");
+                for (int coluna = 1; coluna <= numeroDeColunas; coluna++) {
+                    String nomeDaColuna = rtMetaData.getColumnName(coluna);
+                    joiner.add(nomeDaColuna + " = " + rt.getString(coluna));
+                }
+                System.out.print(joiner.toString());
+            }
+
+        } catch (Exception e){
+            System.out.println("ERRO: " + e);
+        }
     }
 }
