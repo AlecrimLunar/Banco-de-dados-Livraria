@@ -156,58 +156,6 @@ public class ControlaBD {
     }
 
     /**
-     * Função responsável por verificar se o login fornecido está
-     * ou não presente no banco de dados e se a senha informada equivale
-     * à senha desse login.
-     * @Parâmetros: recebe o nome da tabela, o nome do usário (nome de login)
-     * e a senha daquele login.
-     * @Retorna:
-     * <ul>
-     * <li>-1 caso algum erro tenha acontecido;</li>
-     * <li>0 caso não exista o login;
-     * <li>1 caso exista o login e senha esteja correta;
-     * <li>2 caso exista o login mas a senha fornecida estava incorreta.</li>
-     * </ul>
-     * @Excessão: caso tenha havido algum erro com o SQL, e após encerrar
-     * a conexão não tenha sido possível criar outra, ele irá retornar
-     * ConexaoException
-     */
-    protected int login(String user, String password, String tabela, Connection con) throws ConexaoException {
-        ResultSet rt = null;
-        Se
-        try {
-            rt = Select(tabela, "*", " WHERE usuario = '" + user + "'");
-
-            if (rt.next()){
-                if (password.equalsIgnoreCase(rt.getString("senha")))
-                    return 1;
-                else
-                    return 2;
-            }
-            return 0;
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-
-            try {
-                con.close();
-                criaCon(donoCon);
-            } catch (SQLException f) {
-                f.printStackTrace();
-
-            } catch (ConexaoException c){
-                throw new ConexaoException();
-            }
-        } finally {
-            try{
-                if (rt != null)
-                    rt.close();
-            } catch (Exception e){}
-        }
-        return -1;
-    }
-
-    /**
      * Função responsável por realizar updates na tabela. Irá executar o SQL
      * "UPDATE 'tabela' SET 'coluna' = 'novo' WHERE 'condicao';".
      * <P>Essa função pode executar múltiplos updates de uma vez em forma de
@@ -230,8 +178,8 @@ public class ControlaBD {
      * da conexão não tenha sido possível criar outra, ele irá retornar
      * ConexaoException
      */
-    protected int update(String tabela, @NotNull ArrayList<String> coluna, @NotNull ArrayList<String> novo,
-                      @NotNull ArrayList<String> condicao, Connection con) throws ConexaoException{
+    protected int update(String tabela, String mudancas, String condicao,
+                         Connection con) throws ConexaoException{
 
         PreparedStatement st = null;
         try {
