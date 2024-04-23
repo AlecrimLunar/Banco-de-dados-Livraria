@@ -13,12 +13,8 @@ public class Vendedor {
     private Long cpf;
     private ControlaBD controle;
 
-    public Vendedor() {
-        controle = new ControlaBD();
-    }
-
     //Cadastros
-
+/*
     public boolean cadastraCliente(Scanner tc) {
 
 
@@ -93,7 +89,6 @@ public class Vendedor {
         }
         return false;
     }
-
     public boolean cadastraCompra(Scanner tc){
         Compra c = new Compra();
         while(true){
@@ -134,7 +129,7 @@ public class Vendedor {
 
                         if (quantidadeAdiquirida <= quantidadeEstoque) {
                             c.addLivro(l1, quantidadeAdiquirida);
-                            livroFoiAdquirido(idLivro, quantidadeAdiquirida);
+                            //livroFoiAdquirido(idLivro, quantidadeAdiquirida);
                             break;
                         } else {
                             System.out.println("O NÚMERO DE LIVROS ADQUIRIDOS É MAIOR QUE O NÚMERO" +
@@ -227,7 +222,7 @@ public class Vendedor {
                 return false;
             }
 
-            /* adiciona todo o carrinho no banco e decrementa a quantidade de livros no banco*/
+            /* adiciona todo o carrinho no banco e decrementa a quantidade de livros no banco
             for (int i = 0; i < c.getsize(); i++){
                 controle.Insert("carrinho_livro", id_carrinho + ", " +
                                 c.getLivro(i).getId().toString() + ", " + c.getQuantidade(i) ,false,
@@ -252,7 +247,6 @@ public class Vendedor {
         c = null;
         return false;
     }
-
     public void cadastraLivro(Scanner tc){
         System.out.print("-------------------------------ADICIONAR LIVRO------------------------------\n"+
                 "DIGITE O NOME DO LIVRO: ");
@@ -290,7 +284,6 @@ public class Vendedor {
             System.out.println("ERRO NA INSERÇÃO DO LIVRO");
         }
     }
-
     public void cadastraVendedor(Scanner tc){
         while (true) {
             System.out.print("INSIRA AS INFORMAÇÕES:\nNome: ");
@@ -334,6 +327,7 @@ public class Vendedor {
             if (controle.Quantos(idLivro, "livro", "") > 0) {
                 try {
                     ResultSet rt = controle.Select("nome, autor, tipo", "livro", idLivro, "id_livro");
+                    rt.next();
                     System.out.println("O LIVRO ABAIXO É O LIVRO QUE DESEJA REMOVER? REPONDA COM 'Sim' ou 'Não' " +
                             "\nNome: " + rt.getString("nome") + "\nAutor: " + rt.getString("autor") +
                             "\nTipo: " + rt.getString("tipo"));
@@ -358,7 +352,6 @@ public class Vendedor {
             }
         }
     }
-
     public void removeVendedor(Scanner tc){
         while (true) {
             System.out.print("------------------------------------------------------------------" +
@@ -392,7 +385,6 @@ public class Vendedor {
             }
         }
     }
-
     public void removeCliente(Scanner tc) {
         System.out.println("------------------------------------------------------------------------------" +
                 "\nLOGIN CLIENTE");
@@ -707,7 +699,7 @@ public class Vendedor {
     }
 
     //Prints
-    public void printLivro(String colunas){controle.printa("livro", colunas);}
+    /*public void printLivro(String colunas){controle.printa("livro", colunas);}
     public void printLivro(String id, String colunas){controle.printa("livro", id, colunas);}
 
     public void printCliente(String colunas){controle.printa("cliente", colunas);}
@@ -789,5 +781,5 @@ public class Vendedor {
 
     public void setCpf(Long cpf) {
         this.cpf = cpf;
-    }
+    }*/
 }

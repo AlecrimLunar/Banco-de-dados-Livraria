@@ -1,9 +1,16 @@
 package Entities;
 
+import Controle.ConexaoException;
 import Controle.ControlaBD;
-
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.StringJoiner;
 
 public class FuncoesEstaticas {
     public static void clearBuffer(Scanner scanner) {
@@ -12,87 +19,256 @@ public class FuncoesEstaticas {
         }
     }
 
-    public static Vendedor IniciaSistema(Scanner tc) {
+    public LinkedList<Livro> Destaques() throws ConexaoException {
+        ControlaBD con = new ControlaBD(0);
+        LinkedList<Livro> destaques = new LinkedList<>();
+        String coluna = "l.*";
+        String tabela = "estoque.livro as l";
+        String pesquisa = "WHERE l.id_livro >= 0 AND l.id_livro IN (SELECT cl.id_livro FROM clientes_info.carrinho_livro as cl GROUP BY cl.id_livro" +
+                " ORDER BY COUNT(*) DESC LIMIT 3)";
+        try {
+        ResultSet rt = con.Select(tabela, coluna, pesquisa);
+        while(rt.next()) {
+            Livro aux = new Livro(rt.getInt("id_livro"), rt.getString("nome"),
+                    Double.parseDouble(rt.getString("preco").substring(3).replaceAll(",", ".")),
+                    rt.getString("autor"), rt.getString("genero"), rt.getString("tipo"),
+                    rt.getBoolean("from_mari"));
+            destaques.add(aux);
+        }
 
-        ControlaBD controle = new ControlaBD();
-        if (controle.Quantos("", "vendedor", "") == 1) {
-            System.out.println("-----------------------------------------------------------------------------\n" +
-                    "BEM VINDO AO SISTEMA! NENHUM REGISTRO DE VENDEDORES FOI ENCONTRADO." +
-                    " PARA UTILIZAR O SISTEMA \nÉ NECESSÁRIO SER UM VENDEDOR. DESEJA CADASTRAR UM" +
-                    " NOVO VENDEDOR?" );
-            //dei uma formatação nesse print pra ficar bonitinho :D
+        while (rt.next()) { }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return destaques;
+    }
 
-            if (tc.nextLine().equalsIgnoreCase("sim") || tc.nextLine().equalsIgnoreCase("s")) {
-                while (true) {
-                    System.out.print("MUITO BEM, INSIRA AS SEGUINTES INFORMAÇÕES:\nNome: ");
-                    String nome = tc.nextLine();
+    public String PrintDestaques(LinkedList<Livro> livros){
+        StringBuilder sb = new StringBuilder();
+        sb.append("+===========================================+===========================================+===========================================+\n");
 
-                    System.out.print("CPF (Apenas números): ");
-                    String CPF = tc.nextLine();
+        Livro aux = livros.get(0);
+        ArrayList<String> nome1 = new ArrayList<>();
 
-                    System.out.print("Nome de acesso: ");
-                    String user = tc.nextLine();
-                    //adicionei o nome de acesso pra fazer o login de forma mais facil. Do q pelo nome completo
+        if(aux.getNome().length() > 43){
+            nome1 = DividirNoMeio(aux.getNome());
+        } else {
+            nome1.set(0, aux.getNome());
+        }
+        sb.append("|" + AdicionaEspacos(nome1.get(0)) + "|");
 
-                    System.out.print("Senha de acesso: ");
-                    String senha = tc.nextLine();
+        aux = livros.get(1);
+        ArrayList<String> nome2 = new ArrayList<>();
 
+        if(aux.getNome().length() > 43){
+            nome2 = DividirNoMeio(aux.getNome());
+        } else {
+            nome2.set(0, aux.getNome());
+        }
+        sb.append("|" + AdicionaEspacos(nome2.get(0)) + "|");
 
-                    System.out.print("-------------------------------------------------------------------------" +
-                            "\n\nMUITO BEM, VERIFIQUE SE AS INFORMAÇÕES ESTÃO CORRETAS. SE SIM DIGITE " +
-                            "'Sim', SE NÃO DIGITE 'Não'\nNome: " + nome + "\nCPF: " + CPF + "\n");
+        aux = livros.get(2);
+        ArrayList<String> nome3 = new ArrayList<>();
 
-                    if (tc.nextLine().equalsIgnoreCase("sim")) {
-                        String insert = "'" + nome + "', '" + user + "', '" + CPF + "', '" + senha + "'";
-                        //como ce pode ver o nome de usuario fica no final ->-->-->-->-->-->-->-->-->-^
-                        if (controle.Insert("vendedor", insert, false,
-                                "nome, usuario, cpf, senha") != -2) {
-                            System.out.println("CADASTRO CONCLUÍDO COM SUCESSO! PARA LOGAR, UTILIZE O USUÁRIO: " +
-                                    user + " E A " +
-                                    "SENHA INFORMADA.");
-                            break;
-                        }
-                    }
+        if(aux.getNome().length() > 43){
+            nome3 = DividirNoMeio(aux.getNome());
+        } else {
+            nome3.set(0, aux.getNome());
+        }
+        sb.append("|" + AdicionaEspacos(nome3.get(0)) + "|\n");
+
+        if(nome1.size() > 1){
+            sb.append("|" + AdicionaEspacos(nome1.get(1)) + "|");
+        } else {
+            aux = livros.get(0);
+            sb.append("|" + AdicionaEspacos(aux.getAutor()) + "|");
+        }
+
+        if(nome2.size() > 1){
+            sb.append("|" + AdicionaEspacos(nome2.get(1)) + "|");
+        } else {
+            aux = livros.get(1);
+            sb.append("|" + AdicionaEspacos(aux.getAutor()) + "|");
+        }
+
+        if(nome3.size() > 1){
+            sb.append("|" + AdicionaEspacos(nome3.get(1)) + "|");
+        } else {
+            aux = livros.get(2);
+            sb.append("|" + AdicionaEspacos(aux.getAutor()) + "|\n");
+        }
+
+        if(nome1.size() > 1){
+            aux = livros.get(0);
+            sb.append("|" + AdicionaEspacos(aux.getAutor()) + "|");
+        } else {
+            aux = livros.get(0);
+            sb.append("|" + AdicionaEspacos(aux.getTipo()) + "|");
+        }
+
+        if(nome2.size() > 1){
+            aux = livros.get(1);
+            sb.append("|" + AdicionaEspacos(aux.getAutor()) + "|");
+        } else {
+            aux = livros.get(1);
+            sb.append("|" + AdicionaEspacos(aux.getTipo()) + "|");
+        }
+
+        if(nome3.size() > 1){
+            aux = livros.get(2);
+            sb.append("|" + AdicionaEspacos(aux.getAutor()) + "|");
+        } else {
+            aux = livros.get(2);
+            sb.append("|" + AdicionaEspacos(aux.getTipo()) + "|");
+        }
+
+        if(nome1.size() > 1){
+            aux = livros.get(0);
+            sb.append("|" + AdicionaEspacos(aux.getTipo()) + "|");
+        } else {
+            aux = livros.get(0);
+            sb.append("|" + AdicionaEspacos(aux.getGeneroAndMari()) + "|");
+        }
+
+        if(nome2.size() > 1){
+            aux = livros.get(1);
+            sb.append("|" + AdicionaEspacos(aux.getTipo()) + "|");
+        } else {
+            aux = livros.get(1);
+            sb.append("|" + AdicionaEspacos(aux.getGeneroAndMari()) + "|");
+        }
+
+        if(nome3.size() > 1){
+            aux = livros.get(2);
+            sb.append("|" + AdicionaEspacos(aux.getTipo()) + "|");
+        } else {
+            aux = livros.get(2);
+            sb.append("|" + AdicionaEspacos(aux.getGeneroAndMari()) + "|");
+        }
+
+        if(nome1.size() > 1){
+            aux = livros.get(0);
+            sb.append("|" + AdicionaEspacos(aux.getGeneroAndMari()) + "|");
+        } else {
+            sb.append("|" + " ".repeat(43) + "|");
+        }
+
+        if(nome2.size() > 1){
+            aux = livros.get(1);
+            sb.append("|" + AdicionaEspacos(aux.getGeneroAndMari()) + "|");
+        } else {
+            sb.append("|" + " ".repeat(43) + "|");
+        }
+
+        if(nome3.size() > 1){
+            aux = livros.get(2);
+            sb.append("|" + AdicionaEspacos(aux.getGeneroAndMari()) + "|");
+        } else {
+            sb.append("|" + " ".repeat(43) + "|");
+        }
+
+        sb.append("+===========================================+===========================================+===========================================+\n");
+        sb.append("|" + AdicionaEspacos("R$ " + livros.get(0).getPreco()) + "|" + AdicionaEspacos("R$ " + livros.get(1).getPreco()) + "|" +
+                AdicionaEspacos("R$ " + livros.get(2).getPreco()) + "|\n");
+        sb.append("+===========================================+===========================================+===========================================+\n");
+
+        return sb.toString();
+    }
+
+    public static ArrayList<String> DividirNoMeio(String nome){
+        ArrayList<String> nomeA = new ArrayList<>();
+        int auxI = nome.split(" ").length/2;
+        int indiceEncontrado = -1;
+        int contadorEspacos = 0;
+
+        for (int i = 0; i < nome.length(); i++) {
+            char caractere = nome.charAt(i);
+            if (caractere == ' ') {
+                contadorEspacos++;
+                if (contadorEspacos == auxI + 1) {
+                    indiceEncontrado = i;
+                    break;
                 }
-
-            } else {
-                System.exit(0);
             }
         }
-        System.out.print("----------------------------------------------------" +
-                "\nLOGIN NO SISTEMA\n\n");
+        nomeA.set(0 , nome.substring(0, indiceEncontrado).trim());
+        nomeA.set(1, nome.substring(indiceEncontrado + 1).trim());
 
-        /*não tenho ideia de como fazer isso aqui, acho que vamos precisar de duas chamadas
-         * do select, uma pra pegar os usuários com aquele nome e outra pra pegar eles com a senha.
-         * talvez a gente possa fazer isso de forma diferente pq n tem pq da select ja q a gente so
-         * quer saber se tem ou não*/
+        return nomeA;
+    }
+    public static String AdicionaEspacos(String nome){
+        int espEsq = (43 - nome.length()/2), espDir = (43-nome.length()-espEsq);
 
-        /*Nico: Ta resolvido meu querido :D*/
-        Vendedor vendedor = new Vendedor();
+        StringBuilder auxSb = new StringBuilder();
+        auxSb.append(" ".repeat(espEsq));
+        auxSb.append(nome);
+        auxSb.append(" ".repeat(espDir));
 
-        do {
-            System.out.print("Usuário: ");
+        return auxSb.toString();
+    }
 
-            String user = tc.nextLine();
-            System.out.print("Senha: ");
-            String senha = tc.nextLine();
+    /* esse método irá verificar se alguma palavra reservada
+     * do SQL está sendo utilizada */
+    private static boolean verificaComandoSQL(String s){
+        Pattern verificaComandoSQL = Pattern.compile(" *drop +| *insert +| *" +
+                "grant +| *update +| *delete +| *select +| *create +| *" +
+                "alter +| *union +", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = verificaComandoSQL.matcher(s);
 
-            ResultSet rt = controle.login(user, senha, "vendedor");
-            if (rt != null) {
-                try {
-                    vendedor.setNome(rt.getString("nome"));
-                    vendedor.setId(rt.getInt("id_vendedor"));
-                    vendedor.setCpf(rt.getLong("cpf"));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                System.out.print("\nLOGIN EFETUADO COM SUCESSO!\n\n");
-                break;
-            } else {
-                System.out.print("SENHA OU USUÁRIO INCORRETO! \nTENTE NOVAMENTE\n\n");
+        if (matcher.find()){
+            System.out.println("PALAVRA NÃO PERMITIDA UTILIZADA! TENTE NOVAMENTE");
+            return false;
+        }
+        return true;
+    }
+    public static boolean regexEmail(String s){
+        //verifica se a string possui alguma palavra reservada sql
+        if (verificaComandoSQL(s)) {
+            //verifica se o email está dentro do padrão de emails
+            if (Pattern.matches("[a-zA-Z0-9.ç]+@(gmail.com|" +
+                    "yahoo.com.br|hotmail.com)", s))
+                return true;
+            else {
+                System.out.println("O EMAIL NÃO ESTÁ NO FORMATO SUPORTADO! TENTE NOVAMENTE\n" +
+                        "São suportados apenas: 'gmail.com', 'yahoo.com.br', " +
+                        "'hotmail.com.br'");
+                return false;
             }
-        } while (true);
-        controle = null;
-        return vendedor;
+        }
+        return false;
+    }
+    public static boolean regexCPF(String s){
+        if (Pattern.matches("[0-9]{11}", s))
+            return true;
+        else {
+            System.out.println("INSIRA APENAS 11 NÚMEROS!");
+            return false;
+        }
+    }
+
+    public static boolean regexNome(String s){
+        if (verificaComandoSQL(s)){
+            return Pattern.matches("[A-Za-z]+", s);
+        }
+        return false;
+    }
+
+    public static void printa(ResultSet rt){
+        try{
+            ResultSetMetaData rtMetaData = rt.getMetaData();
+            int numeroDeColunas = rtMetaData.getColumnCount();
+
+            while (rt.next()) {
+                StringJoiner joiner = new StringJoiner(", ", "[", "]\n");
+                for (int coluna = 1; coluna <= numeroDeColunas; coluna++) {
+                    String nomeDaColuna = rtMetaData.getColumnName(coluna);
+                    joiner.add(nomeDaColuna + " = " + rt.getString(coluna));
+                }
+                System.out.print(joiner.toString());
+            }
+
+        } catch (Exception e){
+            System.out.println("ERRO: " + e);
+        }
     }
 }

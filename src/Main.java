@@ -1,13 +1,18 @@
+import Controle.ConexaoException;
+import Controle.ControlaBD;
+import Controle.Sistema;
 import Entities.*;
 
 import java.util.Scanner;
 
 public class Main {
 
-    public static void main(String[] args) {
-        Scanner tc = new Scanner(System.in);
-        Vendedor vendedor = FuncoesEstaticas.IniciaSistema(tc);
+    public static void main(String[] args) throws ConexaoException {
+        Sistema s = new Sistema();
+        s.Iniciar();
 
+
+        /*
         System.out.print("-----------------------------------------------------------------------------\n" +
                 "BEM-VINDO AO MENU DE VENDEDOR");
 
@@ -146,6 +151,6 @@ public class Main {
                 default -> System.out.println("OPÇÃO INVÁLIDA!");
             }
         }while(true);
-
+         */
     }
 }

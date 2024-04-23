@@ -46,4 +46,15 @@ public class Livro {
     public Boolean getMari() {
         return mari;
     }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(nome + ", " + autor + "\nR$ " + String.format("%02f", preco) + "\n" + tipo + "\n");
+        sb.append(getGeneroAndMari());
+        return sb.toString();
+    }
+
+    public String getGeneroAndMari(){
+        return mari ? genero + ", feito em Mari." : genero + ".";
+    }
 }
