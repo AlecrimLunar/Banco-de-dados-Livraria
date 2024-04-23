@@ -3,6 +3,7 @@ import Controle.*;
 
 import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.Scanner;
@@ -13,14 +14,13 @@ public class Vendedor {
     private Long cpf;
     private ControlaBD controle;
 
-    public Vendedor() {
-        controle = new ControlaBD();
+    public Vendedor() throws ConexaoException{
+        controle = new ControlaBD(0);
     }
 
     //Cadastros
 
     public boolean cadastraCliente(Scanner tc) {
-
 
         while (true) {
             System.out.println("Insira a seguir as seguintes informações do cliente:");
@@ -56,10 +56,27 @@ public class Vendedor {
             while (true) {
                 System.out.print("Nome para login no sistema: ");
                 user = tc.nextLine();
-                if (controle.Existe( "", "cliente", " WHERE usuario = " + "'" + user + "'") > 0)
+                int verifica = -1;
+
+                do {
+                    try {
+                        verifica = controle.Existe("Clientes_Info.cliente", "usuario", user);
+                    } catch (ConexaoException e) {
+                        try {
+                            controle = new ControlaBD(1);
+                        } catch (ConexaoException f) {
+                            System.err.println("FALHA CRÍTICA NO SISTEMA! NÃO FOI POSSÍVEL SE CONECTAR\n" +
+                                    " AO BANCO DE DADOS");
+                            System.exit(1);
+                        }
+                    }
+                } while (verifica == -1);
+
+                if (verifica == 0)
                     System.out.println("\nJÁ EXISTE UM USUÁRIO COM ESSE NOME");
                 else
                     break;
+
             }
 
             System.out.print("Senha para acesso ao sistema: ");
@@ -73,21 +90,33 @@ public class Vendedor {
                         cpf + "', '" + rua + "', " + numero + ", '" + email + "', " + flamengo + ", " +
                         sousa + ", " + onePiece;
 
-                if (controle.InsertRetornando("cliente", adiciona, "senha, usuario, " +
-                        "nome, cpf, rua, numero, email, is_flamengo, is_sousa, one_piece") != -2) {
-                    System.out.println("CADASTRO CONCLUÍDO COM SUCESSO\n" +
-                            "----------------------------------------------------------------------------");
-                    return true;
-                }
-                else
-                    return false;
+                ArrayList<String> adicionaBd = null;
+                adicionaBd.add(adiciona);
 
+                int verifica = -1;
+                do{
+                    try{
+                        verifica = controle.Insert("cliente", adicionaBd, "senha, usuario, " +
+                                "nome, cpf, rua, numero, email, is_flamengo, is_sousa, one_piece");
+                    } catch (ConexaoException e) {
+                        try {
+                            controle = new ControlaBD(1);
+                        } catch (ConexaoException f) {
+                            System.err.println("FALHA CRÍTICA NO SISTEMA! NÃO FOI POSSÍVEL SE CONECTAR\n" +
+                                    " AO BANCO DE DADOS");
+                            System.exit(1);
+                        }
+                    }
+                } while (verifica == -3 || verifica == 0);
+
+                System.out.println("CADASTRO CONCLUÍDO COM SUCESSO\n" +
+                        "----------------------------------------------------------------------------");
+                return true;
             } else {
                 System.out.println("DESEJA INSERIR AS INFORMAÇÕES NOVAMENTE?");
                 if (!tc.nextLine().equalsIgnoreCase("sim")) {
                     break;
                 }
-
 
             }
         }

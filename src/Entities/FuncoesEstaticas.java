@@ -1,5 +1,6 @@
 package Entities;
 
+import Controle.ConexaoException;
 import Controle.ControlaBD;
 
 import java.sql.ResultSet;
@@ -17,7 +18,11 @@ public class FuncoesEstaticas {
 
     public static Vendedor IniciaSistema(Scanner tc) {
 
-        ControlaBD controle = new ControlaBD();
+        try {
+            ControlaBD controle = new ControlaBD(0);
+        } catch (ConexaoException e){
+
+        }
         if (controle.Existe("", "vendedor", "") == 1) {
             System.out.println("-----------------------------------------------------------------------------\n" +
                     "BEM VINDO AO SISTEMA! NENHUM REGISTRO DE VENDEDORES FOI ENCONTRADO." +
@@ -162,5 +167,9 @@ public class FuncoesEstaticas {
         } catch (Exception e){
             System.out.println("ERRO: " + e);
         }
+    }
+
+    public static Cliente cadastroCliente(){
+
     }
 }
