@@ -24,17 +24,12 @@ public class FuncoesEstaticas {
         LinkedList<Livro> destaques = new LinkedList<>();
         String coluna = "l.*";
         String tabela = "estoque.livro as l";
-        String pesquisa = "WHERE l.id_livro >= 0 AND l.id_livro IN (SELECT cl.id_livro FROM clientes_info.carrinho_livro as cl GROUP BY cl.id_livro" +
-                " ORDER BY COUNT(*) DESC LIMIT 3)";
+        String pesquisa = "WHERE l.id_livro >= 0 AND l.quantidade_estoque > 0 AND l.id_livro IN " +
+                "(SELECT cl.id_livro FROM clientes_info.carrinho_livro as cl GROUP BY cl.id_livro ORDER BY COUNT(*) DESC LIMIT 3)";
         try {
         ResultSet rt = con.Select(tabela, coluna, pesquisa);
-        while(rt.next()) {
-            Livro aux = new Livro(rt.getInt("id_livro"), rt.getString("nome"),
-                    Double.parseDouble(rt.getString("preco").substring(3).replaceAll(",", ".")),
-                    rt.getString("autor"), rt.getString("genero"), rt.getString("tipo"),
-                    rt.getBoolean("from_mari"));
-            destaques.add(aux);
-        }
+
+        destaques = RecuperaLivro(rt);
 
         while (rt.next()) { }
         } catch (SQLException e) {
@@ -45,7 +40,7 @@ public class FuncoesEstaticas {
 
     public String PrintDestaques(LinkedList<Livro> livros){
         StringBuilder sb = new StringBuilder();
-        sb.append("+===========================================+===========================================+===========================================+\n");
+        sb.append("+=====================1=====================+=====================2=====================+=====================3=====================+\n");
 
         Livro aux = livros.get(0);
         ArrayList<String> nome1 = new ArrayList<>();
@@ -199,12 +194,52 @@ public class FuncoesEstaticas {
     public static String AdicionaEspacos(String nome){
         int espEsq = (43 - nome.length()/2), espDir = (43-nome.length()-espEsq);
 
-        StringBuilder auxSb = new StringBuilder();
-        auxSb.append(" ".repeat(espEsq));
-        auxSb.append(nome);
-        auxSb.append(" ".repeat(espDir));
+        String auxSb = " ".repeat(espEsq) +
+                nome +
+                " ".repeat(espDir);
 
-        return auxSb.toString();
+        return auxSb;
+    }
+
+    public LinkedList<Livro> PesquisaLivro(ControlaBD con, String str, String coluna) throws ConexaoException, SQLException {
+        LinkedList<Livro> l = new LinkedList<>();
+
+        int aux = con.Existe("estoque.livro as l", "l." + coluna, str, 1);
+
+        if(aux > 0){
+            ResultSet rt = con.Select("estoque.livro as l", "l." + coluna, " WHERE l." + coluna + " LIKE '%" + str +
+                    "%' AND l.quantidade_estoque > 0");
+
+            l = RecuperaLivro(rt);
+        } else if(aux == 0) {
+            System.out.print("Não temos nenhum livro com esse " + coluna + "!\n\n");
+        } else if(aux == -1){
+            System.out.print("Erro com a pesquisa tente novamente com um atributo diferente!\n\n");
+        }
+
+        return l;
+    }
+
+    public static LinkedList<Livro> RecuperaLivro(ResultSet rt) throws SQLException{
+        LinkedList<Livro> l = new LinkedList<>();
+
+        while(rt.next()) {
+            Livro aux = new Livro(rt.getInt("id_livro"), rt.getString("nome"),
+                    Double.parseDouble(rt.getString("preco").substring(3).replaceAll(",", ".")),
+                    rt.getString("autor"), rt.getString("genero"), rt.getString("tipo"),
+                    rt.getBoolean("from_mari"));
+            l.add(aux);
+        }
+
+        return l;
+    }
+
+    public void PrintLivro(LinkedList<Livro> l){
+        int escolha = 1;
+        for (Livro livro : l) {
+            System.out.println( escolha + " - " + livro.toString());
+            escolha++;
+        }
     }
 
     /* esse método irá verificar se alguma palavra reservada

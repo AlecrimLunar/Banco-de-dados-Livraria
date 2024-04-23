@@ -198,13 +198,20 @@ public class ControlaBD {
      * a conexão não tenha sido possível criar outra, ele irá retornar
      * ConexaoException
      */
-    public int Existe(String tabela, String coluna, String condicao) throws ConexaoException{
+    public int Existe(String tabela, String coluna, String condicao, int tipo) throws ConexaoException{
         ResultSet rt = null;
         try {
-            rt = Select(tabela, "*","WHERE "
-                    + coluna + " = " + condicao);
+            if(tipo == 1) {
+                rt = Select(tabela, "*", " WHERE "
+                        + coluna + " LIKE '%" + condicao + "%'");
 
-            return rt.next() ? rt.getInt(1) : 0;
+                return rt.next() ? rt.getInt(1) : 0;
+            } else {
+                rt = Select(tabela, "*", " WHERE "
+                        + coluna + " = " + condicao);
+
+                return rt.next() ? rt.getInt(1) : 0;
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();
