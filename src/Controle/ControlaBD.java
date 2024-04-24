@@ -65,66 +65,35 @@ public class ControlaBD {
     }
 
     /**
-     * Função responsável pelos inserts onde não se quer saber
-     * o id criado pelo banco para a linha inserida.
-     * Por isso, essa função aceita uma lista de strings,
-     * possibilitando a inserção de várias (tanto a tabela
-     * quanto as colunas onde os valores serão inseridos
-     * precisam ser fixos).
-     * @Retorna:
-     * <ul>
-     * <li>-1 caso um erro tenha acontecido;
-     * <li>0 caso não tenha conseguido inserir todos os valores;
-     * <li>1 caso as inserções tenham acontecido.</li>
-     * </ul>
-     * @Excessão:
-     * Caso tenha ocorrido algum erro com o SQL e após o fechamento
-     * da conexão não tenha sido possível criar outra, ele irá retornar
-     * ConexaoException
+     * Função responsável pelos inserts no banco.
+     * @param tabela a tabela onde o insert será feito.
+     * @param infos as informações que serão inseridas na
+     *              tabela.
+     * @param atributos as colunas que receberão as infos na
+     *                  tabela.
+     * @param con a conexão com o banco
+     * @return 0 caso a inserção não tenha acontecido.<br>
+     * 1 caso o insert tenha sido bem-sucedido.
+     * @throws SQLException
      */
-    protected int Insert(String tabela, ArrayList<String> infos,
-                         String atributos, Connection con) throws ConexaoException{
+    protected int Insert(String tabela, String infos,
+                         String atributos, Connection con) throws SQLException{
         PreparedStatement st = null;
 
         try {
-            con.setAutoCommit(false);
-
-
             String consulta = "INSERT INTO " + tabela + " (" + atributos +
-                    ") VALUES (?) RETURNING id_" + tabela + ";";
+                    ") VALUES (" + infos + ");";
+            st = con.prepareStatement(consulta);
 
-            for (String s : infos) {
-                st = con.prepareStatement(consulta);
-                st.setString(1, s);
-
-                int numLinhasInseridas = st.executeUpdate();
-                if (numLinhasInseridas == 0) {
-                    /*
-                     * verificação de que algo foi realmente inserido no
-                     * banco de dados. caso nada tenha sido adicionado, o
-                     * processo precisa ser reiniciado
-                    */
-                    con.rollback();
-                    return -1;
-                }
-            }
-            con.commit();
-            return 1;
-        } catch (SQLException e) {
-            e.printStackTrace();
-
-            try {
-                con.rollback();
-                throw new ConexaoException();
-            } catch (SQLException f) {
-            }
-        } finally {
+            return st.executeUpdate();
+        }  finally {
             try{
                 if (st != null)
                     st.close();
-            } catch (Exception e){}
+            } catch (Exception e){
+                st = null;
+            }
         }
-        return -1;
     }
 
 

@@ -123,33 +123,40 @@ public abstract class GerenciaCon extends ControlaBD{
     }
 
     /**
-     * Função responsável pelos inserts onde não se quer saber
-     * o id criado pelo banco para a linha inserida. Pode executar
-     * múltipos inserts de uma vez.
-     * @Parâmetros: 'tabela' recebe a tabela que vai ser inserida;
-     * 'infos' recebe um ArrayList contendo todas as coisas a serem
-     * inseridas em cada INSERT; 'atributos' recebe quais as colunas
-     * da tabela irão receber os valores em 'infos'.
-     * @Retorna:
-     * <ul>
-     * <li>-2 caso um erro tenha acontecido e não tenha sido possível tratar ele
-     * ou seja, não há um conexão estabelecida com o banco de dados;
-     * <li>-1 caso um erro tenha acontecido e ele tenha sido tratado;
-     * <li>0 caso não tenha conseguido inserir todos os valores;
-     * <li>1 caso as inserções tenham acontecido.</li>
-     * </ul>
+     * Função responsável por realizar um ou mais inserts.
+     * @param tabela a tabela onde os inserts serão realizados
+     * @param infos as informações que serão inseridas. Para
+     *              cada objeto do ArrayList, uma inserção
+     *              será realizada.
+     * @param atributos as colunas que receberão as informações
+     *                  em infos.
+     * @return -1 caso algum erro tenha acontecido e a função
+     * tenha conseguido lidar com ele.<br>
+     * Qualquer outro inteiro positivo ou zero representado o
+     * número de inserts realizados.
+     * @throws NaoTemConexaoException
      */
     protected int Insert(String tabela, ArrayList<String> infos,
                        String atributos) throws NaoTemConexaoException{
         if (connection != null) {
             try {
-                int funcionou = Insert(tabela, infos, atributos, connection);
+                int funcionou = 0;
+                connection.setAutoCommit(false);
+
+                for (String s : infos) {
+                    funcionou += Insert(qualNomeTabelaBanco.get(tabela),
+                            s, atributos, connection);
+                }
+                connection.setAutoCommit(true);
+                connection.commit();
+
                 return funcionou;
-            } catch (ConexaoException e) {
+            } catch (SQLException e) {
                 /*
                  * Se der erro, vai tentar fechar a conexão atual.
                  */
                 try {
+                    connection.rollback();
                     connection.close();
 
                 } catch (SQLException f) {
