@@ -13,26 +13,27 @@ public class ControlaBD {
     }
 
     /**
-     * Função responsável pelos inserts quando se quer saber
-     * o id criado pelo banco para a linha inserida.
-     * @Retorna:
-     * <ul>
-     * <li>-1 caso um erro tenha acontecido;
-     * <li>0 caso não tenha conseguido inserir;
-     * <li>Qualquer outro inteiro positivo referente ao id atribuído pelo
-     * banco de dados àquela linha.</li>
-     * </ul>
-     * @Excessão: caso tenha havido algum erro com o SQL, e após encerrar
-     * a conexão não tenha sido possível criar outra, ele irá retornar
-     * ConexaoException
+     * Função responsável por fazer o insert no banco de dados
+     * quando se quer receber o id criado para essa nova inserção.
+     * @param tabela a tabela onde o insert será feito.
+     * @param infos as informações que serão inseridas na
+     *              tabela.
+     * @param atributos as colunas que receberão as infos na
+     *                  tabela.
+     * @param retornando a condição para retornar o valor desejado.
+     * @param con a conexão com o banco
+     * @return -1 caso a inserção não tenha acontecido.<br>
+     * Qualquer outro inteiro positivo representado o que foi
+     * pedido para que fosse retornado.
+     * @throws SQLException
      */
     protected int InsertRetornando(String tabela, String infos,
-                                   String atributos, Connection con) throws ConexaoException{
+                                   String atributos, String retornando, Connection con) throws SQLException{
         PreparedStatement st = null;
         ResultSet rt = null;
         try {
             String consulta = "INSERT INTO " + tabela + " (" + atributos +
-                    ") VALUES (" + infos + ") RETURNING id_" + tabela + ";";
+                    ") VALUES (" + infos + ") " + retornando + ";";
 
 
             /*
@@ -44,20 +45,23 @@ public class ControlaBD {
 
             if (rt.next())
                 return rt.getInt("id_" + tabela);
+            else
+                return -1;
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new ConexaoException();
-        } finally {
-            try{
+        } finally{
+            try {
                 if (st != null)
                     st.close();
-
+            } catch (Exception e) {
+                st = null;
+            }
+            try{
                 if (rt != null)
                     rt.close();
-            } catch (Exception e){}
+            } catch (Exception f){
+                rt = null;
+            }
         }
-        return -1;
     }
 
     /**

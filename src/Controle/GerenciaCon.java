@@ -60,25 +60,27 @@ public abstract class GerenciaCon extends ControlaBD{
     }
 
     /**
-     * Função responsável pelos inserts quando se quer saber
-     * o id criado pelo banco para a linha inserida.
-     * @Retorna:
-     * <ul>
-     * <li>-2 caso um erro tenha acontecido e não tenha sido possível
-     * tratar ele ou seja, connection agora é null;</li>
-     * <li>-1 caso um erro tenha acontecido e tenha sido possível tratar ele,
-     * ou seja, deve-se tentar realizar o insert de novo;
-     * <li>0 caso não tenha conseguido inserir;
-     * <li>Qualquer outro inteiro positivo referente ao id atribuído pelo
-     * banco de dados àquela linha.</li>
-     * </ul>
+     * Função responsável pelos inserts onde o id do que foi
+     * inserido deseja ser retornado.
+     * @param tabela a tabela onde será inserido.
+     * @param infos as informações que serão inseridas na
+     *              tabela.
+     * @param atributos as colunas que irão receber as
+     *                  informações.
+     * @return -1 caso algum erro tenha acontecido
+     * e a função tenha conseguido lidar com ele.
+     * Qualquer outro inteiro positivo ou zero
+     * representado o valor retornado.
+     * @throws NaoTemConexaoException
      */
     protected int InsertRetornando(String tabela, String infos, String atributos) throws NaoTemConexaoException{
         if (connection != null) {
             try {
-                int funcionou = InsertRetornando(tabela, infos, atributos, connection);
-                return funcionou;
-            } catch (ConexaoException e) {
+                String retornando = "RETURNING id_" + tabela;
+                return InsertRetornando(qualNomeTabelaBanco.get(tabela),
+                        infos, atributos, retornando, connection);
+
+            } catch (SQLException e) {
                 /*
                  * Se der erro, vai tentar fechar a conexão atual.
                  */
