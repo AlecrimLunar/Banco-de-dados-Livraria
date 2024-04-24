@@ -529,7 +529,20 @@ public abstract class GerenciaCon extends ControlaBD{
     protected void setUsuarioBanco(int usuarioBanco) {
         this.usuarioBanco = usuarioBanco;
     }
-    
+
+    /**
+     * Função responsável por montar SETs para o update.
+     * <P>Recebe uma string de colunas que serão alteradas
+     * e uma string com os novos valores que serão atribuídos
+     * a essas colunas.
+     * @param coluna as colunas que terão os valores alterados.
+     *               Cada nome de coluna deve estar separado por
+     *               um espaço.
+     * @param novo oas novos valores que serão atribuídos a cada
+     *             colua. Os valores devem estar separados por
+     *             um espaço.
+     * @return
+     */
     private String montaConsultaUpdate(String coluna, String novo){
         /*
          * Primeiro separamos as colunas que serão alteradas
@@ -552,5 +565,22 @@ public abstract class GerenciaCon extends ControlaBD{
         }
         
         return mudancas;
+    }
+
+    /**
+     * Cria uma condição de select, update ou delete conforme
+     * as necessidades do banco.
+     * @param condicao a condição inicial para a operação
+     *                 no banco.
+     * @param tabela a tabela onde será realizada a operação.
+     * @return uma string contendo a nova operação.
+     */
+    private String montaCondicao(String condicao, String tabela){
+        if (condicao.isEmpty())
+            condicao = "id_" + tabela + " >= 0";
+        else
+            condicao = "id_" + tabela + " >= 0 AND " + condicao;
+
+        return condicao;
     }
 }
