@@ -7,6 +7,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Classe responsável por fazer as chamadas de ControlaBD.
@@ -15,6 +16,7 @@ import java.util.ArrayList;
  */
 public abstract class GerenciaCon extends ControlaBD{
 
+    private HashMap<String, String> qualNomeTabelaBanco = null;
     private Connection connection;
     private int usuarioBanco;
 
@@ -42,6 +44,10 @@ public abstract class GerenciaCon extends ControlaBD{
                 login = "vendedor_role";
                 password = "123456";
             }
+        }
+
+        if (qualNomeTabelaBanco == null){
+            criaQualNomeTabelaBanco();
         }
         try {
             connection = DriverManager.getConnection(dbURL, login, password);
@@ -582,5 +588,21 @@ public abstract class GerenciaCon extends ControlaBD{
             condicao = "id_" + tabela + " >= 0 AND " + condicao;
 
         return condicao;
+    }
+
+
+    /**
+     * Função responsável por criar na memória o HashMap
+     * para pegar os nomes das tabelas no banco
+     */
+    private void criaQualNomeTabelaBanco(){
+        qualNomeTabelaBanco.put("livro", "Estoque.livro");
+        qualNomeTabelaBanco.put("vendedor", "Vendedores_Info.vendedor");
+        qualNomeTabelaBanco.put("relatorio", "Vendedores_Info.relatorio");
+        qualNomeTabelaBanco.put("relatorio_venda", "Vendedores_Info.relatorio_venda");
+        qualNomeTabelaBanco.put("cliente", "Clientes_Info.cliente");
+        qualNomeTabelaBanco.put("carrinho", "Clientes_Info.carrinho");
+        qualNomeTabelaBanco.put("carrinho_livro", "Clientes_Info.carrinho_livro");
+        qualNomeTabelaBanco.put("compra", "Compras_Info.compra");
     }
 }
