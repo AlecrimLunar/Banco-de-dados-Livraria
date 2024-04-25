@@ -1,5 +1,4 @@
 package Controle;
-import org.jetbrains.annotations.NotNull;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -146,30 +145,12 @@ public class ControlaBD {
      * ConexaoException
      */
     protected int delete(String tabela,
-                      @NotNull String condicao, Connection con) throws ConexaoException{
-        PreparedStatement st = null;
+                       String condicao, Connection con) throws SQLException{
 
-        try {
-            String consulta = "DELETE FROM " + tabela + " WHERE id_" +
-                    tabela + " >= 0 AND " + condicao;
-
-            st = con.prepareStatement(consulta);
+        String consulta = "DELETE FROM " + tabela + " WHERE " + condicao + ";";
+        try (PreparedStatement st = con.prepareStatement(consulta)){
             return st.executeUpdate();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-
-            throw new ConexaoException();
-        } catch (ArrayIndexOutOfBoundsException e){
-            e.printStackTrace();
-
-        } finally{
-            try{
-                if (st != null)
-                    st.close();
-            } catch (Exception e){}
         }
-        return -1;
     }
 
 }

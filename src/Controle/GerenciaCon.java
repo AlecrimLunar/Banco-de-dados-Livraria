@@ -1,6 +1,6 @@
 package Controle;
 
-import org.jetbrains.annotations.NotNull;
+
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -89,7 +89,7 @@ public abstract class GerenciaCon extends ControlaBD implements AutoCloseable{
                  * Se der erro, vai tentar fechar a conexão atual.
                  */
                 try {
-                    connection.close();
+                    close();
 
                 } catch (SQLException f) {
                     /*
@@ -164,7 +164,7 @@ public abstract class GerenciaCon extends ControlaBD implements AutoCloseable{
                  * Se der erro, vai tentar fechar a conexão atual.
                  */
                 try {
-                    connection.close();
+                    close();
 
                 } catch (SQLException f) {
                     /*
@@ -237,7 +237,7 @@ public abstract class GerenciaCon extends ControlaBD implements AutoCloseable{
                  * Se der erro, vai tentar fechar a conexão atual.
                  */
                 try {
-                    connection.close();
+                    close();
 
                 } catch (SQLException f) {
                     /*
@@ -302,7 +302,7 @@ public abstract class GerenciaCon extends ControlaBD implements AutoCloseable{
                  * Se der erro, vai tentar fechar a conexão atual.
                  */
                 try {
-                    connection.close();
+                    close();
 
                 } catch (SQLException f) {
                     /*
@@ -379,7 +379,7 @@ public abstract class GerenciaCon extends ControlaBD implements AutoCloseable{
                  * Se der erro, vai tentar fechar a conexão atual.
                  */
                 try {
-                    connection.close();
+                    close();
 
                 } catch (SQLException f) {
                     /*
@@ -466,12 +466,12 @@ public abstract class GerenciaCon extends ControlaBD implements AutoCloseable{
                 
                 return totalQuantosUpdates;
                 
-            }catch (SQLException e) {
+            } catch (SQLException e) {
                 /*
                  * Se der erro, vai tentar fechar a conexão atual.
                  */
                 try {
-                    connection.close();
+                    close();
 
                 } catch (SQLException f) {
                     /*
@@ -507,41 +507,64 @@ public abstract class GerenciaCon extends ControlaBD implements AutoCloseable{
     }
 
     /**
-     * Função responsável por executar deletes que respeitem uma condição.
-     * Irá executar um SQL do tipo "DELETE FROM 'tabela' WHERE 'condição';".
-     * @Parâmetros: Recebe o nome da tabela e a condição para o delete.
-     * @Retorna:
-     * <ul>
-     * <li>-2 caso um erro tenha acontecido e não tenha sido possível tratar ele
-     * ou seja, não há um conexão estabelecida com o banco de dados;
-     * <li>-1 caso um erro tenha acontecido e tenha sido possível tratar ele,
-     * ou seja, deve-se chamar a função de novo;</li>
-     * <li>0 caso nenhum delete tenha sido executado;
-     * <li>Qualquer outro valor inteiro positivo correspondente à quantidade
-     * de linhas deletadas da tabela.
-     * </ul>
+     * Função responsável por realizar deletes no banco
+     * de dados.
+     * @param tabela a tabela onde o delete será realizado.
+     * @param condicao a condição para o delete ser realizado.
+     * @return -1 caso algum erro tenha acontecido e a
+     * função tenha conseguido lidar com ele. <br>
+     * Qualquer outro valor inteiro positivo ou zero
+     * representando a quantidade de deletes realizados
+     * no total.
+     * @throws NaoTemConexaoException quando não há
+     * nenhuma conexão com o banco de dados.
+     * @throws ConexaoException quando a conexão com
+     * o banco de dados existente apresentou algum
+     * problema mas não foi possível fechá-la.
      */
-    protected int delete(String tabela, String condicao) throws NaoTemConexaoException{
+    protected int delete(String tabela, String condicao)
+            throws NaoTemConexaoException, ConexaoException{
         if (connection != null) {
             try {
-                int verifica = delete(tabela, condicao, connection);
-                if (verifica == -1){
-                    return -3;
-                }
-                return verifica;
-            } catch (ConexaoException e) {
-                try {
-                    connection.close();
-                } catch (SQLException f) {
 
-                } finally {
-                    try {
-                        criaCon(usuarioBanco);
-                    } catch (ConexaoException a) {
-                        throw new NaoTemConexaoException();
-                    }
+                condicao = montaCondicao(condicao, tabela);
+                return delete(tabela, condicao, connection);
+
+            } catch (SQLException e) {
+                /*
+                 * Se der erro, vai tentar fechar a conexão atual.
+                 */
+                try {
+                    close();
+
+                } catch (SQLException f) {
+                    /*
+                     * Se não conseguir ele informa
+                     * a quem o chamou que não foi possível
+                     * encerrar a conexão com o banco e que
+                     * ela é uma conexão defeituosa.
+                     */
+                    throw new ConexaoException();
+                } try {
+                    /*
+                     * O sistema tentar criar outra conexão.
+                     */
+
+                    criaCon(usuarioBanco);
+                } catch (ConexaoException f){
+                    /*
+                     * Caso ele não consiga, é necessário avisar
+                     * que existe um grave problema: não existe conexão
+                     * com o banco de dados.
+                     */
+                    throw new NaoTemConexaoException();
                 }
             }
+            /*
+             * Caso tenha sido possível resolver os erros, a função avisa que ela
+             * teve um comportamento inesperado e foi possível resolver ele,
+             * por isso ela pode ser chamada novamente.
+             */
             return -1;
         }
         throw new NaoTemConexaoException();
