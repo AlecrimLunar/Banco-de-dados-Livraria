@@ -29,38 +29,18 @@ public class ControlaBD {
      */
     protected int InsertRetornando(String tabela, String infos,
                                    String atributos, String retornando, Connection con) throws SQLException{
-        PreparedStatement st = null;
-        ResultSet rt = null;
-        try {
-            String consulta = "INSERT INTO " + tabela + " (" + atributos +
-                    ") VALUES (" + infos + ") " + retornando + ";";
 
+        String consulta = "INSERT INTO " + tabela + " (" + atributos +
+                ") VALUES (" + infos + ") " + retornando + ";";
 
-            /*
-            * aqui é feito a consultal. utilizamos o 'executeQuerry' em vez do
-            * 'executeUpdate' porque queremos que a consulta nos retorne algo
-            */
-            st = con.prepareStatement(consulta);
-            rt = st.executeQuery();
+        try (PreparedStatement st = con.prepareStatement(consulta);
+            ResultSet rt = st.executeQuery()){
 
             if (rt.next())
                 return rt.getInt("id_" + tabela);
             else
                 return -1;
 
-        } finally{
-            try {
-                if (st != null)
-                    st.close();
-            } catch (Exception e) {
-                st = null;
-            }
-            try{
-                if (rt != null)
-                    rt.close();
-            } catch (Exception f){
-                rt = null;
-            }
         }
     }
 
@@ -71,60 +51,44 @@ public class ControlaBD {
      *              tabela.
      * @param atributos as colunas que receberão as infos na
      *                  tabela.
-     * @param con a conexão com o banco
+     * @param con a conexão com o banco de dados.
      * @return 0 caso a inserção não tenha acontecido.<br>
      * 1 caso o insert tenha sido bem-sucedido.
      * @throws SQLException
      */
     protected int Insert(String tabela, String infos,
                          String atributos, Connection con) throws SQLException{
-        PreparedStatement st = null;
 
-        try {
-            String consulta = "INSERT INTO " + tabela + " (" + atributos +
-                    ") VALUES (" + infos + ");";
-            st = con.prepareStatement(consulta);
+        String consulta = "INSERT INTO " + tabela + " (" + atributos +
+                ") VALUES (" + infos + ");";
+
+        try (PreparedStatement st = con.prepareStatement(consulta)) {
 
             return st.executeUpdate();
-        }  finally {
-            try{
-                if (st != null)
-                    st.close();
-            } catch (Exception e){
-                st = null;
-            }
+
         }
     }
 
 
     /**
-     * Função responsável por executar qualquer SELECT desejado no banco
-     * de dados. Irá executar o SQL "SELECT 'argumentos' FROM 'tabela'
-     * WHERE 'pesquisa';".
-     * @Parâmetros: Recebe o nome da tabela, as colunas que deseja receber
-     * e a condição para retorno das linhas.
-     * @Retorna: Um ResultSet com todas as linhas que a consulta devolveu
-     * @Excessão: Caso tenha havido algum erro com o SQL, e após encerrar
-     * a conexão não tenha sido possível criar outra, ele irá retornar
-     * ConexaoException
+     * Função responsável por executar qualquer SELECT desejado.
+     * <P>Executa o SQL: SELECT 'coluna' FROM 'tabela' WHERE pesquisa.
+     * @param tabela a tabela onde será executado o SELECT.
+     * @param coluna as colunas que serão retornadas.
+     * @param pesquisa a condição para o retorno.
+     * @param con a conexão com o banco de dados.
+     * @return Um ResultSet com o retornado do banco de dados.
+     * @throws SQLException
      */
-    protected ResultSet Select(String tabela, String coluna, String pesquisa, Connection con) throws ConexaoException {
-        PreparedStatement st = null;
-        try {
-            String consulta = "SELECT " + coluna + " FROM " + tabela + " WHERE id_" +
-                    tabela + " >= 0 AND " + pesquisa + ";";
-            st = con.prepareStatement(consulta);
+    protected ResultSet Select(String tabela, String coluna, String pesquisa,
+                               Connection con) throws SQLException {
 
+        String consulta = "SELECT " + coluna + " FROM " + tabela +
+                " WHERE " + pesquisa + ";";
+
+        try (PreparedStatement st = con.prepareStatement(consulta)){
             return st.executeQuery(consulta);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new ConexaoException();
 
-        } finally {
-            try{
-                if (st != null)
-                    st.close();
-            } catch (Exception e){}
         }
     }
 
@@ -152,52 +116,17 @@ public class ControlaBD {
      * ConexaoException
      */
     protected int update(String tabela, String mudancas, String condicao,
-                         Connection con) throws ConexaoException{
+                         Connection con) throws SQLException{
 
-        PreparedStatement st = null;
-        try {
-            String consulta = "UPDATE " + tabela + " SET ? = ? WHERE id_" +
-            tabela + " >= 0 AND ?;";
-            con.setAutoCommit(false);
+        String consulta = "UPDATE " + tabela + " SET " + mudancas +
+                " WHERE " + condicao + ";";
 
-            int quantosUpdatesTotal = 0;
-            for (int i = 0; i < coluna.size(); ++i){
-                st = con.prepareStatement(consulta);
-                st.setString(1, coluna.get(i));
-                st.setString(2, novo.get(i));
-                st.setString(3, condicao.get(i));
+        try (PreparedStatement st = con.prepareStatement(consulta)) {
 
-                int quantosUpdate = st.executeUpdate();
-                quantosUpdatesTotal += quantosUpdate;
-            }
-            con.commit();
-            con.setAutoCommit(true);
 
-            return quantosUpdatesTotal;
+            return st.executeUpdate();
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-
-            try {
-                con.rollback();
-                con.close();
-                criaCon(donoCon);
-            } catch (SQLException f) {
-                f.printStackTrace();
-
-            } catch (ConexaoException c){
-                throw new ConexaoException();
-            }
-        } catch (ArrayIndexOutOfBoundsException e){
-            e.printStackTrace();
-
-        } finally{
-            try{
-                if (st != null)
-                    st.close();
-            } catch (Exception e){}
         }
-        return -1;
     }
 
 
@@ -244,53 +173,4 @@ public class ControlaBD {
         return -1;
     }
 
-    /**
-     * Função responsável por executar deletes sem restrição
-     * (apagar uma tabela toda).
-     * Irá executar um SQL do tipo "DELETE FROM 'tabela'".
-     * @Parâmetros: Recebe o nome da tabela.
-     * @Retorna:
-     * <ul>
-     * <li>-1 caso algum erro tenha acontecido;</li>
-     * <li>0 caso nenhum delete tenha sido executado;
-     * <li>Qualquer outro valor inteiro positivo correspondente à quantidade
-     * de linhas deletadas da tabela.
-     * </ul>
-     * @Excessão: Caso tenha havido algum erro com o SQL e após encerrar
-     * a conexão não tenha sido possível criar outra, ele irá retornar
-     * ConexaoException
-     */
-    protected int deleteAll(String tabela, Connection con) throws ConexaoException{
-        PreparedStatement st = null;
-        try{
-            String consulta = "DELETE FROM " + tabela + " WHERE id_" + tabela + ">= 0;";
-            st = con.prepareStatement(consulta);
-
-            return st.executeUpdate();
-
-        }catch (SQLException e) {
-            e.printStackTrace();
-
-            try {
-                con.close();
-                criaCon(donoCon);
-
-            } catch (SQLException f) {
-                f.printStackTrace();
-
-            } catch (ConexaoException c){
-
-                throw new ConexaoException();
-            }
-        } catch (ArrayIndexOutOfBoundsException e){
-            e.printStackTrace();
-
-        } finally{
-            try{
-                if (st != null)
-                    st.close();
-            } catch (Exception e){}
-        }
-        return -1;
-    }
 }

@@ -54,7 +54,6 @@ public abstract class GerenciaCon extends ControlaBD{
             return true;
         } catch (Exception e){
             e.printStackTrace();
-            connection = null;
             throw new ConexaoException();
         }
     }
@@ -73,7 +72,8 @@ public abstract class GerenciaCon extends ControlaBD{
      * representado o valor retornado.
      * @throws NaoTemConexaoException
      */
-    protected int InsertRetornando(String tabela, String infos, String atributos) throws NaoTemConexaoException{
+    protected int InsertRetornando(String tabela, String infos, String atributos)
+            throws NaoTemConexaoException, ConexaoException{
         if (connection != null) {
             try {
                 String retornando = "RETURNING id_" + tabela;
@@ -89,29 +89,29 @@ public abstract class GerenciaCon extends ControlaBD{
 
                 } catch (SQLException f) {
                     /*
-                     * Se isso também der erro, ele vai setar como
-                     * null a conexão para que o garbage collector
-                     * possa excluir a conexão antiga.
+                     * Se não conseguir ele informa
+                     * a quem o chamou que não foi possível
+                     * encerrar a conexão com o banco e que
+                     * ela é uma conexão defeituosa.
                      */
-                    connection = null;
-
-                } finally {
+                    throw new ConexaoException();
+                }
+                try {
                     /*
-                     * Tenha tido sucesso em fechar a conexão antiga
-                     * ou não, o sistema tentar criar outra conexão.
+                     * O sistema tentar criar outra conexão.
                      */
-                    try {
-                        criaCon(usuarioBanco);
-                    } catch (ConexaoException f){
-                        /*
-                         * Caso ele não consiga, é necessário avisar
-                         * que existe um grave problema: não existe conexão
-                         * com o banco de dados.
-                         */
-                        throw new NaoTemConexaoException();
-                    }
+
+                    criaCon(usuarioBanco);
+                } catch (ConexaoException f) {
+                    /*
+                     * Caso ele não consiga, é necessário avisar
+                     * que existe um grave problema: não existe conexão
+                     * com o banco de dados.
+                     */
+                    throw new NaoTemConexaoException();
                 }
             }
+
             /*
              * Caso tenha sido possível resolver os erros, a função avisa que ela
              * teve um comportamento inesperado e foi possível resolver ele,
@@ -137,7 +137,7 @@ public abstract class GerenciaCon extends ControlaBD{
      * @throws NaoTemConexaoException
      */
     protected int Insert(String tabela, ArrayList<String> infos,
-                       String atributos) throws NaoTemConexaoException{
+                       String atributos) throws NaoTemConexaoException, ConexaoException{
         if (connection != null) {
             try {
                 int funcionou = 0;
@@ -156,70 +156,72 @@ public abstract class GerenciaCon extends ControlaBD{
                  * Se der erro, vai tentar fechar a conexão atual.
                  */
                 try {
-                    connection.rollback();
                     connection.close();
 
                 } catch (SQLException f) {
                     /*
-                     * Se isso também der erro, ele vai setar como
-                     * null a conexão para que o garbage collector
-                     * possa excluir a conexão antiga.
+                     * Se não conseguir ele informa
+                     * a quem o chamou que não foi possível
+                     * encerrar a conexão com o banco e que
+                     * ela é uma conexão defeituosa.
                      */
-                    connection = null;
-
-                } finally {
+                    throw new ConexaoException();
+                } try {
                     /*
-                     * Tenha tido sucesso em fechar a conexão antiga
-                     * ou não, o sistema tentar criar outra conexão.
+                     * O sistema tentar criar outra conexão.
                      */
-                    try {
-                        criaCon(usuarioBanco);
-                    } catch (ConexaoException f){
-                        /*
-                         * Caso ele não consiga, é necessário avisar
-                         * que existe um grave problema: não existe conexão
-                         * com o banco de dados.
-                         */
-                        throw new NaoTemConexaoException();
-                    }
+
+                    criaCon(usuarioBanco);
+                } catch (ConexaoException f){
+                    /*
+                     * Caso ele não consiga, é necessário avisar
+                     * que existe um grave problema: não existe conexão
+                     * com o banco de dados.
+                     */
+                    throw new NaoTemConexaoException();
                 }
             }
+
             /*
              * Caso tenha sido possível resolver os erros, a função avisa que ela
              * teve um comportamento inesperado e foi possível resolver ele,
              * por isso ela pode ser chamada novamente.
              */
             return -1;
-        }
+            }
         throw new NaoTemConexaoException();
     }
 
     /**
-     * Função responsável para saber se algo existe ou não no banco
-     * de dados. Irá executar o SQL "SELECT * FROM 'tabela' WHERE
-     * 'coluna' = 'condicao';".
-     * @Parâmetros: Recebe o nome da tabela, a coluna a ser usada como
-     * comparação e a condição que essa coluna precisa atender.
-     * @Retorna:
-     * <ul>
-     * <li>1 caso exista;
-     * <li>0 caso não exista;
-     * <li>-1 caso um erro tenha acontecido e tenha sido possível tratar ele,
-     * ou seja, deve-se chamar a função de novo;</li>
-     * <li>-2 caso um erro tenha acontecido e não tenha sido possível tratar ele
-     * ou seja, não há um conexão estabelecida com o banco de dados.
-     * </ul>
+     * Função responsável por verificar se algo já existe
+     * no banco de dados.
+     * <P>Executa o SQL: SELECT * FROM 'tabela' WHERE 'coluna'
+     * = 'condicao';.
+     * @param tabela a tabela que será verificada.
+     * @param coluna a coluna que será comparada.
+     * @param condicao a condição que deve ser atingida.
+     * @return -1 caso algum erro tenha acontecido e a função
+     * tenha conseguido lidar com ele.<br>
+     * 0 caso não exista nada com a condição especificada.
+     * 1 caso exista pelo menos uma linha que atenda a
+     * condição especificada.
+     * @throws NaoTemConexaoException
+     * @throws ConexaoException
      */
-    protected int Existe(String tabela, String coluna, String condicao) throws NaoTemConexaoException{
-        ResultSet rt = null;
+    protected int Existe(String tabela, String coluna, String condicao)
+            throws NaoTemConexaoException, ConexaoException {
+
         if (connection != null){
-            try {
-                String pesquisa ="WHERE " + coluna + " = " + condicao + ";";
-                rt = Select(tabela, coluna, pesquisa, connection);
 
-                return rt.next() ? rt.getInt(1) : 0;
+            try (ResultSet rt = Select(qualNomeTabelaBanco.get(tabela), coluna,
+                    condicao, connection)) {
 
-            } catch (ConexaoException e) {
+                if (rt.next())
+                    return 1;
+                else
+                    return 0;
+
+            } catch (SQLException e) {
                 /*
                  * Se der erro, vai tentar fechar a conexão atual.
                  */
@@ -228,41 +230,28 @@ public abstract class GerenciaCon extends ControlaBD{
 
                 } catch (SQLException f) {
                     /*
-                     * Se isso também der erro, ele vai setar como
-                     * null a conexão para que o garbage collector
-                     * possa excluir a conexão antiga.
+                     * Se não conseguir ele informa
+                     * a quem o chamou que não foi possível
+                     * encerrar a conexão com o banco e que
+                     * ela é uma conexão defeituosa.
                      */
-                    connection = null;
-
-                } finally {
+                    throw new ConexaoException();
+                } try {
                     /*
-                     * Tenha tido sucesso em fechar a conexão antiga
-                     * ou não, o sistema tentar criar outra conexão.
+                     * O sistema tentar criar outra conexão.
                      */
-                    try {
-                        criaCon(usuarioBanco);
-                    } catch (ConexaoException f){
-                        /*
-                         * Caso ele não consiga, é necessário avisar
-                         * que existe um grave problema: não existe conexão
-                         * com o banco de dados.
-                         */
-                        throw new NaoTemConexaoException();
-                    }
-                }
-            } catch (SQLException e){
-                /*
-                * Apenas necessita informa quem o chamou ser necessário tentar
-                * chamá-lo novamente
-                 */
-            } finally {
-                try {
-                    if (rt != null)
-                        rt.close();
-                }catch (SQLException e){
 
+                    criaCon(usuarioBanco);
+                } catch (ConexaoException f){
+                    /*
+                     * Caso ele não consiga, é necessário avisar
+                     * que existe um grave problema: não existe conexão
+                     * com o banco de dados.
+                     */
+                    throw new NaoTemConexaoException();
                 }
             }
+
             /*
              * Caso tenha sido possível resolver os erros, a função avisa que ela
              * teve um comportamento inesperado e foi possível resolver ele,
