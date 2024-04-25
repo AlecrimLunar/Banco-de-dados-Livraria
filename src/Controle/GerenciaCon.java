@@ -14,7 +14,7 @@ import java.util.HashMap;
  * <P>Nela são tratados os erros possíveis que possam ter acontecidos
  * e é gerenciada a conexão com o banco de dados.
  */
-public abstract class GerenciaCon extends ControlaBD{
+public abstract class GerenciaCon extends ControlaBD implements AutoCloseable{
 
     private HashMap<String, String> qualNomeTabelaBanco = null;
     private Connection connection;
@@ -262,12 +262,14 @@ public abstract class GerenciaCon extends ControlaBD{
         throw new NaoTemConexaoException();
     }
 
-    protected ResultSet Select(String tabela, String coluna, String pesquisa) throws NaoTemConexaoException {
+    protected ResultSet Select(String tabela, String coluna, String pesquisa)
+            throws NaoTemConexaoException, ConexaoException {
         if (connection != null){
+            pesquisa = montaCondicao(pesquisa, tabela);
             try{
-                return Select(tabela, coluna, pesquisa, connection);
+                return Select(qualNomeTabelaBanco.get(tabela), coluna, pesquisa, connection);
 
-            } catch (ConexaoException e) {
+            } catch (SQLException e) {
                 /*
                  * Se der erro, vai tentar fechar a conexão atual.
                  */
@@ -276,29 +278,28 @@ public abstract class GerenciaCon extends ControlaBD{
 
                 } catch (SQLException f) {
                     /*
-                     * Se isso também der erro, ele vai setar como
-                     * null a conexão para que o garbage collector
-                     * possa excluir a conexão antiga.
+                     * Se não conseguir ele informa
+                     * a quem o chamou que não foi possível
+                     * encerrar a conexão com o banco e que
+                     * ela é uma conexão defeituosa.
                      */
-                    connection = null;
-
-                } finally {
+                    throw new ConexaoException();
+                } try {
                     /*
-                     * Tenha tido sucesso em fechar a conexão antiga
-                     * ou não, o sistema tentar criar outra conexão.
+                     * O sistema tentar criar outra conexão.
                      */
-                    try {
-                        criaCon(usuarioBanco);
-                    } catch (ConexaoException f){
-                        /*
-                         * Caso ele não consiga, é necessário avisar
-                         * que existe um grave problema: não existe conexão
-                         * com o banco de dados.
-                         */
-                        throw new NaoTemConexaoException();
-                    }
+
+                    criaCon(usuarioBanco);
+                } catch (ConexaoException f){
+                    /*
+                     * Caso ele não consiga, é necessário avisar
+                     * que existe um grave problema: não existe conexão
+                     * com o banco de dados.
+                     */
+                    throw new NaoTemConexaoException();
                 }
-            }/*
+            }
+            /*
              * Caso tenha sido possível resolver os erros, a função avisa que ela
              * teve um comportamento inesperado e foi possível resolver ele,
              * por isso ela pode ser chamada novamente.
@@ -580,12 +581,16 @@ public abstract class GerenciaCon extends ControlaBD{
      * @return uma string contendo a nova operação.
      */
     private String montaCondicao(String condicao, String tabela){
-        if (condicao.isEmpty())
-            condicao = "id_" + tabela + " >= 0";
-        else
-            condicao = "id_" + tabela + " >= 0 AND " + condicao;
+        if (!tabela.equalsIgnoreCase("carrinho_livro") &&
+            !tabela.equalsIgnoreCase("relatorio_venda")) {
+            if (condicao.isEmpty())
+                condicao = "id_" + tabela + " >= 0";
+            else
+                condicao = "id_" + tabela + " >= 0 AND " + condicao;
 
-        return condicao;
+            return condicao;
+        } else
+            return condicao;
     }
 
 
@@ -602,5 +607,10 @@ public abstract class GerenciaCon extends ControlaBD{
         qualNomeTabelaBanco.put("carrinho", "Clientes_Info.carrinho");
         qualNomeTabelaBanco.put("carrinho_livro", "Clientes_Info.carrinho_livro");
         qualNomeTabelaBanco.put("compra", "Compras_Info.compra");
+    }
+
+    @Override
+    public void close() throws SQLException{
+        connection.close();
     }
 }
