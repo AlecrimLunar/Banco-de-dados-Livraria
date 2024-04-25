@@ -70,7 +70,11 @@ public abstract class GerenciaCon extends ControlaBD implements AutoCloseable{
      * e a função tenha conseguido lidar com ele.
      * Qualquer outro inteiro positivo ou zero
      * representado o valor retornado.
-     * @throws NaoTemConexaoException
+     * @throws NaoTemConexaoException quando não há
+     * nenhuma conexão com o banco de dados.
+     * @throws ConexaoException quando a conexão com
+     * o banco de dados existente apresentou algum
+     * problema mas não foi possível fechá-la.
      */
     protected int InsertRetornando(String tabela, String infos, String atributos)
             throws NaoTemConexaoException, ConexaoException{
@@ -134,7 +138,11 @@ public abstract class GerenciaCon extends ControlaBD implements AutoCloseable{
      * tenha conseguido lidar com ele.<br>
      * Qualquer outro inteiro positivo ou zero representado o
      * número de inserts realizados.
-     * @throws NaoTemConexaoException
+     * @throws NaoTemConexaoException quando não há
+     * nenhuma conexão com o banco de dados.
+     * @throws ConexaoException quando a conexão com
+     * o banco de dados existente apresentou algum
+     * problema mas não foi possível fechá-la.
      */
     protected int Insert(String tabela, ArrayList<String> infos,
                        String atributos) throws NaoTemConexaoException, ConexaoException{
@@ -205,8 +213,11 @@ public abstract class GerenciaCon extends ControlaBD implements AutoCloseable{
      * 0 caso não exista nada com a condição especificada.
      * 1 caso exista pelo menos uma linha que atenda a
      * condição especificada.
-     * @throws NaoTemConexaoException
-     * @throws ConexaoException
+     * @throws NaoTemConexaoException quando não há
+     * nenhuma conexão com o banco de dados.
+     * @throws ConexaoException quando a conexão com
+     * o banco de dados existente apresentou algum
+     * problema mas não foi possível fechá-la.
      */
     protected int Existe(String tabela, String coluna, String condicao)
             throws NaoTemConexaoException, ConexaoException {
@@ -262,6 +273,23 @@ public abstract class GerenciaCon extends ControlaBD implements AutoCloseable{
         throw new NaoTemConexaoException();
     }
 
+
+    /**
+     * Função responsável por executar qualquer SELECT.
+     * Executa o SQL: SELECT 'coluna' FROM 'tabela' WHERE 'pesquisa';.
+     * @param tabela a tabela onde o SELECT será feito.
+     * @param coluna as colunas que serão recebidas do SELECT.
+     * @param pesquisa a condição para retorno das linhas.
+     * @return -1 caso algum erro tenha acontecido e a
+     * função tenha conseguido lidar com ele.<br>
+     * Um ResultSet contendo as linhas retornadas
+     * do SELECT.
+     * @throws NaoTemConexaoException quando não há
+     * nenhuma conexão com o banco de dados.
+     * @throws ConexaoException quando a conexão com
+     * o banco de dados existente apresentou algum
+     * problema mas não foi possível fechá-la.
+     */
     protected ResultSet Select(String tabela, String coluna, String pesquisa)
             throws NaoTemConexaoException, ConexaoException {
         if (connection != null){
@@ -310,28 +338,33 @@ public abstract class GerenciaCon extends ControlaBD implements AutoCloseable{
     }
 
     /**
-     * Função responsável por verificar se o login fornecido está
-     * ou não presente no banco de dados e se a senha informada equivale
-     * à senha desse login.
-     * @Parâmetros: recebe o nome da tabela, o nome do usário (nome de login)
-     * e a senha daquele login.
-     * @Retorna:
-     * <ul>
-     * <li>-1 caso algum erro tenha acontecido;</li>
-     * <li>0 caso não exista o login;
-     * <li>1 caso exista o login e senha esteja correta;
-     * <li>2 caso exista o login mas a senha fornecida estava incorreta.</li>
-     * </ul>
-     * @Excessão: caso tenha havido algum erro com o SQL, e após encerrar
-     * a conexão não tenha sido possível criar outra, ele irá retornar
-     * ConexaoException
+     * Função responsável por verificar se o login inserido
+     * pelo usuário existe no banco de dados.
+     * @param user o nome do login inserido.
+     * @param password a senha referente ao user.
+     * @param tabela a tabela onde essas informações estão
+     *               guardadas.
+     * @return -1 caso algum erro tenha acontecido e a
+     * função tenha conseguido lidar com ele. <br>
+     * 0 caso não tenha sido encontrado o user no banco
+     * de dados.<br>
+     * 1 caso o user tenha sido encontrado e a senha
+     * informada foi correta.<br>
+     * 2 caso o user tenha sido encontrado e a senha
+     * informada foi incorreta.<br>
+     * @throws NaoTemConexaoException quando não há
+     * nenhuma conexão com o banco de dados.
+     * @throws ConexaoException quando a conexão com
+     * o banco de dados existente apresentou algum
+     * problema mas não foi possível fechá-la.
      */
-    protected int login(String user, String password, String tabela) throws NaoTemConexaoException{
-        ResultSet rt = null;
+    protected int login(String user, String password, String tabela)
+            throws NaoTemConexaoException, ConexaoException {
+
         if (connection != null){
-            try{
-                String pesquisa = "WHERE usuario" + " = " + user + ";";
-                rt = Select(tabela, "*", pesquisa, connection);
+            String pesquisa = "usuario = " + user;
+            try (ResultSet rt = Select(qualNomeTabelaBanco.get(tabela), "*",
+                    pesquisa, connection)){
                 
                 if (rt.next()){
                     if (password.equalsIgnoreCase(rt.getString("senha")))
@@ -341,49 +374,34 @@ public abstract class GerenciaCon extends ControlaBD implements AutoCloseable{
                 }
                 return 0;
 
-            } catch (ConexaoException e) {
+            } catch (SQLException e) {
                 /*
-                * Se der erro, vai tentar fechar a conexão atual.
-                */
+                 * Se der erro, vai tentar fechar a conexão atual.
+                 */
                 try {
                     connection.close();
-                    
+
                 } catch (SQLException f) {
                     /*
-                    * Se isso também der erro, ele vai setar como 
-                    * null a conexão para que o garbage collector
-                    * possa excluir a conexão antiga.
+                     * Se não conseguir ele informa
+                     * a quem o chamou que não foi possível
+                     * encerrar a conexão com o banco e que
+                     * ela é uma conexão defeituosa.
                      */
-                        connection = null;
-                        
-                    } finally {
+                    throw new ConexaoException();
+                } try {
                     /*
-                    * Tenha tido sucesso em fechar a conexão antiga 
-                    * ou não, o sistema tentar criar outra conexão.
+                     * O sistema tentar criar outra conexão.
                      */
-                    try {
-                        criaCon(usuarioBanco);
-                    } catch (ConexaoException f){
-                        /*
-                        * Caso ele não consiga, é necessário avisar
-                        * que existe um grave problema: não existe conexão
-                        * com o banco de dados.
-                         */
-                        throw new NaoTemConexaoException();
-                    }
-                    }
-                } catch (SQLException e){
-                
-            } finally {
-                /*
-                * Irá fechar tudo o que foi aberto na função
-                */
-                try {
-                    if (rt != null)     
-                        rt.close();
 
-                } catch (SQLException a){
-                    rt = null;
+                    criaCon(usuarioBanco);
+                } catch (ConexaoException f){
+                    /*
+                     * Caso ele não consiga, é necessário avisar
+                     * que existe um grave problema: não existe conexão
+                     * com o banco de dados.
+                     */
+                    throw new NaoTemConexaoException();
                 }
             }
             /*
@@ -395,85 +413,86 @@ public abstract class GerenciaCon extends ControlaBD implements AutoCloseable{
         }
         throw new NaoTemConexaoException();
     }
-    
-    protected int variosUpdatesDiferentesColunas(String tabela, ArrayList<String> coluna, ArrayList<String> novo,
-                                          ArrayList<String> condicao) throws NaoTemConexaoException{
+
+    /**
+     * Função responsável pela realização dos updates. Pode realizar
+     * um ou mais updates.
+     * <P>Para que mais de um update seja realizdo basta adicionar
+     * o mesmo número de objetos nos ArrayLists. Cada objeto
+     * corresponderá a um update diferente.</P>
+     * <P>Para que haja a atualização de diferentes colunas
+     * dentro de um mesmo update basta que cada uma das colunas
+     * estejam separadas por espaço dentro da string, e que para
+     * cada uma das colunas haja um valor para a inserção.</P>
+     * @param tabela a tabela onde os updates serão realizados.
+     * @param coluna as colunas que serão atualizadas.
+     * @param novo os novos valores que serão atribuídos às
+     *             colunas.
+     * @param condicao a condição para que a linha seja selecionada
+     *                 para o update.
+     * @return -1 caso algum erro tenha acontecido e a
+     * função tenha conseguido lidar com ele. <br>
+     * Qualquer outro valor inteiro positivo ou zero
+     * representando a quantidade de updates realizados
+     * no total.
+     * @throws NaoTemConexaoException quando não há
+     * nenhuma conexão com o banco de dados.
+     * @throws ConexaoException quando a conexão com
+     * o banco de dados existente apresentou algum
+     * problema mas não foi possível fechá-la.
+     */
+    protected int variosUpdates(String tabela, ArrayList<String> coluna,
+                                ArrayList<String> novo, ArrayList<String> condicao)
+            throws NaoTemConexaoException, ConexaoException{
         if (connection != null){
             try {
                 connection.setAutoCommit(false);
                 int totalQuantosUpdates = 0;
+
                 for (int i = 0; i < condicao.size(); ++i) {
                     String mudancas = montaConsultaUpdate(coluna.get(i), novo.get(i));
+                    String condicaoAtual = montaCondicao(condicao.get(i), tabela);
                     
                     /*
                     * Realização do UPDATE
                      */
-                    int quantosUpdates = update(tabela, mudancas, condicao.get(i), connection);
-                    if (quantosUpdates == -1){
-                        /*
-                        * Caso algum erro tenha acontecido, o banco irá retornar
-                        * ao seu estado original e então será informado a quem 
-                        * chamou essa função que houve um erro.
-                         */
-                        connection.rollback();
-                        connection.setAutoCommit(true);
-                        
-                        return -1;
-                    }
+                    int quantosUpdates = update(qualNomeTabelaBanco.get(tabela),
+                            mudancas, condicaoAtual, connection);
                     
                     totalQuantosUpdates += quantosUpdates;
                 }
-                
-                connection.commit();
                 connection.setAutoCommit(true);
+                connection.commit();
                 
                 return totalQuantosUpdates;
                 
-            }catch (ConexaoException e) {
+            }catch (SQLException e) {
                 /*
-                 * Se der erro, vai retornar o banco ao estado anterior
-                 * e tentar fechar a conexão atual.
+                 * Se der erro, vai tentar fechar a conexão atual.
                  */
                 try {
-                    connection.rollback();
                     connection.close();
 
                 } catch (SQLException f) {
                     /*
-                     * Se isso também der erro, ele vai setar como
-                     * null a conexão para que o garbage collector
-                     * possa excluir a conexão antiga.
+                     * Se não conseguir ele informa
+                     * a quem o chamou que não foi possível
+                     * encerrar a conexão com o banco e que
+                     * ela é uma conexão defeituosa.
                      */
-                    connection = null;
-
-                } finally {
+                    throw new ConexaoException();
+                } try {
                     /*
-                     * Tenha tido sucesso em fechar a conexão antiga
-                     * ou não, o sistema tentar criar outra conexão.
+                     * O sistema tentar criar outra conexão.
                      */
-                    try {
-                        criaCon(usuarioBanco);
-                    } catch (ConexaoException f){
-                        /*
-                         * Caso ele não consiga, é necessário avisar
-                         * que existe um grave problema: não existe conexão
-                         * com o banco de dados.
-                         */
-                        throw new NaoTemConexaoException();
-                    }
-                }
-            } catch (SQLException e){
-                /*
-                * Qualquer erro que possa acontecer com a conexão 
-                * deve resultar no encerramento da mesma e no retorno
-                * do banco a um estado seguro.
-                 */
-                try{
-                    connection.close();
-                } catch (SQLException f) {
-                    connection = null;
-                    
-                } finally {
+
+                    criaCon(usuarioBanco);
+                } catch (ConexaoException f){
+                    /*
+                     * Caso ele não consiga, é necessário avisar
+                     * que existe um grave problema: não existe conexão
+                     * com o banco de dados.
+                     */
                     throw new NaoTemConexaoException();
                 }
             }
@@ -486,9 +505,6 @@ public abstract class GerenciaCon extends ControlaBD implements AutoCloseable{
         }
         throw new NaoTemConexaoException();
     }
-    
-    protected int variosUpdatesMesmaColuna(String tabela, String coluna, ArrayList<String> novo,
-                                           ArrayList<String> condicao) throws NaoTemConexaoException{}
 
     /**
      * Função responsável por executar deletes que respeitem uma condição.

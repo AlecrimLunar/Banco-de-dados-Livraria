@@ -129,7 +129,6 @@ public class ControlaBD {
         }
     }
 
-
     /**
      * Função responsável por executar deletes que respeitem uma condição.
      * Irá executar um SQL do tipo "DELETE FROM 'tabela' WHERE 'condição';".
