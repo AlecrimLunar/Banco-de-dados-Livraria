@@ -1,6 +1,6 @@
 package Controle;
-
 import org.jetbrains.annotations.NotNull;
+
 import java.sql.*;
 import java.util.ArrayList;
 
@@ -8,55 +8,8 @@ import java.util.ArrayList;
  * Classe responsável pela comunicação com o banco de dados.
  * */
 public class ControlaBD {
+    public ControlaBD(){
 
-    private Connection con;
-    private int donoCon;
-
-
-    /**
-     * função responsável por criar as conexões com o banco de
-     * dados sempre que necessário.
-     * retorna o erro de não ter conexão caso ele não consiga criar
-     * a conexão
-     */
-    private boolean criaCon(int quem) throws ConexaoException{
-
-        String dbURL = "";
-        String login = "";
-        String password = "";
-
-        switch (quem){
-            case 0 -> {
-                dbURL = "jdbc:postgresql://localhost:5432/livraria";
-                login = "cliente_role";
-                password = "12345678";
-            }
-
-            case 1 -> {
-                dbURL = "jdbc:postgresql://localhost:5432/livraria";
-                login = "vendedor_role";
-                password = "123456";
-            }
-        }
-        try {
-            con = DriverManager.getConnection(dbURL, login, password);
-            return true;
-        } catch (Exception e){
-            e.printStackTrace();
-            throw new ConexaoException();
-        }
-    }
-
-    public ControlaBD(int quem) throws ConexaoException{
-        int donoCon = quem;
-        try {
-            criaCon(quem);
-        } catch (ConexaoException e){
-            /*
-             * dps tem q achar uma forma de lidar com essa exceção
-             */
-            throw new ConexaoException();
-        }
     }
 
     /**
@@ -73,7 +26,8 @@ public class ControlaBD {
      * a conexão não tenha sido possível criar outra, ele irá retornar
      * ConexaoException
      */
-    public int InsertRetornando(String tabela, String infos, String atributos) throws ConexaoException{
+    protected int InsertRetornando(String tabela, String infos,
+                                   String atributos, Connection con) throws ConexaoException{
         PreparedStatement st = null;
         ResultSet rt = null;
         try {
@@ -82,9 +36,9 @@ public class ControlaBD {
 
 
             /*
-             * aqui é feito a consultal. utilizamos o 'executeQuerry' em vez do
-             * 'executeUpdate' porque queremos que a consulta nos retorne algo
-             */
+            * aqui é feito a consultal. utilizamos o 'executeQuerry' em vez do
+            * 'executeUpdate' porque queremos que a consulta nos retorne algo
+            */
             st = con.prepareStatement(consulta);
             rt = st.executeQuery();
 
@@ -93,16 +47,7 @@ public class ControlaBD {
 
         } catch (SQLException e) {
             e.printStackTrace();
-
-            try {
-                con.close();
-                criaCon(donoCon);
-            } catch (SQLException f) {
-                f.printStackTrace();
-
-            } catch (ConexaoException c){
-                throw new ConexaoException();
-            }
+            throw new ConexaoException();
         } finally {
             try{
                 if (st != null)
@@ -133,7 +78,8 @@ public class ControlaBD {
      * da conexão não tenha sido possível criar outra, ele irá retornar
      * ConexaoException
      */
-    public int Insert(String tabela, ArrayList<String> infos, String atributos) throws ConexaoException{
+    protected int Insert(String tabela, ArrayList<String> infos,
+                         String atributos, Connection con) throws ConexaoException{
         PreparedStatement st = null;
 
         try {
@@ -153,7 +99,7 @@ public class ControlaBD {
                      * verificação de que algo foi realmente inserido no
                      * banco de dados. caso nada tenha sido adicionado, o
                      * processo precisa ser reiniciado
-                     */
+                    */
                     con.rollback();
                     return -1;
                 }
@@ -165,13 +111,8 @@ public class ControlaBD {
 
             try {
                 con.rollback();
-                con.close();
-                criaCon(donoCon);
-            } catch (SQLException f) {
-                f.printStackTrace();
-
-            } catch (ConexaoException c){
                 throw new ConexaoException();
+            } catch (SQLException f) {
             }
         } finally {
             try{
@@ -182,62 +123,11 @@ public class ControlaBD {
         return -1;
     }
 
-    /**
-     * Função responsável para saber se algo existe ou não no banco
-     * de dados. Irá executar o SQL "SELECT * FROM 'tabela' WHERE
-     * 'coluna' = 'condicao';".
-     * @Parâmetros: Recebe o nome da tabela, a coluna a ser usada como
-     * comparação e a condição que essa coluna precisa atender.
-     * @Retorna:
-     * <ul>
-     * <li>1 caso exista;
-     * <li>0 caso não exista;
-     * <li>-1 caso algum erro tenha acontecido.</li>
-     * </ul>
-     * @Excessão: Caso tenha havido algum erro com o SQL, e após encerrar
-     * a conexão não tenha sido possível criar outra, ele irá retornar
-     * ConexaoException
-     */
-    public int Existe(String tabela, String coluna, String condicao, int tipo) throws ConexaoException{
-        ResultSet rt = null;
-        try {
-            if(tipo == 1) {
-                rt = Select(tabela, "*", " WHERE "
-                        + coluna + " LIKE '%" + condicao + "%'");
-
-                return rt.next() ? rt.getInt(1) : 0;
-            } else {
-                rt = Select(tabela, "*", " WHERE "
-                        + coluna + " = " + condicao);
-
-                return rt.next() ? rt.getInt(1) : 0;
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-
-            try {
-                con.close();
-                criaCon(donoCon);
-            } catch (SQLException f) {
-                f.printStackTrace();
-
-            } catch (ConexaoException c){
-                throw new ConexaoException();
-            }
-        } finally {
-            try{
-                if (rt != null)
-                    rt.close();
-            } catch (Exception e){}
-        }
-        return -1;
-    }
 
     /**
      * Função responsável por executar qualquer SELECT desejado no banco
      * de dados. Irá executar o SQL "SELECT 'argumentos' FROM 'tabela'
-     * 'pesquisa';".
+     * WHERE 'pesquisa';".
      * @Parâmetros: Recebe o nome da tabela, as colunas que deseja receber
      * e a condição para retorno das linhas.
      * @Retorna: Um ResultSet com todas as linhas que a consulta devolveu
@@ -245,83 +135,24 @@ public class ControlaBD {
      * a conexão não tenha sido possível criar outra, ele irá retornar
      * ConexaoException
      */
-    public ResultSet Select(String tabela, String coluna, String pesquisa) throws ConexaoException {
+    protected ResultSet Select(String tabela, String coluna, String pesquisa, Connection con) throws ConexaoException {
         PreparedStatement st = null;
         try {
-            String consulta = "SELECT " + coluna + " FROM " + tabela  + pesquisa + ";";
+            String consulta = "SELECT " + coluna + " FROM " + tabela + " WHERE id_" +
+                    tabela + " >= 0 AND " + pesquisa + ";";
             st = con.prepareStatement(consulta);
 
             return st.executeQuery(consulta);
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new ConexaoException();
 
-            try {
-                con.close();
-                criaCon(donoCon);
-            } catch (SQLException f) {
-                f.printStackTrace();
-
-            } catch (ConexaoException c){
-                throw new ConexaoException();
-            }
         } finally {
             try{
                 if (st != null)
                     st.close();
             } catch (Exception e){}
         }
-        return null;
-    }
-
-    /**
-     * Função responsável por verificar se o login fornecido está
-     * ou não presente no banco de dados e se a senha informada equivale
-     * à senha desse login.
-     * @Parâmetros: recebe o nome da tabela, o nome do usário (nome de login)
-     * e a senha daquele login.
-     * @Retorna:
-     * <ul>
-     * <li>-1 caso algum erro tenha acontecido;</li>
-     * <li>0 caso não exista o login;
-     * <li>1 caso exista o login e senha esteja correta;
-     * <li>2 caso exista o login mas a senha fornecida estava incorreta.</li>
-     * </ul>
-     * @Excessão: caso tenha havido algum erro com o SQL, e após encerrar
-     * a conexão não tenha sido possível criar outra, ele irá retornar
-     * ConexaoException
-     */
-    public int login(String user, String password, String tabela) throws ConexaoException {
-        ResultSet rt = null;
-        try {
-            rt = Select(tabela, "*", " WHERE usuario = '" + user + "'");
-
-            if (rt.next()){
-                if (password.equalsIgnoreCase(rt.getString("senha")))
-                    return 1;
-                else
-                    return 2;
-            }
-            return 0;
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-
-            try {
-                con.close();
-                criaCon(donoCon);
-            } catch (SQLException f) {
-                f.printStackTrace();
-
-            } catch (ConexaoException c){
-                throw new ConexaoException();
-            }
-        } finally {
-            try{
-                if (rt != null)
-                    rt.close();
-            } catch (Exception e){}
-        }
-        return -1;
     }
 
     /**
@@ -347,13 +178,13 @@ public class ControlaBD {
      * da conexão não tenha sido possível criar outra, ele irá retornar
      * ConexaoException
      */
-    public int update(String tabela, @NotNull ArrayList<String> coluna, @NotNull ArrayList<String> novo,
-                      @NotNull ArrayList<String> condicao) throws ConexaoException{
+    protected int update(String tabela, String mudancas, String condicao,
+                         Connection con) throws ConexaoException{
 
         PreparedStatement st = null;
         try {
             String consulta = "UPDATE " + tabela + " SET ? = ? WHERE id_" +
-                    tabela + " >= 0 AND ?;";
+            tabela + " >= 0 AND ?;";
             con.setAutoCommit(false);
 
             int quantosUpdatesTotal = 0;
@@ -413,8 +244,8 @@ public class ControlaBD {
      * a conexão não tenha sido possível criar outra, ele irá retornar
      * ConexaoException
      */
-    public int delete(String tabela,
-                      @NotNull String condicao) throws ConexaoException{
+    protected int delete(String tabela,
+                      @NotNull String condicao, Connection con) throws ConexaoException{
         PreparedStatement st = null;
 
         try {
@@ -427,17 +258,7 @@ public class ControlaBD {
         } catch (SQLException e) {
             e.printStackTrace();
 
-            try {
-                con.close();
-                criaCon(donoCon);
-
-            } catch (SQLException f) {
-                f.printStackTrace();
-
-            } catch (ConexaoException c){
-
-                throw new ConexaoException();
-            }
+            throw new ConexaoException();
         } catch (ArrayIndexOutOfBoundsException e){
             e.printStackTrace();
 
@@ -466,7 +287,7 @@ public class ControlaBD {
      * a conexão não tenha sido possível criar outra, ele irá retornar
      * ConexaoException
      */
-    public int deleteAll(String tabela) throws ConexaoException{
+    protected int deleteAll(String tabela, Connection con) throws ConexaoException{
         PreparedStatement st = null;
         try{
             String consulta = "DELETE FROM " + tabela + " WHERE id_" + tabela + ">= 0;";

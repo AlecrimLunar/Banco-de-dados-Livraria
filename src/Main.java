@@ -1,13 +1,12 @@
 import Controle.ConexaoException;
-import Controle.ControlaBD;
-import Controle.Sistema;
-import Entities.*;
+import Controle.NaoTemConexaoException;
+import Entities.Sistema;
 
-import java.util.Scanner;
+import java.sql.SQLException;
 
 public class Main {
 
-    public static void main(String[] args) throws ConexaoException {
+    public static void main(String[] args) throws ConexaoException, NaoTemConexaoException, SQLException {
         Sistema s = new Sistema();
         s.Iniciar();
 

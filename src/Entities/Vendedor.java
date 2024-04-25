@@ -13,6 +13,12 @@ public class Vendedor {
     private Long cpf;
     private ControlaBD controle;
 
+    public Vendedor(Integer id, String nome, Long cpf) {
+        this.id = id;
+        this.nome = nome;
+        this.cpf = cpf;
+    }
+
     //Cadastros
 /*
     public boolean cadastraCliente(Scanner tc) {
