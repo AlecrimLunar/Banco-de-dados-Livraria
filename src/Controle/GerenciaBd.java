@@ -1,10 +1,6 @@
 package Controle;
 
-
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,19 +10,236 @@ import java.util.HashMap;
  * <P>Nela são tratados os erros possíveis que possam ter acontecidos
  * e é gerenciada a conexão com o banco de dados.
  */
-public abstract class GerenciaCon extends ControlaBD implements AutoCloseable{
+public abstract class GerenciaBd implements AutoCloseable{
 
     private HashMap<String, String> qualNomeTabelaBanco = null;
     private Connection connection;
     private int usuarioBanco;
 
+
     /**
+     * Função responsável por fazer o insert no banco de dados
+     * quando se quer receber o id criado para essa nova inserção.
+     * @param tabela a tabela onde o insert será feito.
+     * @param infos as informações que serão inseridas na
+     *              tabela.
+     * @param atributos as colunas que receberão as infos na
+     *                  tabela.
+     * @param retornando a condição para retornar o valor desejado.
+     * @param con a conexão com o banco
+     * @return -1 caso a inserção não tenha acontecido.<br>
+     * Qualquer outro inteiro positivo representado o que foi
+     * pedido para que fosse retornado.
+     * @throws SQLException
+     */
+    private int InsertRetornando(String tabela, String infos,
+                                 String atributos, String retornando, Connection con) throws SQLException{
+
+        String consulta = "INSERT INTO " + tabela + " (" + atributos +
+                ") VALUES (" + infos + ") " + retornando + ";";
+
+        try (PreparedStatement st = con.prepareStatement(consulta);
+             ResultSet rt = st.executeQuery()){
+
+            if (rt.next())
+                return rt.getInt("id_" + tabela);
+            else
+                return -1;
+
+        }
+    }
+
+    /**
+     * Função responsável pelos inserts no banco.
+     * @param tabela a tabela onde o insert será feito.
+     * @param infos as informações que serão inseridas na
+     *              tabela.
+     * @param atributos as colunas que receberão as infos na
+     *                  tabela.
+     * @param con a conexão com o banco de dados.
+     * @return 0 caso a inserção não tenha acontecido.<br>
+     * 1 caso o insert tenha sido bem-sucedido.
+     * @throws SQLException
+     */
+    private int Insert(String tabela, String infos,
+                       String atributos, Connection con) throws SQLException{
+
+        String consulta = "INSERT INTO " + tabela + " (" + atributos +
+                ") VALUES (" + infos + ");";
+
+        try (PreparedStatement st = con.prepareStatement(consulta)) {
+
+            return st.executeUpdate();
+
+        }
+    }
+
+
+    /**
+     * Função responsável por executar qualquer SELECT desejado.
+     * <P>Executa o SQL: SELECT 'coluna' FROM 'tabela' WHERE pesquisa.
+     * @param tabela a tabela onde será executado o SELECT.
+     * @param coluna as colunas que serão retornadas.
+     * @param pesquisa a condição para o retorno.
+     * @param con a conexão com o banco de dados.
+     * @return Um ResultSet com o retornado do banco de dados.
+     * @throws SQLException
+     */
+    private ResultSet Select(String tabela, String coluna, String pesquisa,
+                             Connection con) throws SQLException {
+
+        String consulta = "SELECT " + coluna + " FROM " + tabela +
+                " WHERE " + pesquisa + ";";
+
+        try (PreparedStatement st = con.prepareStatement(consulta)){
+            return st.executeQuery(consulta);
+
+        }
+    }
+
+    /**
+     * Função responsável por realizar updates na tabela. Irá executar o SQL
+     * "UPDATE 'tabela' SET 'coluna' = 'novo' WHERE 'condicao';".
+     * <P>Essa função pode executar múltiplos updates de uma vez em forma de
+     * transações. Para isso, basta enviar os ArrayLists com o mesmo tamanho
+     * contendo todas as informações para cada UPDATE desejado.</P>
+     * <P>Note que essa função realiza o UPDATE em apenas uma coluna por
+     * vez.</P>
+     * @Parâmetros: Recebe o nome da tabela, um ArrayList contendo o nome da
+     * coluna que vai ser atualizada em cada update, um ArrayList contendo o
+     * novo valor que será atribuído a coluna em cada update e a condição das
+     * linhas que serão atualizadas em cada update.
+     * @Retorna:
+     * <ul>
+     * <li>-1 caso algum erro tenha acontecido;</li>
+     * <li>0 caso nenhum update tenha sido realizado;
+     * <li>Qualquer outro inteiro positivo correspondente ao número total de
+     * updates realizados.
+     * </ul>
+     * @Excessão: Caso tenha ocorrido algum erro com o SQL e após o fechamento
+     * da conexão não tenha sido possível criar outra, ele irá retornar
+     * ConexaoException
+     */
+    private int update(String tabela, String mudancas, String condicao,
+                       Connection con) throws SQLException{
+
+        String consulta = "UPDATE " + tabela + " SET " + mudancas +
+                " WHERE " + condicao + ";";
+
+        try (PreparedStatement st = con.prepareStatement(consulta)) {
+
+
+            return st.executeUpdate();
+
+        }
+    }
+
+    /**
+     * Função responsável por executar deletes que respeitem uma condição.
+     * Irá executar um SQL do tipo "DELETE FROM 'tabela' WHERE 'condição';".
+     * @Parâmetros: Recebe o nome da tabela e a condição (que não pode ser
+     * vazia) para o delete.
+     * @Retorna:
+     * <ul>
+     * <li>-1 caso algum erro tenha acontecido;</li>
+     * <li>0 caso nenhum delete tenha sido executado;
+     * <li>Qualquer outro valor inteiro positivo correspondente à quantidade
+     * de linhas deletadas da tabela.
+     * </ul>
+     * @Excessão: Caso tenha havido algum erro com o SQL e após encerrar
+     * a conexão não tenha sido possível criar outra, ele irá retornar
+     * ConexaoException
+     */
+    private int delete(String tabela,
+                       String condicao, Connection con) throws SQLException{
+
+        String consulta = "DELETE FROM " + tabela + " WHERE " + condicao + ";";
+        try (PreparedStatement st = con.prepareStatement(consulta)){
+            return st.executeUpdate();
+        }
+    }
+
+    /**
+     * Função responsável por montar SETs para o update.
+     * <P>Recebe uma string de colunas que serão alteradas
+     * e uma string com os novos valores que serão atribuídos
+     * a essas colunas.
+     * @param coluna as colunas que terão os valores alterados.
+     *               Cada nome de coluna deve estar separado por
+     *               um espaço.
+     * @param novo oas novos valores que serão atribuídos a cada
+     *             colua. Os valores devem estar separados por
+     *             um espaço.
+     * @return
+     */
+    private String montaConsultaUpdate(String coluna, String novo){
+        /*
+         * Primeiro separamos as colunas que serão alteradas
+         * e os valores novos para cada uma dessas colunas.
+         * Cada alteração possui um índice no arrayList e
+         * cada coluna alterada está separada por um espaço.
+         */
+        String mudancas = "";
+        String[]colunasAlteradas = coluna.split(" ");
+        String[]valorColunasAlteradas = novo.split(" ");
+
+        /*
+         * Aqui fazemos a criação do SET do UPDATE.
+         */
+        for (int j = 0; j < colunasAlteradas.length; ++j) {
+            if (j != coluna.length() - 1)
+                mudancas += colunasAlteradas[j] + " = " + valorColunasAlteradas[j] + ", ";
+            else
+                mudancas += colunasAlteradas[j] + " = " + valorColunasAlteradas[j];
+        }
+
+        return mudancas;
+    }
+
+    /**
+     * Cria uma condição de select, update ou delete conforme
+     * as necessidades do banco.
+     * @param condicao a condição inicial para a operação
+     *                 no banco.
+     * @param tabela a tabela onde será realizada a operação.
+     * @return uma string contendo a nova operação.
+     */
+    private String montaCondicao(String condicao, String tabela){
+        if (!tabela.equalsIgnoreCase("carrinho_livro") &&
+                !tabela.equalsIgnoreCase("relatorio_venda")) {
+            if (condicao.isEmpty())
+                condicao = "id_" + tabela + " >= 0";
+            else
+                condicao = "id_" + tabela + " >= 0 AND " + condicao;
+
+            return condicao;
+        } else
+            return condicao;
+    }
+
+
+    /**
+     * Função responsável por criar na memória o HashMap
+     * para pegar os nomes das tabelas no banco
+     */
+    private void criaQualNomeTabelaBanco(){
+        qualNomeTabelaBanco.put("livro", "Estoque.livro");
+        qualNomeTabelaBanco.put("vendedor", "Vendedores_Info.vendedor");
+        qualNomeTabelaBanco.put("relatorio", "Vendedores_Info.relatorio");
+        qualNomeTabelaBanco.put("relatorio_venda", "Vendedores_Info.relatorio_venda");
+        qualNomeTabelaBanco.put("cliente", "Clientes_Info.cliente");
+        qualNomeTabelaBanco.put("carrinho", "Clientes_Info.carrinho");
+        qualNomeTabelaBanco.put("carrinho_livro", "Clientes_Info.carrinho_livro");
+        qualNomeTabelaBanco.put("compra", "Compras_Info.compra");
+    }
+
+/**
      * função responsável por criar as conexões com o banco de
      * dados sempre que necessário.
      * retorna o erro de não ter conexão caso ele não consiga criar
      * a conexão
      */
-    private boolean criaCon(int quem) throws ConexaoException{
+    protected boolean criaCon(int quem) throws ConexaoException{
 
         String dbURL = "";
         String login = "";
@@ -572,80 +785,6 @@ public abstract class GerenciaCon extends ControlaBD implements AutoCloseable{
 
     protected void setUsuarioBanco(int usuarioBanco) {
         this.usuarioBanco = usuarioBanco;
-    }
-
-    /**
-     * Função responsável por montar SETs para o update.
-     * <P>Recebe uma string de colunas que serão alteradas
-     * e uma string com os novos valores que serão atribuídos
-     * a essas colunas.
-     * @param coluna as colunas que terão os valores alterados.
-     *               Cada nome de coluna deve estar separado por
-     *               um espaço.
-     * @param novo oas novos valores que serão atribuídos a cada
-     *             colua. Os valores devem estar separados por
-     *             um espaço.
-     * @return
-     */
-    private String montaConsultaUpdate(String coluna, String novo){
-        /*
-         * Primeiro separamos as colunas que serão alteradas
-         * e os valores novos para cada uma dessas colunas.
-         * Cada alteração possui um índice no arrayList e
-         * cada coluna alterada está separada por um espaço.
-         */
-        String mudancas = "";
-        String[]colunasAlteradas = coluna.split(" ");
-        String[]valorColunasAlteradas = novo.split(" ");
-
-        /*
-         * Aqui fazemos a criação do SET do UPDATE.
-         */
-        for (int j = 0; j < colunasAlteradas.length; ++j) {
-            if (j != coluna.length() - 1)
-                mudancas += colunasAlteradas[j] + " = " + valorColunasAlteradas[j] + ", ";
-            else
-                mudancas += colunasAlteradas[j] + " = " + valorColunasAlteradas[j];
-        }
-        
-        return mudancas;
-    }
-
-    /**
-     * Cria uma condição de select, update ou delete conforme
-     * as necessidades do banco.
-     * @param condicao a condição inicial para a operação
-     *                 no banco.
-     * @param tabela a tabela onde será realizada a operação.
-     * @return uma string contendo a nova operação.
-     */
-    private String montaCondicao(String condicao, String tabela){
-        if (!tabela.equalsIgnoreCase("carrinho_livro") &&
-            !tabela.equalsIgnoreCase("relatorio_venda")) {
-            if (condicao.isEmpty())
-                condicao = "id_" + tabela + " >= 0";
-            else
-                condicao = "id_" + tabela + " >= 0 AND " + condicao;
-
-            return condicao;
-        } else
-            return condicao;
-    }
-
-
-    /**
-     * Função responsável por criar na memória o HashMap
-     * para pegar os nomes das tabelas no banco
-     */
-    private void criaQualNomeTabelaBanco(){
-        qualNomeTabelaBanco.put("livro", "Estoque.livro");
-        qualNomeTabelaBanco.put("vendedor", "Vendedores_Info.vendedor");
-        qualNomeTabelaBanco.put("relatorio", "Vendedores_Info.relatorio");
-        qualNomeTabelaBanco.put("relatorio_venda", "Vendedores_Info.relatorio_venda");
-        qualNomeTabelaBanco.put("cliente", "Clientes_Info.cliente");
-        qualNomeTabelaBanco.put("carrinho", "Clientes_Info.carrinho");
-        qualNomeTabelaBanco.put("carrinho_livro", "Clientes_Info.carrinho_livro");
-        qualNomeTabelaBanco.put("compra", "Compras_Info.compra");
     }
 
     @Override
