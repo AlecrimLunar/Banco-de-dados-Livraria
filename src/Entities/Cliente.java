@@ -19,7 +19,7 @@ public class Cliente extends GerenciaBd {
     private String user;
     private String senha;
     private static Carrinho carrinho;
-    private static FuncoesEstaticas fun;
+    private static Funcoes fun;
     private static LinkedList<Integer> pedidos;
 
     public Cliente(String nome, Long cpf, String rua, int numero,
@@ -35,7 +35,7 @@ public class Cliente extends GerenciaBd {
         this.user = user;
         this.senha = senha;
         Cliente.carrinho = carrinho;
-        fun = new FuncoesEstaticas();
+        fun = new Funcoes();
     }
 
     public void MenuCliente(Scanner sc, boolean compra) throws NaoTemConexaoException, SQLException {

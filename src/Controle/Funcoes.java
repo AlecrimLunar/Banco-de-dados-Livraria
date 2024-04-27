@@ -13,7 +13,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class FuncoesEstaticas extends GerenciaBd {
+public class Funcoes extends GerenciaBd {
+
     public static void clearBuffer(Scanner scanner) {
         if (scanner.hasNextLine()) {
             scanner.nextLine();
@@ -451,6 +452,20 @@ public class FuncoesEstaticas extends GerenciaBd {
         }
     }
 
+    public void printCompras(ResultSet rt){
+        try {
+            int contador = 1;
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
+            System.out.print(contador + " - Código do pedido:" + rt.getInt("id_compra") + "\n" +
+                    "Forma de pagamento: " + rt.getString("forma_pagamento") + "\n" +
+                    "Data: " + sdf.format(rt.getDate("data")) + "\n" +
+                    "Valor total: " + rt.getInt("valor") + "\n");
+        } catch (SQLException e){
+            //tem q ter algum tratamento dps
+        }
+    }
+
     /* esse método irá verificar se alguma palavra reservada
      * do SQL está sendo utilizada */
     private static boolean verificaComandoSQL(String s){
@@ -495,6 +510,10 @@ public class FuncoesEstaticas extends GerenciaBd {
             return Pattern.matches("[A-Za-zÀÃÂÁÇÉÊÍÎÓÔÕÚÛÜàãâáçéêíîóôõúûü]+", s);
         }
         return false;
+    }
+
+    public boolean regexNum(String s){
+        return Pattern.matches("[0-9]+", s);
     }
 
 

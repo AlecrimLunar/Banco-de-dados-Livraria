@@ -72,4 +72,39 @@ public class DonoLivraria extends GerenciaBd {
         }
     }
 
+    public void removeLivro (Scanner tc) {
+        while (true) {
+            System.out.print("------------------------------------------------------------------" +
+                    "\nID DO LIVRO A SER REMOVIDO: ");
+            String idLivro = tc.nextLine();
+
+            if (controle.Quantos(idLivro, "livro", "") > 0) {
+                try {
+                    ResultSet rt = controle.Select("nome, autor, tipo", "livro", idLivro, "id_livro");
+                    rt.next();
+                    System.out.println("O LIVRO ABAIXO É O LIVRO QUE DESEJA REMOVER? REPONDA COM 'Sim' ou 'Não' " +
+                            "\nNome: " + rt.getString("nome") + "\nAutor: " + rt.getString("autor") +
+                            "\nTipo: " + rt.getString("tipo"));
+
+                    if (tc.nextLine().equalsIgnoreCase("sim")) {
+                        if (controle.delete("livro", "id_livro", idLivro, false))
+                            System.out.println("REMOÇÃO FEITA COM SUCESSO!!" +
+                                    "\n---------------------------------------------------------------------");
+                        else
+                            System.out.println("ERRO!! TENTE NOVAMENTE" +
+                                    "\n---------------------------------------------------------------------");
+                    }
+
+                } catch (Exception e) {
+                    System.out.println("ERRO: " + e);
+                }
+
+                System.out.println("DESEJA REMOVER OUTRO LIVRO? REPONDA COM 'Sim' ou 'Não'");
+                if (!tc.nextLine().equalsIgnoreCase("sim")) {
+                    return;
+                }
+            }
+        }
+    }
+
 }

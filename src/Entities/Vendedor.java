@@ -3,26 +3,23 @@ import Controle.*;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedList;
 import java.util.Scanner;
 
 public class Vendedor extends GerenciaBd{
     private Integer id;
     private String nome;
     private Long cpf;
+    Funcoes funcoes;
 
     public Vendedor(Integer id, String nome, Long cpf) {
         this.id = id;
         this.nome = nome;
         this.cpf = cpf;
+        funcoes = new Funcoes();
     }
 
 
-
-    //Cadastros
 
     public boolean cadastraCliente(Scanner tc) {
 
@@ -257,6 +254,117 @@ public class Vendedor extends GerenciaBd{
         return false;
     }*/
 
+    /**
+     * Função responsável por realizar a alteração da quantidade de livros
+     * em estoque. Essa função deve ser utilizada quando se quer
+     * aumentar a quantidade de livros já existentes em estoque.
+     */
+    public void adicionaLivrosEstoque(Scanner tc){
+        ArrayList<Integer> livros = new ArrayList<>();
+        ArrayList<Integer> quantidades = new ArrayList<>();
+        String testes;
+
+        while (true) {
+            System.out.print("""
+                    ========================================================
+                    BEM-VINDO AO SISTEMA DE ADICIONAR LIVROS.
+                    INSIRA AS INFORMAÇÕES A SEGUIR PARA QUE A ADIÇÃO POSSA
+                    SER REALIZADA
+                    ========================================================
+                    """);
+
+            while (true) {
+                System.out.print("""
+                        QUAL O ID DO LIVRO RECEBIDO?
+                        """);
+
+                testes = tc.nextLine();
+
+                if (!funcoes.regexNum(testes)){
+                    System.err.print("""
+                            INSIRA APENAS UM VALOR NUMÉRICO.
+                            ========================================================
+                            """);
+                } else
+                    break;
+            }
+
+            livros.add(Integer.parseInt(testes));
+
+            while (true) {
+                System.out.print("""
+                        QUAL A QUANTIDADE DE LIVROS FOI RECEBIDA?
+                        """);
+
+                testes = tc.nextLine();
+
+                if (!funcoes.regexNum(testes)){
+                    System.err.print("""
+                            INSIRA APENAS UM VALOR NUMÉRICO.
+                            ========================================================
+                            """);
+                } else
+                    break;
+            }
+
+            quantidades.add(Integer.parseInt(testes));
+
+            System.out.print("""
+                    OUTRO LIVRO FOI RECEBIDO?
+                    """);
+
+            if (!tc.nextLine().equalsIgnoreCase("sim"))
+                break;
+        }
+
+        int verifica = -1;
+        try{
+            do {
+                verifica = adicionaQuantidadeLivroEstoque(livros, quantidades);
+            } while (verifica == -1);
+        } catch (ConexaoException e){
+            try {
+                close();
+            } catch (SQLException f){
+                System.err.println("""
+                ========================================================
+                FALHA CRÍTICA NO SISTEMA!
+                A CONEXÃO COM O BANCO DE DADOS APRESENTOU ERROS E
+                NÃO FOI POSSÍVEL ENCERRÁ-LA
+                ========================================================
+                """);
+                System.exit(1);
+            }
+        } catch (NaoTemConexaoException e){
+            try{
+                criaCon(1);
+            } catch (SQLException f){
+                System.err.println("""
+                ========================================================
+                FALHA CRÍTICA NO SISTEMA!
+                NÃO FOI POSSÍVEL ESTABELECER UMA CONEXÃO COM O BANCO
+                DE DADOS
+                ========================================================
+                """);
+                System.exit(1);
+            }
+        }
+
+        if (verifica == 0){
+            System.out.print("""
+                    NENHUMA ADIÇÃO FOI REALIZADA!
+                    ========================================================
+                    """);
+        } else
+            System.out.print("""
+                    ADIÇÕES FEITAS COM SUCESSO!
+                    ========================================================
+                    """);
+    }
+
+    /**
+     * Função responsável por cadastrar novos livros no sistema.
+     */
     public void cadastraLivro(Scanner tc){
         System.out.print("-------------------------------ADICIONAR LIVRO------------------------------\n"+
                 "DIGITE O NOME DO LIVRO: ");
@@ -327,44 +435,45 @@ public class Vendedor extends GerenciaBd{
         }
     }
 
-    //Remove
+    public void confirmarCompra(Scanner tc){
+    }
 
-    public void removeLivro (Scanner tc) {
-        while (true) {
-            System.out.print("------------------------------------------------------------------" +
-                    "\nID DO LIVRO A SER REMOVIDO: ");
-            String idLivro = tc.nextLine();
+    private ResultSet recuperaComprasNaoConfirmadas(){
+        String tabela = "Compras_Info.compra";
+        String coluna = "forma_pagamento, data, valor";
 
-            if (controle.Quantos(idLivro, "livro", "") > 0) {
-                try {
-                    ResultSet rt = controle.Select("nome, autor, tipo", "livro", idLivro, "id_livro");
-                    rt.next();
-                    System.out.println("O LIVRO ABAIXO É O LIVRO QUE DESEJA REMOVER? REPONDA COM 'Sim' ou 'Não' " +
-                            "\nNome: " + rt.getString("nome") + "\nAutor: " + rt.getString("autor") +
-                            "\nTipo: " + rt.getString("tipo"));
+        ResultSet rt;
 
-                    if (tc.nextLine().equalsIgnoreCase("sim")) {
-                        if (controle.delete("livro", "id_livro", idLivro, false))
-                            System.out.println("REMOÇÃO FEITA COM SUCESSO!!" +
-                                    "\n---------------------------------------------------------------------");
-                        else
-                            System.out.println("ERRO!! TENTE NOVAMENTE" +
-                                    "\n---------------------------------------------------------------------");
-                    }
-
-                } catch (Exception e) {
-                    System.out.println("ERRO: " + e);
-                }
-
-                System.out.println("DESEJA REMOVER OUTRO LIVRO? REPONDA COM 'Sim' ou 'Não'");
-                if (!tc.nextLine().equalsIgnoreCase("sim")) {
-                    return;
-                }
+        try {
+            rt = Select(coluna, tabela, "id_vendedor = -1 AND id_compra >= 0");
+        } catch (ConexaoException e){
+            try {
+                close();
+            } catch (SQLException f){
+                System.err.println("""
+                ========================================================
+                FALHA CRÍTICA NO SISTEMA!
+                A CONEXÃO COM O BANCO DE DADOS APRESENTOU ERROS E
+                NÃO FOI POSSÍVEL ENCERRÁ-LA
+                ========================================================
+                """);
+                System.exit(1);
+            }
+        } catch (NaoTemConexaoException e){
+            try{
+                criaCon(1);
+            } catch (SQLException f){
+                System.err.println("""
+                ========================================================
+                FALHA CRÍTICA NO SISTEMA!
+                NÃO FOI POSSÍVEL ESTABELECER UMA CONEXÃO COM O BANCO
+                DE DADOS
+                ========================================================
+                """);
+                System.exit(1);
             }
         }
     }
-
-    //Alteração
 
     public void alteraLivro(Scanner tc){
         try {

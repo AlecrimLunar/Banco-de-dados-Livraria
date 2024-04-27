@@ -501,13 +501,11 @@ public abstract class GerenciaBd implements AutoCloseable{
      * o banco de dados existente apresentou algum
      * problema mas não foi possível fechá-la.
      */
-    protected ResultSet Select(String tabela, String coluna, String pesquisa)
-            throws NaoTemConexaoException, ConexaoException {
+    protected ResultSet Select(String colunas, String tabela, String condicao)
+            throws NaoTemConexaoException, ConexaoException{
         if (connection != null){
-            pesquisa = montaCondicao(pesquisa, tabela);
             try{
-                return Select(qualNomeTabelaBanco.get(tabela), coluna, pesquisa, connection);
-
+                return Select(tabela, colunas, condicao, connection);
             } catch (SQLException e) {
                 /*
                  * Se der erro, vai tentar fechar a conexão atual.
@@ -734,15 +732,24 @@ public abstract class GerenciaBd implements AutoCloseable{
      * o banco de dados existente apresentou algum
      * problema mas não foi possível fechá-la.
      */
-    protected int livroComprado(int idLivro, int quantidade)
+    protected int livroComprado(ArrayList<Integer> idLivro, ArrayList<Integer> quantidade)
             throws ConexaoException, NaoTemConexaoException{
         if (connection != null){
             try {
-                String tabela = "Estoque.livro";
-                String mudancas = "id_livro = quantidade_estoque - " + quantidade;
-                String condicao = "id_livro = " + idLivro;
+                connection.setAutoCommit(false);
+                int totalUpdates = 0;
 
-                return update(tabela, mudancas, condicao, connection);
+                for (int i = 0; i < idLivro.size(); ++i) {
+                    String tabela = "Estoque.livro";
+                    String mudancas = "id_livro = quantidade_estoque - " + quantidade.get(i);
+                    String condicao = "id_livro = " + idLivro.get(i);
+
+                    totalUpdates += update(tabela, mudancas, condicao, connection);
+                }
+                connection.setAutoCommit(true);
+                connection.commit();
+
+                return totalUpdates;
 
             } catch (SQLException e) {
                 /*
@@ -784,21 +791,50 @@ public abstract class GerenciaBd implements AutoCloseable{
         throw new NaoTemConexaoException();
     }
 
-    protected int adicionaQuantidadeLivroEstoque(int idLivro, int quantidade)
+    /**
+     * Função responsável por alterar a quantidade de livros
+     * presentes em estoque quando livros forem recebidos
+     * na livraria.
+     * @param idLivro o id do livro que foi comprado
+     * @param quantidade a quantidade de livros referente
+     *                   àquele id que foi adquirida.
+     * @return -1 caso algum erro tenha acontecido e a
+     * função tenha conseguido lidar com ele. <br>
+     * Qualquer outro valor inteiro positivo ou zero
+     * representando a quantidade de updates realizados
+     * no total.
+     * @throws NaoTemConexaoException quando não há
+     * nenhuma conexão com o banco de dados.
+     * @throws ConexaoException quando a conexão com
+     * o banco de dados existente apresentou algum
+     * problema mas não foi possível fechá-la.
+     */
+    protected int adicionaQuantidadeLivroEstoque
+    (ArrayList<Integer> idLivro, ArrayList<Integer> quantidade)
             throws NaoTemConexaoException, ConexaoException {
         if (connection != null){
             try {
-                String tabela = "Estoque.livro";
-                String mudancas = "id_livro = quantidade_estoque + " + quantidade;
-                String condicao = "id_livro = " + idLivro;
+                connection.setAutoCommit(false);
+                int totalUpdates = 0;
 
-                return update(tabela, mudancas, condicao, connection);
+                for (int i = 0; i < idLivro.size(); ++i) {
+                    String tabela = "Estoque.livro";
+                    String mudancas = "id_livro = quantidade_estoque + " + quantidade.get(i);
+                    String condicao = "id_livro = " + idLivro.get(i);
+
+                    totalUpdates += update(tabela, mudancas, condicao, connection);
+                }
+                connection.setAutoCommit(true);
+                connection.commit();
+
+                return totalUpdates;
 
             } catch (SQLException e) {
                 /*
                  * Se der erro, vai tentar fechar a conexão atual.
                  */
                 try {
+                    connection.rollback();
                     close();
 
                 } catch (SQLException f) {

@@ -1,7 +1,7 @@
 package Entities;
 
 import Controle.ConexaoException;
-import Controle.FuncoesEstaticas;
+import Controle.Funcoes;
 import Controle.NaoTemConexaoException;
 
 import java.sql.SQLException;
@@ -9,10 +9,10 @@ import java.util.*;
 
 public class Sistema extends Controle.GerenciaBd {
 
-    private static FuncoesEstaticas fun;
+    private static Funcoes fun;
     private static Carrinho carrinho;
     public Sistema() {
-        fun = new FuncoesEstaticas();
+        fun = new Funcoes();
         carrinho = new Carrinho();
         setUsuarioBanco(0);
     }
