@@ -201,35 +201,5 @@ public class Sistema extends Controle.GerenciaBd {
         Login(sc, true, compra);
     }
 
-    public void cadastraVendedor(Scanner tc){
-        while (true) {
-            System.out.print("INSIRA AS INFORMAÇÕES:\nNome: ");
-            String nome = tc.nextLine();
 
-            System.out.print("CPF (Apenas números): ");
-            String CPF = tc.nextLine();
-
-            System.out.print("Nome de acesso: ");
-            String user = tc.nextLine();
-
-            System.out.print("Senha de acesso: ");
-            String senha = tc.nextLine();
-
-
-            System.out.print("-------------------------------------------------------------------------" +
-                    "\n\nMUITO BEM, VERIFIQUE SE AS INFORMAÇÕES ESTÃO CORRETAS. SE SIM DIGITE " +
-                    "'Sim', SE NÃO DIGITE 'Não'\nNome: " + nome + "\nCPF: " + CPF + "\n");
-
-            if (tc.nextLine().equalsIgnoreCase("sim")) {
-                String insert = "'" + nome + "', '" + user + "', '" + CPF + "', '" + senha + "'";
-
-                if (controle.Insert("vendedor", insert, false, "nome, usuario, cpf, senha") != -2) {
-                    System.out.println("CADASTRO CONCLUÍDO COM SUCESSO! PARA LOGAR, UTILIZE O USUÁRIO: " +
-                            user + " E A " +
-                            "SENHA INFORMADA.");
-                    break;
-                }
-            }
-        }
-    }
 }

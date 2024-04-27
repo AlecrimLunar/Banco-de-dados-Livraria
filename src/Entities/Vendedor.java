@@ -256,6 +256,7 @@ public class Vendedor extends GerenciaBd{
         c = null;
         return false;
     }*/
+
     public void cadastraLivro(Scanner tc){
         System.out.print("-------------------------------ADICIONAR LIVRO------------------------------\n"+
                 "DIGITE O NOME DO LIVRO: ");
@@ -361,72 +362,6 @@ public class Vendedor extends GerenciaBd{
                 }
             }
         }
-    }
-    public void removeVendedor(Scanner tc){
-        while (true) {
-            System.out.print("------------------------------------------------------------------" +
-                    "\nID DO VENDEDOR A SER REMOVIDO: ");
-            String idVendedor = tc.nextLine();
-
-            if (controle.Quantos(idVendedor, "vendedor", "") > 0) {
-                try {
-                    ResultSet rt = controle.Select("nome, cpf", "vendedor", idVendedor,
-                            "id_vendedor");
-                    System.out.println("O VENDEDOR ABAIXO É O VENDEDOR QUE DESEJA REMOVER? REPONDA COM 'Sim' ou 'Não' " +
-                            "\nNome: " + rt.getString("nome") + "\nCPF: " + rt.getString("cpf"));
-
-                    if (tc.nextLine().equalsIgnoreCase("sim")) {
-                        if (controle.delete("vendedor", "id_vendedor", idVendedor, false))
-                            System.out.println("REMOÇÃO FEITA COM SUCESSO!!" +
-                                    "\n---------------------------------------------------------------------");
-                        else
-                            System.out.println("ERRO!! TENTE NOVAMENTE" +
-                                    "\n---------------------------------------------------------------------");
-                    }
-
-                } catch (Exception e) {
-                    System.out.println("ERRO: " + e);
-                }
-
-                System.out.println("DESEJA REMOVER OUTRO VENDEDOR? REPONDA COM 'Sim' ou 'Não'");
-                if (!tc.nextLine().equalsIgnoreCase("sim")) {
-                    return;
-                }
-            }
-        }
-    }
-    public void removeCliente(Scanner tc) {
-        System.out.println("------------------------------------------------------------------------------" +
-                "\nLOGIN CLIENTE");
-        String user;
-        String senha;
-        ResultSet rs;
-        while (true) {
-            System.out.print("Usuário: ");
-            user = tc.nextLine();
-            System.out.print("Senha: ");
-            senha = tc.nextLine();
-            rs = controle.login(user, senha, "cliente");
-            if (rs != null)
-                break;
-            else
-                System.out.print("INFORMAÇÕES INCORRETAS! TENTE NOVAMENTE");
-        }
-
-        System.out.println("RESPONDA COM 'Sim' OU 'Não' \nDESEJA REMOVER SEU CADASTRO DA LOJA? ISSO NÃO" +
-                " IRÁ REMOVER SEU HISTÓRICO DE COMPRAS NO SISTEMA DA LOJA");
-        if (tc.nextLine().equalsIgnoreCase("sim")){
-            try {
-                if (controle.delete("cliente", "id_cliente", rs.getString("id_cliente"),
-                        false))
-                    System.out.println("REMOÇÃO FEITA COM SUCESSO!");
-                else
-                    System.out.println("ERRO! TENTE NOVAMENTE");
-            }catch (Exception e){
-                System.out.println("ERRO: " + e);
-            }
-        }
-
     }
 
     //Alteração
@@ -548,66 +483,6 @@ public class Vendedor extends GerenciaBd{
         }catch (Exception e){
             System.out.println("ERRO: " + e);
         }
-    }
-
-    //Prints
-    public void printLivro(String colunas){controle.printa("livro", colunas);}
-    public void printLivro(String id, String colunas){controle.printa("livro", id, colunas);}
-
-    public void printCliente(String colunas){controle.printa("cliente", colunas);}
-    public void printCliente(String id, String colunas){controle.printa("cliente", id, colunas);}
-
-    public void printVendedor(String colunas){controle.printa("vendedor", colunas);}
-    public void printVendedor(String id, String colunas){controle.printa("vendedor", id, colunas);}
-
-    public void printCompra(String colunas){controle.printa("compra", colunas);}
-    public void printCompra(String id, String colunas){
-        try {
-            ResultSet rs = controle.Select("id_carrinho", "compra", id, "id_compra");
-            rs.next();
-
-            int idCarrinho = rs.getInt("id_carrinho");
-
-            rs = controle.Select("id_livro", "carrinho_livro", Integer.toString(idCarrinho),
-                    "id_carrinho");
-
-            controle.printa("compra", id, colunas);
-            System.out.println("LIVROS PERTENCENTES AO CARRINHO DESSA COMPRA:");
-            while (rs.next()) {
-                controle.printa("livro", rs.getString("id_livro"), "nome, autor, id_livro");
-            }
-        } catch (Exception e){
-            System.out.println("ERRO: " + e);
-        }
-    }
-
-    private void livroFoiAdquirido (int id_livro, int quantidade) {//essa função faz update no banco sobre a quantidade dos livros
-        controle.update("livro", "quantidade_estoque", "quantidade_estoque - "
-                + quantidade, " WHERE id_livro = " + id_livro);
-    }
-
-    public void adicionaLivro_noEstoque(Scanner tc) {
-        LinkedList<Integer> livros = new LinkedList<>();
-        LinkedList<Integer> quantidade = new LinkedList<>();
-        while (true){
-            System.out.println("Qual o ID do livro recebido?");
-            livros.add(Integer.parseInt(tc.nextLine()));
-
-            System.out.println("Qual a quantidade de livros com esse ID que foram recebidos?");
-            quantidade.add(Integer.parseInt(tc.nextLine()));
-
-            System.out.println("Foram recebidos outros livros com IDs diferentes?");
-            if (!tc.nextLine().equalsIgnoreCase("sim"))
-                break;
-        }
-        while (!livros.isEmpty()){
-            if (!controle.update("livro", "quantidade_estoque", "quantidade_estoque + " +
-                    quantidade.pop().toString(), "WHERE id_livro =" + livros.pop()))
-                return;
-
-            System.out.println("ATUALIZAÇÃO FEITA COM SUCESSO!");
-        }
-
     }
 
 

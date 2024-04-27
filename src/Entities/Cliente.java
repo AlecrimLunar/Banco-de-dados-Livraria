@@ -2,6 +2,7 @@ package Entities;
 
 import Controle.*;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.Scanner;
@@ -102,6 +103,40 @@ public class Cliente extends GerenciaBd {
                 default -> System.out.println("Opção invalida:");
             }
         }
+    }
+
+    public void removeCliente(Scanner tc) {
+        System.out.println("------------------------------------------------------------------------------" +
+                "\nLOGIN CLIENTE");
+        String user;
+        String senha;
+        ResultSet rs;
+        while (true) {
+            System.out.print("Usuário: ");
+            user = tc.nextLine();
+            System.out.print("Senha: ");
+            senha = tc.nextLine();
+            rs = controle.login(user, senha, "cliente");
+            if (rs != null)
+                break;
+            else
+                System.out.print("INFORMAÇÕES INCORRETAS! TENTE NOVAMENTE");
+        }
+
+        System.out.println("RESPONDA COM 'Sim' OU 'Não' \nDESEJA REMOVER SEU CADASTRO DA LOJA? ISSO NÃO" +
+                " IRÁ REMOVER SEU HISTÓRICO DE COMPRAS NO SISTEMA DA LOJA");
+        if (tc.nextLine().equalsIgnoreCase("sim")){
+            try {
+                if (controle.delete("cliente", "id_cliente", rs.getString("id_cliente"),
+                        false))
+                    System.out.println("REMOÇÃO FEITA COM SUCESSO!");
+                else
+                    System.out.println("ERRO! TENTE NOVAMENTE");
+            }catch (Exception e){
+                System.out.println("ERRO: " + e);
+            }
+        }
+
     }
 
     public Integer getId() {

@@ -317,7 +317,7 @@ public abstract class GerenciaBd implements AutoCloseable{
                      */
 
                     criaCon(usuarioBanco);
-                } catch (ConexaoException f) {
+                } catch (SQLException f) {
                     /*
                      * Caso ele não consiga, é necessário avisar
                      * que existe um grave problema: não existe conexão
@@ -391,7 +391,7 @@ public abstract class GerenciaBd implements AutoCloseable{
                      */
 
                     criaCon(usuarioBanco);
-                } catch (ConexaoException f){
+                } catch (SQLException f){
                     /*
                      * Caso ele não consiga, é necessário avisar
                      * que existe um grave problema: não existe conexão
@@ -464,7 +464,7 @@ public abstract class GerenciaBd implements AutoCloseable{
                      */
 
                     criaCon(usuarioBanco);
-                } catch (ConexaoException f){
+                } catch (SQLException f){
                     /*
                      * Caso ele não consiga, é necessário avisar
                      * que existe um grave problema: não existe conexão
@@ -529,7 +529,7 @@ public abstract class GerenciaBd implements AutoCloseable{
                      */
 
                     criaCon(usuarioBanco);
-                } catch (ConexaoException f){
+                } catch (SQLException f){
                     /*
                      * Caso ele não consiga, é necessário avisar
                      * que existe um grave problema: não existe conexão
@@ -606,7 +606,7 @@ public abstract class GerenciaBd implements AutoCloseable{
                      */
 
                     criaCon(usuarioBanco);
-                } catch (ConexaoException f){
+                } catch (SQLException f){
                     /*
                      * Caso ele não consiga, é necessário avisar
                      * que existe um grave problema: não existe conexão
@@ -698,7 +698,74 @@ public abstract class GerenciaBd implements AutoCloseable{
                      */
 
                     criaCon(usuarioBanco);
-                } catch (ConexaoException f){
+                } catch (SQLException f){
+                    /*
+                     * Caso ele não consiga, é necessário avisar
+                     * que existe um grave problema: não existe conexão
+                     * com o banco de dados.
+                     */
+                    throw new NaoTemConexaoException();
+                }
+            }
+            /*
+             * Caso tenha sido possível resolver os erros, a função avisa que ela
+             * teve um comportamento inesperado e foi possível resolver ele,
+             * por isso ela pode ser chamada novamente.
+             */
+            return -1;
+        }
+        throw new NaoTemConexaoException();
+    }
+
+    /**
+     * Função responsável por alterar a quantidade de livros
+     * presentes em estoque após a solicitação de uma compra.
+     * @param idLivro o id do livro que foi comprado
+     * @param quantidade a quantidade de livros referente
+     *                   àquele id que foi adquirida.
+     * @return -1 caso algum erro tenha acontecido e a
+     * função tenha conseguido lidar com ele. <br>
+     * Qualquer outro valor inteiro positivo ou zero
+     * representando a quantidade de updates realizados
+     * no total.
+     * @throws NaoTemConexaoException quando não há
+     * nenhuma conexão com o banco de dados.
+     * @throws ConexaoException quando a conexão com
+     * o banco de dados existente apresentou algum
+     * problema mas não foi possível fechá-la.
+     */
+    protected int livroComprado(int idLivro, int quantidade)
+            throws ConexaoException, NaoTemConexaoException{
+        if (connection != null){
+            try {
+                String tabela = "Estoque.livro";
+                String mudancas = "id_livro = id_livro - " + quantidade;
+                String condicao = "id_livro = " + idLivro;
+
+                return update(tabela, mudancas, condicao, connection);
+
+            } catch (SQLException e) {
+                /*
+                 * Se der erro, vai tentar fechar a conexão atual.
+                 */
+                try {
+                    close();
+
+                } catch (SQLException f) {
+                    /*
+                     * Se não conseguir ele informa
+                     * a quem o chamou que não foi possível
+                     * encerrar a conexão com o banco e que
+                     * ela é uma conexão defeituosa.
+                     */
+                    throw new ConexaoException();
+                } try {
+                    /*
+                     * O sistema tentar criar outra conexão.
+                     */
+
+                    criaCon(usuarioBanco);
+                } catch (SQLException f){
                     /*
                      * Caso ele não consiga, é necessário avisar
                      * que existe um grave problema: não existe conexão
@@ -762,7 +829,7 @@ public abstract class GerenciaBd implements AutoCloseable{
                      */
 
                     criaCon(usuarioBanco);
-                } catch (ConexaoException f){
+                } catch (SQLException f){
                     /*
                      * Caso ele não consiga, é necessário avisar
                      * que existe um grave problema: não existe conexão
