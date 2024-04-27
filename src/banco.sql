@@ -1,69 +1,166 @@
-CREATE TABLE Vendedor(
-    id_vendedor SMALLSERIAL,
-    nome varchar(30) NOT NULL,
-    usuario varchar(15) UNIQUE NOT NULL,
-    cpf varchar(11) UNIQUE NOT NULL,
-    senha varchar(15) NOT NULL,
+--DROP TABLE vendedor, cliente, compra, livro, carrinho, carrinho_livro;
 
-    PRIMARY KEY (id_vendedor)
-);
-CREATE TABLE Cliente(
-    id_cliente SMALLSERIAL,
-    senha varchar(15) NOT NULL,
-    usuario varchar(30) UNIQUE NOT NULL,
-    nome varchar(30) NOT NULL,
-    cpf varchar(11) UNIQUE NOT NULL,
-    rua text,
-    numero smallint,
-    email text,
-    is_flamengo boolean NOT NULL,
-    is_sousa boolean NOT NULL,
-    one_piece boolean NOT NULL,
+CREATE SCHEMA Estoque;
 
-    PRIMARY KEY (id_cliente)
+CREATE TABLE Estoque.livro(
+                              id_livro SMALLSERIAL,
+                              tipo text NOT NULL CHECK (tipo in ('novo', 'usado')),
+                              nome varchar(30) NOT NULL,
+                              quantidade_estoque int NOT NULL CHECK (quantidade_estoque >= 0),
+                              from_mari boolean NOT NULL,
+                              autor varchar(30) NOT NULL,
+                              genero varchar(20) NOT NULL,
+                              preco money NOT NULL CHECK (preco >= money(0)),
+
+                              PRIMARY KEY (id_livro)
 );
 
-CREATE TABLE Compra(
-    id_compra SMALLSERIAL,
-    forma_pagamento text NOT NULL,
-    data date NOT NULL,
-    valor int NOT NULL CHECK (valor >= 0),
-    id_vendedor int,
-    id_carrinho int,
-    id_cliente int,
+CREATE SCHEMA Vendedores_Info;
+CREATE TABLE Vendedores_Info.vendedor(
+                                         id_vendedor SMALLSERIAL,
+                                         nome varchar(30) NOT NULL,
+                                         usuario varchar(15) UNIQUE NOT NULL,
+                                         cpf varchar(11) UNIQUE NOT NULL,
+                                         senha varchar(15) NOT NULL,
 
-    PRIMARY KEY  (id_compra),
-    FOREIGN KEY (id_vendedor) REFERENCES Vendedor(id_vendedor) ON UPDATE CASCADE,
-    FOREIGN KEY (id_carrinho) REFERENCES Compra(id_compra) ON UPDATE CASCADE,
-    FOREIGN KEY (id_cliente) REFERENCES Cliente(id_cliente) ON UPDATE CASCADE
+                                         PRIMARY KEY (id_vendedor)
 );
 
-CREATE TABLE livro(
-    id_livro SMALLSERIAL PRIMARY KEY,
-    tipo text NOT NULL CHECK (tipo in ('n', 'u')),
-    nome varchar(30) NOT NULL,
-    quantidade_estoque int NOT NULL CHECK (quantidade_estoque >= 0),
-    from_mari boolean NOT NULL,
-    autor varchar(30) NOT NULL,
-    genero varchar(20) NOT NULL,
-    preco money NOT NULL CHECK (preco >= money(0))
+CREATE TABLE Vendedores_Info.relatorio(
+                                          id_relatorio SMALLSERIAL,
+                                          id_vendedor int DEFAULT -1 NOT NULL,
+                                          data date NOT NULL,
+
+                                          PRIMARY KEY (id_relatorio),
+                                          FOREIGN KEY (id_vendedor) REFERENCES Vendedores_Info.vendedor(id_vendedor) ON UPDATE CASCADE ON DELETE SET DEFAULT
 );
 
-CREATE TABLE carrinho(
-    id_carrinho SMALLSERIAL,
-    id_cliente int,
-    id_compra int,
+CREATE TABLE Vendedores_Info.relatorio_venda(
+                                                id_relatorio int DEFAULT -1 NOT NULL,
+                                                id_venda int DEFAULT -1 NOT NULL,
 
-    PRIMARY KEY (id_carrinho),
-    FOREIGN KEY (id_carrinho) REFERENCES carrinho(id_carrinho) ON UPDATE CASCADE,
-    FOREIGN KEY (id_compra) REFERENCES compra(id_compra) ON UPDATE CASCADE
+                                                PRIMARY KEY (id_relatorio, id_venda),
+                                                FOREIGN KEY (id_relatorio) REFERENCES Vendedores_Info.relatorio(id_relatorio) ON UPDATE CASCADE ON DELETE SET DEFAULT--,
+    --FOREIGN KEY (id_venda) REFERENCES compras_info.compra(id_compra) ON UPDATE CASCADE ON DELETE SET DEFAULT
 );
 
-CREATE TABLE carrinho_livro(
-    id_carrinho int,
-    id_livro int,
-    quantidade int CHECK (quantidade > 0),
-    PRIMARY KEY (id_carrinho, id_livro),
-    FOREIGN KEY (id_carrinho) REFERENCES carrinho(id_carrinho) ON UPDATE CASCADE,
-    FOREIGN KEY (id_livro) REFERENCES livro(id_livro) ON UPDATE CASCADE
+
+CREATE SCHEMA Clientes_Info;
+
+--SELECT * FROM cliente;
+CREATE TABLE Clientes_Info.cliente(
+                                      id_cliente SMALLSERIAL,
+                                      senha varchar(15) NOT NULL,
+                                      usuario varchar(30) UNIQUE NOT NULL,
+                                      nome varchar(30) NOT NULL,
+                                      cpf varchar(11) UNIQUE NOT NULL,
+                                      rua text,
+                                      numero smallint,
+                                      email text,
+                                      is_flamengo boolean NOT NULL,
+                                      is_sousa boolean NOT NULL,
+                                      one_piece boolean NOT NULL,
+
+                                      PRIMARY KEY (id_cliente)
 );
+
+CREATE TABLE Clientes_Info.carrinho(
+                                       id_carrinho SMALLSERIAL,
+                                       id_cliente int DEFAULT -1,
+                                       id_compra int DEFAULT -1,
+
+                                       PRIMARY KEY (id_carrinho),
+                                       FOREIGN KEY (id_cliente) REFERENCES Clientes_Info.cliente(id_cliente) ON UPDATE CASCADE ON DELETE SET DEFAULT--,
+    --FOREIGN KEY (id_compra) REFERENCES Compras_Info.compra(id_compra) ON UPDATE CASCADE ON DELETE SET DEFAULT
+);
+
+CREATE TABLE Clientes_Info.carrinho_livro(
+                                             id_carrinho int DEFAULT -1,
+                                             id_livro int DEFAULT -1,
+                                             quantidade int CHECK (quantidade > 0),
+
+                                             PRIMARY KEY (id_carrinho, id_livro),
+                                             FOREIGN KEY (id_carrinho) REFERENCES Clientes_Info.carrinho(id_carrinho) ON UPDATE CASCADE ON DELETE SET DEFAULT--,
+    --FOREIGN KEY (id_livro) REFERENCES Estoque.livro(id_livro) ON UPDATE CASCADE ON DELETE SET DEFAULT
+);
+
+CREATE SCHEMA Compras_Info;
+
+CREATE TABLE Compras_Info.compra(
+                                    id_compra SMALLSERIAL,
+                                    forma_pagamento text NOT NULL,
+                                    data date NOT NULL,
+                                    valor int NOT NULL CHECK (valor >= 0),
+                                    id_vendedor int DEFAULT -1,
+                                    id_carrinho int DEFAULT -1,
+                                    id_cliente int DEFAULT -1,
+
+                                    PRIMARY KEY  (id_compra)--,
+    --FOREIGN KEY (id_vendedor) REFERENCES Vendedores_Info.vendedor(id_vendedor) ON UPDATE CASCADE ON DELETE SET DEFAULT,
+    --FOREIGN KEY (id_carrinho) REFERENCES Clientes_Info.carrinho(id_carrinho) ON UPDATE CASCADE ON DELETE SET DEFAULT,
+    --FOREIGN KEY (id_cliente) REFERENCES Clientes_Info.cliente(id_cliente) ON UPDATE CASCADE ON DELETE SET DEFAULT
+);
+
+
+ALTER TABLE Vendedores_Info.relatorio_venda
+    ADD CONSTRAINT relatorio_venda_id_venda_fkey
+        FOREIGN KEY (id_venda) REFERENCES compras_info.compra(id_compra)
+            ON UPDATE CASCADE ON DELETE SET DEFAULT;
+
+ALTER TABLE Clientes_Info.carrinho
+    ADD CONSTRAINT carrinho_id_compra_fkey
+        FOREIGN KEY (id_compra) REFERENCES Compras_Info.compra(id_compra)
+            ON UPDATE CASCADE ON DELETE SET DEFAULT;
+
+ALTER TABLE Clientes_Info.carrinho_livro
+    ADD CONSTRAINT carrinho_livro_id_livro_fkey
+        FOREIGN KEY (id_livro) REFERENCES Estoque.livro(id_livro)
+            ON UPDATE CASCADE ON DELETE SET DEFAULT;
+
+
+ALTER TABLE Compras_Info.compra
+    ADD CONSTRAINT compra_id_vendedor
+        FOREIGN KEY (id_vendedor) REFERENCES Vendedores_Info.vendedor(id_vendedor)
+            ON UPDATE CASCADE ON DELETE SET DEFAULT;
+
+ALTER TABLE Compras_Info.compra
+    ADD CONSTRAINT compra_id_carrinho
+        FOREIGN KEY (id_carrinho) REFERENCES Clientes_Info.carrinho(id_carrinho)
+            ON UPDATE CASCADE ON DELETE SET DEFAULT;
+ALTER TABLE Compras_Info.compra
+    ADD CONSTRAINT compra_id_cliente
+        FOREIGN KEY (id_cliente) REFERENCES Clientes_Info.cliente(id_cliente)
+            ON UPDATE CASCADE ON DELETE SET DEFAULT;
+
+
+CREATE ROLE adm LOGIN PASSWORD '12' SUPERUSER;
+
+CREATE ROLE dono_livraria LOGIN PASSWORD '1234';
+GRANT SELECT ON ALL TABLES IN SCHEMA Compras_Info, Clientes_Info, Vendedores_Info, Estoque TO dono_livraria;
+GRANT INSERT ON ALL TABLES IN SCHEMA Compras_Info, Clientes_Info, Vendedores_Info, Estoque  TO dono_livraria;
+GRANT UPDATE ON ALL TABLES IN SCHEMA Compras_Info, Clientes_Info, Vendedores_Info, Estoque  TO dono_livraria;
+GRANT DELETE ON Estoque.livro, Clientes_Info.cliente,
+    Vendedores_Info.vendedor TO dono_livraria;
+
+CREATE ROLE vendedor_role LOGIN PASSWORD '123456';
+GRANT SELECT ON Vendedores_Info.vendedor, Estoque.livro, Compras_Info.compra,
+    Clientes_Info.cliente, Clientes_Info.carrinho, Clientes_Info.carrinho_livro
+    TO vendedor_role;
+GRANT INSERT ON Vendedores_Info.vendedor, Estoque.livro, Compras_Info.compra,
+    Clientes_Info.cliente TO vendedor_role;
+GRANT UPDATE ON Vendedores_Info.vendedor, Estoque.livro, Compras_Info.compra,
+                                                  Clientes_Info.cliente TO vendedor_role;
+GRANT DELETE ON Clientes_Info.cliente TO vendedor_role;
+
+CREATE ROLE cliente_role LOGIN PASSWORD '12345678';
+GRANT SELECT ON Estoque.livro, Clientes_Info.cliente, Clientes_Info.carrinho,
+    Clientes_Info.carrinho_livro, Compras_Info.compra TO cliente_role;
+GRANT INSERT ON Clientes_Info.cliente, Clientes_Info.carrinho,
+    Clientes_Info.carrinho_livro TO cliente_role;
+GRANT UPDATE ON Clientes_Info.cliente, Clientes_Info.carrinho_livro TO cliente_role;
+GRANT DELETE ON Clientes_Info.carrinho_livro TO cliente_role;
+
+
+GRANT USAGE ON SCHEMA vendedores_info, Clientes_Info, Compras_Info, Estoque TO vendedor_role;
+GRANT USAGE ON SCHEMA Clientes_Info, Compras_Info, Estoque TO cliente_role;
+GRANT USAGE ON SCHEMA vendedores_info, Clientes_Info, Compras_Info, Estoque TO dono_livraria;

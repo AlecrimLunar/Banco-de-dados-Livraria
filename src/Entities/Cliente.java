@@ -1,15 +1,12 @@
 package Entities;
 
-import Controle.ConexaoException;
-import Controle.GerenciaCon;
-import Controle.NaoTemConexaoException;
-import Controle.FuncoesEstaticas;
+import Controle.*;
 
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.Scanner;
 
-public class Cliente extends GerenciaCon {
+public class Cliente extends GerenciaBd {
     private Integer id;
     private String nome;
     private Long cpf;

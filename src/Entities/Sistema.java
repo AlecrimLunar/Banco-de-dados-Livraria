@@ -7,7 +7,7 @@ import Controle.NaoTemConexaoException;
 import java.sql.SQLException;
 import java.util.*;
 
-public class Sistema extends Controle.GerenciaCon {
+public class Sistema extends Controle.GerenciaBd {
 
     private static FuncoesEstaticas fun;
     private static Carrinho carrinho;
@@ -80,7 +80,7 @@ public class Sistema extends Controle.GerenciaCon {
         }
     }
 
-    public static void Login(Scanner sc, Boolean c, boolean compra) throws NaoTemConexaoException, SQLException, ConexaoException {
+    public void Login(Scanner sc, Boolean c, boolean compra) throws NaoTemConexaoException, SQLException, ConexaoException {
         boolean loginEfetuado = false;
 
         String tabela = "";
@@ -127,7 +127,7 @@ public class Sistema extends Controle.GerenciaCon {
         }
     }
 
-    public static void Cadastrar(Scanner sc, boolean compra) throws ConexaoException, NaoTemConexaoException, SQLException {
+    public void Cadastrar(Scanner sc, boolean compra) throws ConexaoException, NaoTemConexaoException, SQLException {
         String nome, cpf, email, senha, rua, user;
         boolean isF, isS, one;
         int numero;
@@ -201,4 +201,35 @@ public class Sistema extends Controle.GerenciaCon {
         Login(sc, true, compra);
     }
 
+    public void cadastraVendedor(Scanner tc){
+        while (true) {
+            System.out.print("INSIRA AS INFORMAÇÕES:\nNome: ");
+            String nome = tc.nextLine();
+
+            System.out.print("CPF (Apenas números): ");
+            String CPF = tc.nextLine();
+
+            System.out.print("Nome de acesso: ");
+            String user = tc.nextLine();
+
+            System.out.print("Senha de acesso: ");
+            String senha = tc.nextLine();
+
+
+            System.out.print("-------------------------------------------------------------------------" +
+                    "\n\nMUITO BEM, VERIFIQUE SE AS INFORMAÇÕES ESTÃO CORRETAS. SE SIM DIGITE " +
+                    "'Sim', SE NÃO DIGITE 'Não'\nNome: " + nome + "\nCPF: " + CPF + "\n");
+
+            if (tc.nextLine().equalsIgnoreCase("sim")) {
+                String insert = "'" + nome + "', '" + user + "', '" + CPF + "', '" + senha + "'";
+
+                if (controle.Insert("vendedor", insert, false, "nome, usuario, cpf, senha") != -2) {
+                    System.out.println("CADASTRO CONCLUÍDO COM SUCESSO! PARA LOGAR, UTILIZE O USUÁRIO: " +
+                            user + " E A " +
+                            "SENHA INFORMADA.");
+                    break;
+                }
+            }
+        }
+    }
 }

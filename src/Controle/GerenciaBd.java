@@ -239,7 +239,7 @@ public abstract class GerenciaBd implements AutoCloseable{
      * retorna o erro de não ter conexão caso ele não consiga criar
      * a conexão
      */
-    protected boolean criaCon(int quem) throws ConexaoException{
+    protected void criaCon(int quem) throws SQLException{
 
         String dbURL = "";
         String login = "";
@@ -264,10 +264,8 @@ public abstract class GerenciaBd implements AutoCloseable{
         }
         try {
             connection = DriverManager.getConnection(dbURL, login, password);
-            return true;
-        } catch (Exception e){
-            e.printStackTrace();
-            throw new ConexaoException();
+        } finally {
+            connection = null;
         }
     }
 
