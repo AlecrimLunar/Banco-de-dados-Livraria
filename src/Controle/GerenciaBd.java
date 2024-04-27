@@ -739,7 +739,57 @@ public abstract class GerenciaBd implements AutoCloseable{
         if (connection != null){
             try {
                 String tabela = "Estoque.livro";
-                String mudancas = "id_livro = id_livro - " + quantidade;
+                String mudancas = "id_livro = quantidade_estoque - " + quantidade;
+                String condicao = "id_livro = " + idLivro;
+
+                return update(tabela, mudancas, condicao, connection);
+
+            } catch (SQLException e) {
+                /*
+                 * Se der erro, vai tentar fechar a conexão atual.
+                 */
+                try {
+                    close();
+
+                } catch (SQLException f) {
+                    /*
+                     * Se não conseguir ele informa
+                     * a quem o chamou que não foi possível
+                     * encerrar a conexão com o banco e que
+                     * ela é uma conexão defeituosa.
+                     */
+                    throw new ConexaoException();
+                } try {
+                    /*
+                     * O sistema tentar criar outra conexão.
+                     */
+
+                    criaCon(usuarioBanco);
+                } catch (SQLException f){
+                    /*
+                     * Caso ele não consiga, é necessário avisar
+                     * que existe um grave problema: não existe conexão
+                     * com o banco de dados.
+                     */
+                    throw new NaoTemConexaoException();
+                }
+            }
+            /*
+             * Caso tenha sido possível resolver os erros, a função avisa que ela
+             * teve um comportamento inesperado e foi possível resolver ele,
+             * por isso ela pode ser chamada novamente.
+             */
+            return -1;
+        }
+        throw new NaoTemConexaoException();
+    }
+
+    protected int adicionaQuantidadeLivroEstoque(int idLivro, int quantidade)
+            throws NaoTemConexaoException, ConexaoException {
+        if (connection != null){
+            try {
+                String tabela = "Estoque.livro";
+                String mudancas = "id_livro = quantidade_estoque + " + quantidade;
                 String condicao = "id_livro = " + idLivro;
 
                 return update(tabela, mudancas, condicao, connection);
