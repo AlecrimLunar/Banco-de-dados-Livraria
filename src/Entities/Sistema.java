@@ -10,10 +10,10 @@ import java.util.*;
 public class Sistema extends Controle.GerenciaCon {
 
     private static FuncoesEstaticas fun;
-    private static LinkedList<Livro> carrinho;
+    private static Carrinho carrinho;
     public Sistema() {
         fun = new FuncoesEstaticas();
-        carrinho = new LinkedList<>();
+        carrinho = new Carrinho();
         setUsuarioBanco(0);
     }
 
@@ -42,17 +42,17 @@ public class Sistema extends Controle.GerenciaCon {
                 case 1 -> {
                     System.out.print("Adicionar " + destaques.get(0).getNome() + " ao carrinho?\n");
                     if (sc.nextLine().equalsIgnoreCase("sim"))
-                        carrinho.add(destaques.get(0));
+                        carrinho.setLivro(destaques.get(0));
                 }
                 case 2 -> {
                     System.out.print("Adicionar " + destaques.get(1).getNome() + " ao carrinho?\n");
                     if (sc.nextLine().equalsIgnoreCase("sim"))
-                        carrinho.add(destaques.get(1));
+                        carrinho.setLivro(destaques.get(1));
                 }
                 case 3 -> {
                     System.out.print("Adicionar " + destaques.get(2).getNome() + " ao carrinho?\n");
                     if (sc.nextLine().equalsIgnoreCase("sim"))
-                        carrinho.add(destaques.get(2));
+                        carrinho.setLivro(destaques.get(2));
                 }
 
                 case 4 -> carrinho = fun.Pesquisa(sc, carrinho);
@@ -63,13 +63,13 @@ public class Sistema extends Controle.GerenciaCon {
                     if(sc.nextLine().equalsIgnoreCase("sim")){
                         System.out.print("""
                         Para finalizar a compra é necessário ter um conta criada.
-                        Por favor faça o login.
+                        Por favor faça o login ou crie uma conta.
                         """);
-                        Login(sc, true);
+                        Login(sc, true, true);
                     }
                 }
-                case 6 -> Login(sc, null);
-                case 7 -> Cadastrar(sc);
+                case 6 -> Login(sc, null, false);
+                case 7 -> Cadastrar(sc, false);
                 case 0 -> {
                     System.out.print("Tem certeza que deseja sair?\n");
                     if (sc.nextLine().equalsIgnoreCase("sim"))
@@ -80,7 +80,7 @@ public class Sistema extends Controle.GerenciaCon {
         }
     }
 
-    public static void Login(Scanner sc, Boolean c) throws NaoTemConexaoException, SQLException, ConexaoException {
+    public static void Login(Scanner sc, Boolean c, boolean compra) throws NaoTemConexaoException, SQLException, ConexaoException {
         boolean loginEfetuado = false;
 
         String tabela = "";
@@ -90,38 +90,44 @@ public class Sistema extends Controle.GerenciaCon {
         } else if(c) {
             tabela = "clientes_info.cliente";
         }
-        String user = "";
-        String senha = "";
-        while(!loginEfetuado) {
-            System.out.print("Usuário: ");
-            user = sc.nextLine();
 
-            System.out.print("Senha: ");
-            senha = sc.nextLine();
-
-            int aux = login(user, senha, tabela);
-
-            switch (aux) {
-                case -1 -> System.out.println("Erro no banco");
-                case 0 -> System.out.println("Usuário não existente");
-                case 1 -> {
-                    System.out.println("login efetuado com sucesso");
-                    loginEfetuado = true;
-                }
-                case 2 -> System.out.println("Senha incorreta");
-            }
-        }
-
-        if(tabela.equalsIgnoreCase("vendedores_info.vendedor")){
-            Vendedor vendedor = fun.recuperaVendedor(user, senha);
-            //v.menuVendedor();
+        System.out.print("Deseja realizar [1]-login ou [2]-criar uma conta?\n");
+        if("2".equalsIgnoreCase(sc.nextLine())){
+            Cadastrar(sc, compra);
         } else {
-            Cliente cliente = fun.recuperaCliente(user, senha, carrinho);
-            cliente.MenuCliente(sc);
+            String user = "";
+            String senha = "";
+            while (!loginEfetuado) {
+                System.out.print("Usuário: ");
+                user = sc.nextLine();
+
+                System.out.print("Senha: ");
+                senha = sc.nextLine();
+
+                int aux = login(user, senha, tabela);
+
+                switch (aux) {
+                    case -1 -> System.out.println("Erro no banco");
+                    case 0 -> System.out.println("Usuário não existente");
+                    case 1 -> {
+                        System.out.println("login efetuado com sucesso");
+                        loginEfetuado = true;
+                    }
+                    case 2 -> System.out.println("Senha incorreta");
+                }
+            }
+
+            if (tabela.equalsIgnoreCase("vendedores_info.vendedor")) {
+                Vendedor vendedor = fun.recuperaVendedor(user, senha);
+                //v.menuVendedor();
+            } else {
+                Cliente cliente = fun.recuperaCliente(user, senha, carrinho);
+                cliente.MenuCliente(sc, compra);
+            }
         }
     }
 
-    public static void Cadastrar(Scanner sc) throws ConexaoException, NaoTemConexaoException, SQLException {
+    public static void Cadastrar(Scanner sc, boolean compra) throws ConexaoException, NaoTemConexaoException, SQLException {
         String nome, cpf, email, senha, rua, user;
         boolean isF, isS, one;
         int numero;
@@ -192,7 +198,7 @@ public class Sistema extends Controle.GerenciaCon {
         int id = InsertRetornando("clientes_info.client", "senha, usuario, nome, cpf, rua, numero, email, is_flamengo, is_sousa, one_piece",
                 senha + user + nome + cpf + rua + numero + email + isF + isS + one);
         novoCliente.setId(id);
-        Login(sc, true);
+        Login(sc, true, compra);
     }
 
 }

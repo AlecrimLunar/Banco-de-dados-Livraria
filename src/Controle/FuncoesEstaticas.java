@@ -1,5 +1,6 @@
 package Controle;
 
+import Entities.Carrinho;
 import Entities.Cliente;
 import Entities.Livro;
 import Entities.Vendedor;
@@ -7,12 +8,10 @@ import Entities.Vendedor;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Scanner;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.StringJoiner;
 
 public class FuncoesEstaticas extends GerenciaCon {
     public static void clearBuffer(Scanner scanner) {
@@ -166,8 +165,9 @@ public class FuncoesEstaticas extends GerenciaCon {
         }
 
         sb.append("+===========================================+===========================================+===========================================+\n");
-        sb.append("|" + AdicionaEspacos("R$ " + livros.get(0).getPreco()) + "|" + AdicionaEspacos("R$ " + livros.get(1).getPreco()) + "|" +
-                AdicionaEspacos("R$ " + livros.get(2).getPreco()) + "|\n");
+        sb.append("|" + AdicionaEspacos("R$ " + String.format("%.2f", livros.get(0).getPreco())) + "|" + AdicionaEspacos("R$ " +
+                String.format("%.2f", livros.get(1).getPreco())) + "|" +
+                AdicionaEspacos("R$ " + String.format("%.2f", livros.get(2).getPreco())) + "|\n");
         sb.append("+===========================================+===========================================+===========================================+\n");
 
         return sb.toString();
@@ -201,7 +201,6 @@ public class FuncoesEstaticas extends GerenciaCon {
                 nome +
                 " ".repeat(espDir);
     }
-
 
     /**
      * Serve para o cliente pesquisar o livro tanto pelo nome, quanto autor ou genero.
@@ -266,7 +265,7 @@ public class FuncoesEstaticas extends GerenciaCon {
         return new Vendedor(rt.getInt("id_vendedor"), rt.getString("nome"), Long.parseLong(rt.getString("cpf")));
     }
 
-    public Cliente recuperaCliente(String user, String senha, LinkedList<Livro> carrinho) throws SQLException, NaoTemConexaoException {
+    public Cliente recuperaCliente(String user, String senha, Carrinho carrinho) throws SQLException, NaoTemConexaoException {
 
         ResultSet rt = Select("vendedores_info.vendedor as v", "v.*", "v.usuario = " + user + "AND v.senha = " + senha);
         assert rt != null;
@@ -276,7 +275,7 @@ public class FuncoesEstaticas extends GerenciaCon {
                 rt.getBoolean("is_sousa"), rt.getString("usuario"), rt.getString("senha"), carrinho);
     }
 
-    public LinkedList<Livro> Pesquisa(Scanner sc, LinkedList<Livro> carrinho) throws SQLException, NaoTemConexaoException {
+    public Carrinho Pesquisa(Scanner sc, Carrinho carrinho) throws SQLException, NaoTemConexaoException {
         LinkedList<Livro> l = new LinkedList<>();
 
         while(true) {
@@ -325,7 +324,7 @@ public class FuncoesEstaticas extends GerenciaCon {
                 while(true) {
 
                     if (aux > 0 && aux < l.size()) {
-                        carrinho.add(l.get(aux - 1));
+                        carrinho.setLivro(l.get(aux - 1));
                         System.out.println("""
                                 Livro adicionado ao carrinho!
                                 Deseja adicionar outro?
@@ -342,7 +341,7 @@ public class FuncoesEstaticas extends GerenciaCon {
         }
     }
 
-    public LinkedList<Livro> Carrinho(Scanner sc, LinkedList<Livro> carrinho) {
+    public Carrinho Carrinho(Scanner sc, Carrinho carrinho) {
 
         if(carrinho.isEmpty()){
             System.out.print("""
@@ -356,19 +355,19 @@ public class FuncoesEstaticas extends GerenciaCon {
                                 Seu carrinho:
                                 """);
             while(!carrinho.isEmpty()){
-                PrintLivro(carrinho);
+                System.out.print(carrinho + "\n");
                 System.out.print("""
                         Deseja retirar algum do carrinho?
                         (Digite o número que se encontra antes do nome do livro para retirá-lo)
                         (Caso não queira alterar o carrinho digite '0')
                         """);
                 int aux = Integer.parseInt(sc.nextLine());
-                if (aux > 0 && aux < carrinho.size()) {
-                    carrinho.remove(aux - 1);
+                if (aux > 0 && aux < carrinho.getLivros().size()) {
+                    carrinho.removeLivro(aux - 1);
                     System.out.println("""
                                 Livro reirado do carrinho!
                                 """);
-                } else if (aux > carrinho.size()) {
+                } else if (aux > carrinho.getLivros().size()) {
                     System.out.println("Livro inválido");
                 } else if(aux == 0){
                     break;
@@ -377,6 +376,79 @@ public class FuncoesEstaticas extends GerenciaCon {
             System.out.print("========================================================\n");
         }
         return carrinho;
+    }
+
+    public void Compra(Scanner sc, Carrinho carrinho, boolean[] desc, int idCliente) throws NaoTemConexaoException {
+        double precoT = 0, precoD;
+
+        System.out.print("""
+                        ================================================
+                        FINALIZAR COMPRA
+                        ================================================
+                        """
+                );
+        System.out.println(carrinho);
+
+        for(Livro l : carrinho.getLivros()){
+            precoT += l.getPreco();
+        }
+
+        if(desc[0] || desc[1] || desc[2]){
+
+            String des = desc[0] ? "assiste One Piece" : desc[1] ? "torce pro Flamengo" : "é de Sousa";
+            precoD = precoT/0.7;
+            System.out.println("Preço total: R$" + String.format("%.2f", precoT) +
+                    "\nComo você " + des + "você recebe um desconto de 30%!\n" +
+                    "Preço atual: R$" + String.format("%.2f", precoD)
+            );
+
+        } else {
+            precoD = precoT;
+            System.out.print("Preço total: R$" + String.format("%.2f", precoD));
+        }
+
+        System.out.print("""
+
+                ================================================
+                O pagamento será feito por meio de:
+                1 - Berries
+                2 - Pix
+                3 - Boleto
+                4 - Cartão
+                0 - cancelar
+                """);
+
+        int a = Integer.parseInt(sc.nextLine());
+
+        switch (a) {
+            case 1 -> SolicitarCompra(1, precoD, idCliente, carrinho.getId());
+            case 2 -> SolicitarCompra(2, precoD, idCliente, carrinho.getId());
+            case 3 -> SolicitarCompra(3, precoD, idCliente, carrinho.getId());
+            case 4 -> SolicitarCompra(4, precoD, idCliente, carrinho.getId());
+            case 0 -> System.out.println("COMPRA CANCELADA");
+            default -> System.out.println("Opção inválida");
+        }
+
+
+    }
+
+    public static void SolicitarCompra(int tipoP, double precoT, int id_cliente, int id_carrinho) throws NaoTemConexaoException {
+        Date date = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        String formaP = tipoP == 1 ? "Berries" : tipoP == 2 ? "Pix" : tipoP == 3 ? "Boleto" : "Cartão";
+
+        int id = InsertRetornando("compra", "forma_pagamento, data, valor, id_carrinho, id_cliente",
+                tipoP + "', date('" + sdf.format(date) + "'), " + precoT + ", " + id_carrinho + ", " + id_cliente);
+
+        if(id > 0){
+            System.out.print("================================================\n" +
+                    "COMPRA FINALIZADA\n" +
+                    "================================================\n" +
+                    "O seu pedido está em processamento! Logo logo será aprovada, não se preocupe!\n" +
+                    "Número do pedido: " + id);
+        } else if(id == 0){
+            System.out.print("Erro no cadastro da compra");
+        }
     }
 
     /* esse método irá verificar se alguma palavra reservada

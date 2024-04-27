@@ -35,21 +35,13 @@ public class Livro {
         return autor;
     }
 
-    public String getGenero() {
-        return genero;
-    }
-
     public String getTipo() {
         return tipo;
     }
 
-    public Boolean getMari() {
-        return mari;
-    }
-
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(nome + ", " + autor + "\nR$ " + String.format("%02f", preco) + "\n" + tipo + "\n");
+        sb.append(nome + ", " + autor + "\nR$ " + String.format("%.2f", preco) + "\n" + tipo + "\n");
         sb.append(getGeneroAndMari());
         return sb.toString();
     }

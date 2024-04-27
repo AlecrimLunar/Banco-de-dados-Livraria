@@ -20,12 +20,13 @@ public class Cliente extends GerenciaCon {
     private Boolean souza;
     private String user;
     private String senha;
-    private static LinkedList<Livro> carrinho;
+    private static Carrinho carrinho;
     private static FuncoesEstaticas fun;
+    private static LinkedList<Integer> pedidos;
 
     public Cliente(String nome, Long cpf, String rua, int numero,
                    Boolean onePiece, Boolean flamengo, Boolean souza, String user,
-                   String senha, LinkedList<Livro> carrinho) {
+                   String senha, Carrinho carrinho) {
         this.nome = nome;
         this.cpf = cpf;
         this.rua = rua;
@@ -39,7 +40,12 @@ public class Cliente extends GerenciaCon {
         fun = new FuncoesEstaticas();
     }
 
-    public void MenuCliente(Scanner sc) throws NaoTemConexaoException, SQLException, ConexaoException {
+    public void MenuCliente(Scanner sc, boolean compra) throws NaoTemConexaoException, SQLException {
+
+        if(compra){
+            
+        }
+        /*Tem que ter uma função que vai buscar o carrinho anterior do cara*/
         LinkedList<Livro> destaques = fun.Destaques(0);
 
         System.out.print("""
@@ -65,17 +71,17 @@ public class Cliente extends GerenciaCon {
                 case 1 -> {
                     System.out.print("Adicionar " + destaques.get(0).getNome() + " ao carrinho?\n");
                     if (sc.nextLine().equalsIgnoreCase("sim"))
-                        carrinho.add(destaques.get(0));
+                        carrinho.setLivro(destaques.get(0));
                 }
                 case 2 -> {
                     System.out.print("Adicionar " + destaques.get(1).getNome() + " ao carrinho?\n");
                     if (sc.nextLine().equalsIgnoreCase("sim"))
-                        carrinho.add(destaques.get(1));
+                        carrinho.setLivro(destaques.get(1));
                 }
                 case 3 -> {
                     System.out.print("Adicionar " + destaques.get(2).getNome() + " ao carrinho?\n");
                     if (sc.nextLine().equalsIgnoreCase("sim"))
-                        carrinho.add(destaques.get(2));
+                        carrinho.setLivro(destaques.get(2));
                 }
 
                 case 4 -> carrinho = fun.Pesquisa(sc, carrinho);
@@ -84,7 +90,7 @@ public class Cliente extends GerenciaCon {
 
                     System.out.print("Deseja finalizar a compra?\n");
                     if(sc.nextLine().equalsIgnoreCase("sim")){
-                        //compra();
+                        fun.Compra(sc, carrinho, new boolean[]{getOnePiece(), getOnePiece(), getSouza()}, getId());
                     }
                 }
                 case 6 ->{
