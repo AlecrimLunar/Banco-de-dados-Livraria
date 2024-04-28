@@ -614,7 +614,7 @@ public class Funcoes extends GerenciaBd {
     }
 
     public boolean regexNum(String s){
-        return Pattern.matches("[0-9]+", s);
+        return Pattern.matches("[0-9.]+", s);
     }
 
 
