@@ -1,47 +1,61 @@
 package Entities;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
 
+/**
+ * Classe responsável por guardar as informações das compras.
+ * É útil na classe vendedor para guardar as compras que necessitam
+ * de ser confirmadas.
+ */
 public class Compra {
-    private int id;
-    private String formaP;
-    private Date date;
+    private int idCompra;
+    private String formaPagamento;
+    private Date data;
     private int valor;
-    private int idV;
-    private int idCarrinho;
-    private int idC;
+    private int id_carrinho;
+    private int idVendedor;
+    private ArrayList<Livro> livrosAdquiridos;
 
-    public Compra() {
-        compra = new LinkedList<Livro>();
-        quantidade = new LinkedList<Integer>();
+    public Compra(int idCompra, String formaPagamento, Date data,
+                  int valor, int id_carrinho, int idVendedor){
+        this.idCompra = idCompra;
+        this.formaPagamento = formaPagamento;
+        this.data = data;
+        this.valor = valor;
+        this.id_carrinho = id_carrinho;
+        this.idVendedor = idVendedor;
+        livrosAdquiridos = new ArrayList<>();
     }
 
-    /*adicionei esse quantidade pq é importante saber a quantidade d um determinado livro
-    que foi comprado*/
-    public void addLivro(Livro livro, int quantidade){
-        compra.add(livro);
-        this.quantidade.add(quantidade);
+    public Date getData() {
+        return data;
     }
 
-    public void remove (){
-        compra.remove(compra.size() - 1);
+    public int getIdCompra() {
+        return idCompra;
     }
 
-    public void getcompra(){
-        for(int i=0; i<compra.size(); i++)
-            System.out.print("ID: " + compra.get(i).getId() +
-                    " | Nome: " + compra.get(i).getNome() + " | Preço: R$" + compra.get(i).getPreco() + "\n");
+    public int getValor() {
+        return valor;
     }
 
-    public int getsize(){
-        return compra.size();
-    }
-    public int getQuantidade(int index){
-        return quantidade.get(index);
+    public String getFormaPagamento() {
+        return formaPagamento;
     }
 
-    public Livro getLivro(int index){
-        return compra.get(index);
+    public int getId_carrinho() {
+        return id_carrinho;
+    }
+
+    public int getIdVendedor() { return idVendedor; }
+
+    public String toString() {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        return  "Código do pedido:" + getIdCompra() + "\n" +
+                "Forma de pagamento: " + getFormaPagamento() + "\n" +
+                "Data: " + sdf.format(getData()) + "\n" +
+                "Valor total: " + getValor() + "\n";
     }
 }

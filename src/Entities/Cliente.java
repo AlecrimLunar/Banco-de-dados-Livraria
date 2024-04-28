@@ -1,12 +1,10 @@
 package Entities;
 
-import Controle.ConexaoException;
-import Controle.GerenciaCon;
-import Controle.NaoTemConexaoException;
-import Controle.FuncoesEstaticas;
+import Controle.*;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Scanner;
 
@@ -41,7 +39,7 @@ public class Cliente extends GerenciaBd {
         fun = new Funcoes();
     }
 
-    public void MenuCliente(Scanner sc, boolean compra) throws NaoTemConexaoException, SQLException {
+    public void MenuCliente(Scanner sc, boolean compra) throws NaoTemConexaoException, SQLException, ConexaoException {
 
         if(compra){
             fun.Compra(sc, carrinho, new boolean[]{getOnePiece(), getOnePiece(), getSouza()}, getId());
@@ -111,7 +109,7 @@ public class Cliente extends GerenciaBd {
         }
     }
 
-    public void MenuConta(Scanner sc){
+    public void MenuConta(Scanner sc) throws NaoTemConexaoException, SQLException, ConexaoException {
 
         loop:while(true) {
             System.out.println("========================================================\n" +
@@ -127,52 +125,160 @@ public class Cliente extends GerenciaBd {
             int a = Integer.parseInt(sc.nextLine());
 
             switch (a) {
-                case 1 -> {
-
-                }
-                case 2 -> {
-
-                }
+                case 1 -> fun.verPedidos(sc, getId());
+                case 2 -> alteraCliente(sc);
                 case 3 -> {
-
+                    removeCliente(sc);
+                    break loop;
                 }
                 case 0 -> {break loop;}
             }
         }
     }
 
-    public void removeCliente(Scanner tc) {
-        System.out.println("------------------------------------------------------------------------------" +
-                "\nLOGIN CLIENTE");
-        String user;
-        String senha;
-        ResultSet rs;
-        while (true) {
-            System.out.print("Usuário: ");
-            user = tc.nextLine();
-            System.out.print("Senha: ");
-            senha = tc.nextLine();
-            rs = controle.login(user, senha, "cliente");
-            if (rs != null)
-                break;
-            else
-                System.out.print("INFORMAÇÕES INCORRETAS! TENTE NOVAMENTE");
-        }
+    // Ainda tem que fazer o tratamento de erros aq!
+    public void removeCliente(Scanner tc) throws NaoTemConexaoException, ConexaoException {
 
-        System.out.println("RESPONDA COM 'Sim' OU 'Não' \nDESEJA REMOVER SEU CADASTRO DA LOJA? ISSO NÃO" +
-                " IRÁ REMOVER SEU HISTÓRICO DE COMPRAS NO SISTEMA DA LOJA");
+        System.out.print("RESPONDA COM 'Sim' OU 'Não' \nDESEJA REMOVER SEU CADASTRO DA LOJA? ISSO NÃO" +
+                " IRÁ REMOVER SEU HISTÓRICO DE COMPRAS NO SISTEMA DA LOJA\n");
         if (tc.nextLine().equalsIgnoreCase("sim")){
-            try {
-                if (controle.delete("cliente", "id_cliente", rs.getString("id_cliente"),
-                        false))
-                    System.out.println("REMOÇÃO FEITA COM SUCESSO!");
-                else
-                    System.out.println("ERRO! TENTE NOVAMENTE");
-            }catch (Exception e){
-                System.out.println("ERRO: " + e);
-            }
+            delete("cliente", "id_cliente = " + getId());
         }
 
+    }
+
+    // Precisa de tratamento de dados PARA CARALHO, mas são duas da manhã eu vou dormir
+    public void alteraCliente(Scanner tc){
+        try {
+            loop: while (true) {
+                System.out.println("SELECIONE O CAMPO QUE DESEJA ALTERAR \n1 - Nome \n2 - CPF \n3 - Rua \n4 - Número " +
+                        "\n5 - Email \n6 - Torcer para o Flamengo \n7 - Nascer em Sousa \n8 - Assistir a One Piece " +
+                        "\n0 - Voltar ao menu principal");
+                int escolha = Integer.parseInt(tc.nextLine());
+                System.out.println("---------------------------------------------------------------------------");
+
+                switch (escolha) {
+                    case 1 -> {
+                        ArrayList<String> coluna = new ArrayList<>();
+                        ArrayList<String> novoU = new ArrayList<>();
+                        ArrayList<String> condicao = new ArrayList<>();
+
+                        System.out.print("Insira o novo nome: ");
+                        String novo = tc.nextLine();
+
+                        coluna.add("nome");
+                        novoU.add("'" + novo + "'");
+                        condicao.add("id_cliente = " + getId());
+                        variosUpdates("cliente", coluna, novoU, condicao);
+                    }
+
+                    case 2 -> {
+                        ArrayList<String> coluna = new ArrayList<>();
+                        ArrayList<String> novoU = new ArrayList<>();
+                        ArrayList<String> condicao = new ArrayList<>();
+
+                        System.out.print("Insira o novo CPF: ");
+                        int novo = Integer.parseInt(tc.nextLine());
+
+                        coluna.add("cpf");
+                        novoU.add("'" + novo + "'");
+                        condicao.add("id_cliente = " + getId());
+                        variosUpdates("cliente", coluna, novoU, condicao);
+                    }
+
+                    case 3 -> {
+                        ArrayList<String> coluna = new ArrayList<>();
+                        ArrayList<String> novoU = new ArrayList<>();
+                        ArrayList<String> condicao = new ArrayList<>();
+
+                        System.out.print("Insira a nova rua: ");
+                        String novo = tc.nextLine();
+
+                        coluna.add("rua");
+                        novoU.add("'" + novo + "'");
+                        condicao.add("id_cliente = " + getId());
+                        variosUpdates("cliente", coluna, novoU, condicao);
+                    }
+
+                    case 4 -> {
+                        ArrayList<String> coluna = new ArrayList<>();
+                        ArrayList<String> novoU = new ArrayList<>();
+                        ArrayList<String> condicao = new ArrayList<>();
+
+                        System.out.print("Insira o novo número de residência: ");
+                        int novo = Integer.parseInt(tc.nextLine());
+
+                        coluna.add("numero");
+                        novoU.add("" + novo);
+                        condicao.add("id_cliente = " + getId());
+                        variosUpdates("cliente", coluna, novoU, condicao);
+                    }
+
+                    case 5 -> {
+                        ArrayList<String> coluna = new ArrayList<>();
+                        ArrayList<String> novoU = new ArrayList<>();
+                        ArrayList<String> condicao = new ArrayList<>();
+
+                        System.out.print("Insira o novo email: ");
+                        String novo = tc.nextLine();
+
+                        coluna.add("email");
+                        novoU.add("'" + novo + "'");
+                        condicao.add("id_cliente = " + getId());
+                        variosUpdates("cliente", coluna, novoU, condicao);
+                    }
+
+                    case 6 -> {
+                        ArrayList<String> coluna = new ArrayList<>();
+                        ArrayList<String> novoU = new ArrayList<>();
+                        ArrayList<String> condicao = new ArrayList<>();
+
+                        System.out.print("RESPONDA COM 'sim' OU 'não'\nTorce para o flamengo? ");
+                        boolean novo = tc.nextLine().equalsIgnoreCase("sim");
+
+                        coluna.add("is_flamengo");
+                        novoU.add("" + novo);
+                        condicao.add("id_cliente = " + getId());
+                        variosUpdates("cliente", coluna, novoU, condicao);
+                    }
+
+                    case 7 -> {
+                        ArrayList<String> coluna = new ArrayList<>();
+                        ArrayList<String> novoU = new ArrayList<>();
+                        ArrayList<String> condicao = new ArrayList<>();
+
+                        System.out.print("RESPONDA COM 'sim' OU 'não'\nNasceu em Sousa? ");
+                        boolean novo = tc.nextLine().equalsIgnoreCase("sim");
+
+                        coluna.add("is_sousa");
+                        novoU.add("" + novo);
+                        condicao.add("id_cliente = " + getId());
+                        variosUpdates("cliente", coluna, novoU, condicao);
+                    }
+
+                    case 8 -> {
+                        ArrayList<String> coluna = new ArrayList<>();
+                        ArrayList<String> novoU = new ArrayList<>();
+                        ArrayList<String> condicao = new ArrayList<>();
+
+                        System.out.print("RESPONDA COM 'sim' OU 'não'\nAssiste a One Piece? ");
+                        boolean novo = tc.nextLine().equalsIgnoreCase("sim");
+
+                        coluna.add("one_piece");
+                        novoU.add("" + novo);
+                        condicao.add("id_cliente = " + getId());
+                        variosUpdates("cliente", coluna, novoU, condicao);
+                    }
+
+                    case 0 -> {
+                        break loop;
+                    }
+                    default -> System.out.println("OPÇÃO INVÁLIDA!");
+                }
+            }
+        }catch (Exception e){
+            System.out.println("ERRO: " + e);
+        }
     }
 
     public Integer getId() {

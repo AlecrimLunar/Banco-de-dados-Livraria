@@ -1,9 +1,6 @@
 package Controle;
 
-import Entities.Carrinho;
-import Entities.Cliente;
-import Entities.Livro;
-import Entities.Vendedor;
+import Entities.*;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -34,9 +31,10 @@ public class Funcoes extends GerenciaBd {
 
         destaques = RecuperaLivro(rt, false);
 
-        while (rt.next()) { }
         } catch (SQLException | NaoTemConexaoException e) {
             e.printStackTrace();
+        } catch (ConexaoException e) {
+            throw new RuntimeException(e);
         }
         return destaques;
     }
@@ -203,11 +201,7 @@ public class Funcoes extends GerenciaBd {
                 " ".repeat(espDir);
     }
 
-    /**
-     * Serve para o cliente pesquisar o livro tanto pelo nome, quanto autor ou genero.
-     * É retornado o ResultSet com as tabelas lançando para uma LinkedList de livros.
-     * **/
-    public static LinkedList<Livro> PesquisaLivro(String str, String coluna) throws SQLException, NaoTemConexaoException {
+    public LinkedList<Livro> PesquisaLivro(String str, String coluna) throws SQLException, NaoTemConexaoException, ConexaoException {
         LinkedList<Livro> l = new LinkedList<>();
 
         /*
@@ -275,16 +269,6 @@ public class Funcoes extends GerenciaBd {
         }
     }
 
-    public void printCompras(ResultSet rt){
-        int contador = 1;
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-
-        System.out.print(contador + " - Código do pedido:" + rt.getInt("id_compra") + "\n" +
-                "Forma de pagamento: " + rt.getString("forma_pagamento") + "\n" +
-                "Data: " + sdf.format(rt.getDate("data")) + "\n" +
-                "Valor total: " + rt.getInt("valor") + "\n");
-    }
-
     /**
      * Recupera um vendedor pelo seu usuário e senha.
      *
@@ -294,13 +278,13 @@ public class Funcoes extends GerenciaBd {
      * @throws SQLException  Caso ocorra algum erro ao acessar o banco de dados.
      * @throws NaoTemConexaoException  Caso a conexão com o banco de dados não esteja disponível.
      */
-    public Vendedor recuperaVendedor(String user, String senha) throws SQLException, NaoTemConexaoException {
+    public Vendedor recuperaVendedor(String user, String senha) throws SQLException, NaoTemConexaoException, ConexaoException {
         ResultSet rt = Select("vendedores_info.vendedor as v", "v.*", "v.usuario = " + user + "AND v.senha = " + senha);
         assert rt != null;
         return new Vendedor(rt.getInt("id_vendedor"), rt.getString("nome"), Long.parseLong(rt.getString("cpf")));
     }
 
-    public Cliente recuperaCliente(String user, String senha, Carrinho carrinho) throws SQLException, NaoTemConexaoException {
+    public Cliente recuperaCliente(String user, String senha, Carrinho carrinho) throws SQLException, NaoTemConexaoException, ConexaoException {
 
         ResultSet rt = Select("vendedores_info.vendedor as v", "v.*", "v.usuario = " + user + "AND v.senha = " + senha);
         assert rt != null;
@@ -310,16 +294,20 @@ public class Funcoes extends GerenciaBd {
                 rt.getBoolean("is_sousa"), rt.getString("usuario"), rt.getString("senha"), carrinho);
     }
 
-    public LinkedList<Compra> recuperaCompra() throws NaoTemConexaoException {
-        LinkedList<Compra> c = new LinkedList<>();
+    public LinkedList<Compra> recuperaCompra(ResultSet rt) throws SQLException {
+        LinkedList<Compra> compras = new LinkedList<>();
 
-        ResultSet rt = Select("estoque.compra as c", "c.*", "");
-        assert rt!= null;
+        while(rt.next()){
+            Compra c = new Compra(rt.getInt("id_compra"), rt.getNString("forma_pagamento"),
+                    rt.getDate("data"), rt.getInt("valor"), rt.getInt("id_Carrinho"),
+                    rt.getInt("Id_vendedor"));
+            compras.add(c);
+        }
 
-        return c;
+        return compras;
     }
 
-    public Carrinho Pesquisa(Scanner sc, Carrinho carrinho) throws SQLException, NaoTemConexaoException {
+    public Carrinho Pesquisa(Scanner sc, Carrinho carrinho) throws SQLException, NaoTemConexaoException, ConexaoException {
         LinkedList<Livro> l = new LinkedList<>();
 
         while(true) {
@@ -422,7 +410,7 @@ public class Funcoes extends GerenciaBd {
         return carrinho;
     }
 
-    public void Compra(Scanner sc, Carrinho carrinho, boolean[] desc, int idCliente) throws NaoTemConexaoException {
+    public void Compra(Scanner sc, Carrinho carrinho, boolean[] desc, int idCliente) throws NaoTemConexaoException, ConexaoException {
         double precoT = 0, precoD;
 
         System.out.print("""
@@ -476,13 +464,13 @@ public class Funcoes extends GerenciaBd {
 
     }
 
-    public static void SolicitarCompra(int tipoP, double precoT, int id_cliente, int id_carrinho) throws NaoTemConexaoException {
+    public void SolicitarCompra(int tipoP, double precoT, int id_cliente, int id_carrinho) throws NaoTemConexaoException, ConexaoException {
         Date date = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         String formaP = tipoP == 1 ? "Berries" : tipoP == 2 ? "Pix" : tipoP == 3 ? "Boleto" : "Cartão";
 
         int id = InsertRetornando("compra", "forma_pagamento, data, valor, id_carrinho, id_cliente",
-                tipoP + "', date('" + sdf.format(date) + "'), " + precoT + ", " + id_carrinho + ", " + id_cliente);
+                formaP + "', date('" + sdf.format(date) + "'), " + precoT + ", " + id_carrinho + ", " + id_cliente);
 
         if(id > 0){
             System.out.print("================================================\n" +
@@ -495,7 +483,7 @@ public class Funcoes extends GerenciaBd {
         }
     }
 
-    public Carrinho CarregaCarrinho(Carrinho carrinho, int idC) throws SQLException, NaoTemConexaoException {
+    public Carrinho CarregaCarrinho(Carrinho carrinho, int idC) throws SQLException, NaoTemConexaoException, ConexaoException {
 
         /* SELECT cl.id_carrinho, cl.quantidade, l.* FROM clientes_info.carrinho as c
         INNER JOIN clientes_info.carrinho_livro as cl ON c.id_carrinho = cl.id_carrinho
@@ -517,30 +505,19 @@ public class Funcoes extends GerenciaBd {
         return carrinho;
     }
 
-    public void verPedidos(Scanner sc, int id) throws SQLException {
-        int contador = 1;
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+    public void verPedidos(Scanner sc, int id) throws SQLException, NaoTemConexaoException, ConexaoException {
 
-        ResultSet rt = Select("id_compra, forma_pagamento, data, valor, id_vendedor", "compra", "id_cliente = " + id);
+        ResultSet rt = recuperaCompra(id);
+        LinkedList<Compra> compras = recuperaCompra(rt);
 
-        if(!rt.wasNull()){
+        if(!compras.isEmpty()) {
             System.out.print("""
                     ========================================================
                     PEDIDOS
                     ========================================================
                     """);
-            while(rt.next()){
+                printCompras(compras);
 
-                printCompras(rt);
-                System.out.print("Status: ");
-
-                if(rt.getInt("id_vendedor") == -1){
-                    System.out.println("Em processamento.\n");
-                } else {
-                    System.out.println("Aprovado.\n");
-                }
-                contador++;
-            }
             System.out.println("""
                     ========================================================
                     Caso deseje ver mais detalhes digite o numero do pedido
@@ -548,6 +525,23 @@ public class Funcoes extends GerenciaBd {
                     """);
             int a = Integer.parseInt(sc.nextLine());
 
+            while(true) {
+
+                if (a > 0 && a < compras.size()) {
+                    ResultSet rts = recuperaLivrosCompras(compras.get(a-1).getId_carrinho());
+                    LinkedList<Livro> livros = RecuperaLivro(rts, false);
+                    System.out.print("========================================================\n" +
+                            "Pedido - " + compras.get(a-1).getIdCompra() + "\n");
+                    PrintLivro(livros);
+                    System.out.print("""
+                            ========================================================
+                            """);
+                } else if (a > compras.size()) {
+                    System.out.println("compra inválido");
+                } else if(a == 0){
+                    break;
+                }
+            }
 
         } else {
             System.out.println("""
@@ -557,18 +551,20 @@ public class Funcoes extends GerenciaBd {
         }
     }
 
-    public void printCompras(ResultSet rt){
-        try {
-            int contador = 1;
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+    public void printCompras(LinkedList<Compra> c){
 
-            System.out.print(contador + " - Código do pedido:" + rt.getInt("id_compra") + "\n" +
-                    "Forma de pagamento: " + rt.getString("forma_pagamento") + "\n" +
-                    "Data: " + sdf.format(rt.getDate("data")) + "\n" +
-                    "Valor total: " + rt.getInt("valor") + "\n");
-        } catch (SQLException e){
-            //tem q ter algum tratamento dps
+        int contador = 1;
+        for(Compra c1 : c){
+            System.out.print(contador + " - " + c1.toString() + "\nStatus: ");
+
+            if(c1.getIdVendedor() == -1) {
+                System.out.println("Em processamento.\n");
+            } else {
+                System.out.println("Aprovado.\n");
+            }
+            contador++;
         }
+
     }
 
     /* esse método irá verificar se alguma palavra reservada

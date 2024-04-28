@@ -476,8 +476,8 @@ public class Vendedor extends GerenciaBd{
         return null;
     }
 
-    private ArrayList<InfosCompra> trataCompra(ResultSet rt){
-        ArrayList<InfosCompra> retorno = new ArrayList<>();
+    private ArrayList<Compra> trataCompra(ResultSet rt){
+        ArrayList<Compra> retorno = new ArrayList<>();
 
         try {
             while (rt.next()) {
@@ -486,9 +486,9 @@ public class Vendedor extends GerenciaBd{
                 Date data = rt.getDate("data");
                 int valor = rt.getInt("valor");
                 int idCarrinho = rt.getInt("id_carrinho");
+                int idVendedor = rt.getInt("id_vendedor");
 
-                retorno.add(new InfosCompra(idCompra, formaPagamento,
-                        data, valor, idCarrinho));
+                retorno.add(new Compra(idCompra, formaPagamento, data, valor, idCarrinho, idVendedor));
             }
             return retorno;
         } catch (SQLException e){}
