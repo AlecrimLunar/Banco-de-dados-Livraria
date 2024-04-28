@@ -118,7 +118,7 @@ public class Sistema extends Controle.GerenciaBd {
             }
 
             if (tabela.equalsIgnoreCase("vendedores_info.vendedor")) {
-                Vendedor vendedor = fun.recuperaVendedor(user, senha);
+                Vendedor vendedor = fun.recuperaVendedorF(user, senha);
                 //v.menuVendedor();
             } else {
                 Cliente cliente = fun.recuperaCliente(user, senha, carrinho);

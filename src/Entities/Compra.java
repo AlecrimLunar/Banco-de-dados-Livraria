@@ -43,7 +43,7 @@ public class Compra {
     }
 
     public void preencheLivrosAdquiridos(ResultSet rt) throws SQLException {
-        while (rt.next()){
+        while (rt.next()) {
             int idLivro = rt.getInt("id_livro");
             String nome = rt.getNString("nome");
             double preco = Double.parseDouble(rt.getNString
@@ -51,6 +51,8 @@ public class Compra {
 
             livrosAdquiridos.add(new Livro(idLivro, nome, preco));
         }
+    }
+
     }
 
     public void printCompras(){

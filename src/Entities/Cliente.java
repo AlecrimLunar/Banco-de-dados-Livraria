@@ -47,7 +47,6 @@ public class Cliente extends GerenciaBd {
 
         carrinho = fun.CarregaCarrinho(carrinho, getId());
 
-        /*Tem que ter uma função que vai buscar o carrinho anterior do cara*/
         LinkedList<Livro> destaques = fun.Destaques(0);
 
         System.out.print("""
@@ -95,9 +94,7 @@ public class Cliente extends GerenciaBd {
                         fun.Compra(sc, carrinho, new boolean[]{getOnePiece(), getOnePiece(), getSouza()}, getId());
                     }
                 }
-                case 6 ->{
-
-                }
+                case 6 -> MenuConta(sc);
                 case 7 ->{break loop;}
                 case 0 -> {
                     System.out.print("Tem certeza que deseja sair?\n");
@@ -139,8 +136,11 @@ public class Cliente extends GerenciaBd {
     // Ainda tem que fazer o tratamento de erros aq!
     public void removeCliente(Scanner tc) throws NaoTemConexaoException, ConexaoException {
 
-        System.out.print("RESPONDA COM 'Sim' OU 'Não' \nDESEJA REMOVER SEU CADASTRO DA LOJA? ISSO NÃO" +
-                " IRÁ REMOVER SEU HISTÓRICO DE COMPRAS NO SISTEMA DA LOJA\n");
+        System.out.print("""
+                RESPONDA COM 'Sim' OU 'Não'.\s
+                DESEJA REMOVER SEU CADASTRO DA LOJA? ISSO NÃO IRÁ REMOVER SEU HISTÓRICO DE COMPRAS NO SISTEMA DA LOJA!
+                """);
+
         if (tc.nextLine().equalsIgnoreCase("sim")){
             delete("cliente", "id_cliente = " + getId());
         }
@@ -151,11 +151,12 @@ public class Cliente extends GerenciaBd {
     public void alteraCliente(Scanner tc){
         try {
             loop: while (true) {
+
                 System.out.println("SELECIONE O CAMPO QUE DESEJA ALTERAR \n1 - Nome \n2 - CPF \n3 - Rua \n4 - Número " +
                         "\n5 - Email \n6 - Torcer para o Flamengo \n7 - Nascer em Sousa \n8 - Assistir a One Piece " +
                         "\n0 - Voltar ao menu principal");
                 int escolha = Integer.parseInt(tc.nextLine());
-                System.out.println("---------------------------------------------------------------------------");
+                System.out.println("===========================================================================");
 
                 switch (escolha) {
                     case 1 -> {
