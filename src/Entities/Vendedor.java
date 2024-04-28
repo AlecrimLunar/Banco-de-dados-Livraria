@@ -20,240 +20,51 @@ public class Vendedor extends GerenciaBd{
         funcoes = new Funcoes();
     }
 
+    /**
+     * Função que exibe o menu do vendedor e mostra as coisas
+     * que o vendedor pode realizar.
+     * @param tc o scanner para as entradas do usuário.
+     */
+    public void menuVendedor(Scanner tc){
 
+        System.out.print("========================================================" + "\n" +
+                "BEM-VINDO AO MENU DE VENDEDOR");
 
-    public boolean cadastraCliente(Scanner tc) {
+        do{
 
+            System.out.println("""
 
-        while (true) {
-            System.out.println("Insira a seguir as seguintes informações do cliente:");
+                    QUAL A LEITURA DE HOJE?
+                    (ESCOLHA UMA DAS OPÇÕES ABAIXO)
+                    --------------------------------------------------------
+                    1 - Cadastrar livro
+                    2 - Alterar informação de um livro
+                    3 - Atualizar o estoque
+                    4 - Atender a solicitações de compras
+                    5 - Sair
+                    --------------------------------------------------------
+                    """);
+            int a = Integer.parseInt(tc.nextLine());
 
-            System.out.print("Nome: ");
-            String nome = tc.nextLine();
+            switch (a){
+                case 1 -> cadastraLivro(tc);
 
-            System.out.print("CPF: ");
-            String cpf = tc.nextLine();
+                case 2 -> alteraQualLivro(tc);
 
-            System.out.print("Rua: ");
-            String rua = tc.nextLine();
+                case 3 -> adicionaLivrosEstoque(tc);
 
-            System.out.print("Número: ");
-            int numero = Integer.parseInt(tc.nextLine());
+                case 4 -> confirmaCompras(tc);
 
-            System.out.print("Email: ");
-            String email = tc.nextLine();
-
-            System.out.println("\nRESPONDA AS PERGUNTAS ABAIXO COM SIM OU NÃO");
-            System.out.print("Torce para o Flamengo? ");
-            boolean flamengo = tc.nextLine().equalsIgnoreCase("sim");
-
-            System.out.print("É nascido em Sousa? ");
-            boolean sousa = tc.nextLine().equalsIgnoreCase("sim");
-
-            System.out.print("Assiste a One Piece? ");
-            boolean onePiece = tc.nextLine().equalsIgnoreCase("sim");
-
-            System.out.println("\nINSIRA ABAIXO SUAS INFORMAÇÕES PARA LOGIN");
-            String user;
-
-            while (true) {
-                System.out.print("Nome para login no sistema: ");
-                user = tc.nextLine();
-                if (controle.Quantos( "", "cliente", " WHERE usuario = " + "'" + user + "'") > 0)
-                    System.out.println("\nJÁ EXISTE UM USUÁRIO COM ESSE NOME");
-                else
-                    break;
-            }
-
-            System.out.print("Senha para acesso ao sistema: ");
-            String senha = tc.nextLine();
-
-            System.out.println("\nAS INFORMAÇÕES ABAIXO ESTÃO CORRETAS?\nNome: " + nome + "\nCPF: " +
-                    cpf + "\nEndereço: " + rua + " " + numero);
-            if (tc.nextLine().equalsIgnoreCase("sim")) {
-
-                String adiciona = "'" + senha + "', '" + user +  "', '" + nome + "', '" +
-                        cpf + "', '" + rua + "', " + numero + ", '" + email + "', " + flamengo + ", " +
-                        sousa + ", " + onePiece;
-
-                if (controle.Insert("cliente", adiciona, false, "senha, usuario, " +
-                        "nome, cpf, rua, numero, email, is_flamengo, is_sousa, one_piece") != -2) {
-                    System.out.println("CADASTRO CONCLUÍDO COM SUCESSO\n" +
-                            "----------------------------------------------------------------------------");
-                    return true;
-                }
-                else
-                    return false;
-
-            } else {
-                System.out.println("DESEJA INSERIR AS INFORMAÇÕES NOVAMENTE?");
-                if (!tc.nextLine().equalsIgnoreCase("sim")) {
-                    break;
+                case 5 -> {
+                    System.out.print("========================================================");
+                    return;
                 }
 
-
+                default -> System.out.println("OPÇÃO INVÁLIDA!");
             }
-        }
-        return false;
+        }while(true);
+
     }
-   /* public boolean cadastraCompra(Scanner tc){
-        Compra c = new Compra();
-        while(true){
-
-            System.out.print("--------------------------------------------------------------" +
-                    "\nDigite o codigo do livro: ");
-            int idLivro = Integer.parseInt(tc.nextLine());
-
-            if(controle.Quantos( "", "livro", " WHERE id_livro = '" + idLivro + "'") > 0){
-
-                try {
-
-                    ResultSet rt = controle.Select("nome, preco, autor, genero, tipo, " +
-                                    "from_mari, quantidade_estoque", "livro",
-                            "id_livro", Integer.toString(idLivro));
-                    rt.next();
-
-                    //pega a quantidade de livros que tem em estoque
-                    int quantidadeEstoque = rt.getInt("quantidade_estoque");
-                    //verifica se tem esse livro em estoque
-                    if (quantidadeEstoque == 0){
-                        System.out.println("ESSE LIVRO NÃO POSSUI CÓPIAS EM ESTOQUE!");
-                        continue;
-                    }
-
-                    //remove o R$
-                    String trataPreco = rt.getString("preco").substring(3);
-                    //troca a vírgula por ponto
-                    trataPreco = trataPreco.replaceAll(",", ".");
-
-                    Livro l1 = new Livro(idLivro, rt.getString("nome"), Double.parseDouble(trataPreco),
-                            rt.getString("autor"), rt.getString("genero"),
-                            rt.getString("tipo"), rt.getBoolean("from_mari"));
-
-                    while (true) {
-                        System.out.print("\nQuantidade adquirida do livro " + l1.getNome() + ": ");
-                        int quantidadeAdiquirida = Integer.parseInt(tc.nextLine());
-
-                        if (quantidadeAdiquirida <= quantidadeEstoque) {
-                            c.addLivro(l1, quantidadeAdiquirida);
-                            //livroFoiAdquirido(idLivro, quantidadeAdiquirida);
-                            break;
-                        } else {
-                            System.out.println("O NÚMERO DE LIVROS ADQUIRIDOS É MAIOR QUE O NÚMERO" +
-                                    "EM ESTOQUE!\nDESEJA TENTAR NOVAMENTE?");
-                            if (!tc.nextLine().equalsIgnoreCase("sim"))
-                                break;
-                        }
-                    }
-
-                    rt.close();
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-                System.out.println("Livro adicionado");
-
-            } else {
-
-                //adicionei isso aqui pra ter um redirecionamento pra parte de adição de livro
-                System.out.println("LIVRO NÃO ENCONTRADO! DESEJA ADICIONAR UM LIVRO?\n");
-                if (tc.nextLine().equalsIgnoreCase("sim")){
-                    cadastraLivro(tc);
-                    continue;
-                }
-
-            }
-            c.getcompra(); //printa as informaões do livro
-
-            System.out.println("\nO livro adicionado é o correto? ");
-
-            if(tc.nextLine().equalsIgnoreCase("não")){
-                c.remove();
-            }
-
-            System.out.println("\nJá adicionou todos os livros da compra? ");
-            if (tc.nextLine().equalsIgnoreCase("sim")){
-                break;
-            }
-
-        }
-        double precoT = 0;
-
-        for(int i = 0; i < c.getsize(); i++){
-            precoT = precoT + c.getLivro(i).getPreco() * c.getQuantidade(i);
-        }
-
-        System.out.println("\nPreço total: R$" + precoT + "\nQual a forma de pagamento? ");
-        String formaPagamento = tc.nextLine();
-
-        //verifica o cadastro do cliente pra pegar o id dele pra adicionar na compra
-        System.out.print("O cliente possui cadastro na loja?\n");
-        if (!tc.nextLine().equalsIgnoreCase("sim")){
-            System.out.println("PARA REALIZAÇÃO DA COMPRA É NECESSÁRIO ESTAR CADASTRADO!\n" +
-                    "REALIZE O CADASTRO DO CLIENTE");
-
-            cadastraCliente(tc);
-
-            System.out.print("-----------------------------------------------------------\n");
-        }
-
-        String user;
-        String senha;
-        ResultSet rs;
-        while (true) {
-            System.out.print("Usuário: ");
-            user = tc.nextLine();
-            System.out.print("Senha: ");
-            senha = tc.nextLine();
-            rs = controle.login(user, senha, "cliente");
-            if (rs != null)
-                break;
-            else
-                System.out.print("INFORMAÇÕES INCORRETAS! TENTE NOVAMENTE");
-        }
-
-        try {
-            //pega o id do cliente
-            String id_cliente = rs.getString("id_cliente");
-            rs.close();
-
-            Date date = new Date();
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-
-            //insere no carrinho e pega o id dele
-            int id_carrinho = controle.Insert("carrinho", id_cliente + ", -1", true,
-                    "id_cliente, id_compra");
-            if (id_carrinho == -2) {
-                System.out.print("\nERRO");
-                return false;
-            }
-
-            // adiciona todo o carrinho no banco e decrementa a quantidade de livros no banco
-            for (int i = 0; i < c.getsize(); i++){
-                controle.Insert("carrinho_livro", id_carrinho + ", " +
-                                c.getLivro(i).getId().toString() + ", " + c.getQuantidade(i) ,false,
-                        "id_carrinho, id_livro, quantidade");
-            }
-
-            int id_compra = controle.Insert("compra", "'" + formaPagamento
-                    + "', date('" + sdf.format(date) + "'), " + precoT + ", " + this.id + ", " + id_carrinho +
-                    ", " + id_cliente, true, "forma_pagamento, data, valor," +
-                    " id_vendedor, id_carrinho, id_cliente");
-            if (id_compra != -2) {
-                System.out.println("Compra efetuada");
-                controle.update("carrinho", "id_compra", Integer.toString(id_compra),
-                        "WHERE id_compra = " + -1);
-                c = null;
-                return true;
-            }
-        } catch (Exception e){
-            System.out.print("ERRO: " + e);
-        }
-
-        c = null;
-        return false;
-    }*/
 
     /**
      * Função responsável por realizar a alteração da quantidade de livros
@@ -336,6 +147,18 @@ public class Vendedor extends GerenciaBd{
                 """);
                 System.exit(1);
             }
+            try {
+                criaCon(1);
+            } catch (SQLException f) {
+                System.err.println("""
+                            ========================================================
+                            FALHA CRÍTICA NO SISTEMA!
+                            NÃO FOI POSSÍVEL ESTABELECER UMA CONEXÃO COM O BANCO
+                            DE DADOS
+                            ========================================================
+                            """);
+                System.exit(1);
+            }
         } catch (NaoTemConexaoException e){
             try{
                 criaCon(1);
@@ -391,7 +214,7 @@ public class Vendedor extends GerenciaBd{
         String genero = tc.nextLine();
 
         System.out.print("DIGITE O PREÇO (apenas números): ");
-        Double preco = Double.parseDouble(tc.nextLine());
+        double preco = Double.parseDouble(tc.nextLine());
 
         String info = "'" + tipo + "', '" + nome + "', " + Integer.toString(quantidade) + ", "
                 + Boolean.toString(from_mari) + ", '" + autor + "', '" + genero + "', " + Double.toString(preco);
@@ -402,32 +225,12 @@ public class Vendedor extends GerenciaBd{
         try {
             idLivro = Insert("livro", argumento,  "tipo, nome, " +
                     "quantidade_estoque, from_mari, autor, genero, preco");
-        } catch (ConexaoException e){
-            try {
-                close();
-            } catch (SQLException f){
-                System.err.println("""
-                ========================================================
-                FALHA CRÍTICA NO SISTEMA!
-                A CONEXÃO COM O BANCO DE DADOS APRESENTOU ERROS E
-                NÃO FOI POSSÍVEL ENCERRÁ-LA
-                ========================================================
-                """);
-                System.exit(1);
-            }
-        } catch (NaoTemConexaoException e){
-            try{
-                criaCon(1);
-            } catch (SQLException f){
-                System.err.println("""
-                ========================================================
-                FALHA CRÍTICA NO SISTEMA!
-                NÃO FOI POSSÍVEL ESTABELECER UMA CONEXÃO COM O BANCO
-                DE DADOS
-                ========================================================
-                """);
-                System.exit(1);
-            }
+        } catch (ConexaoException e) {
+            trataException(e);
+
+        } catch (NaoTemConexaoException e) {
+            trataException(e);
+
         }
         if (idLivro != -1) {
             System.out.println("\nLIVRO ADICIONADO COM SUCESSO!\nSEU NÚMERO DE CADASTRO É: " + idLivro + "\n");
@@ -436,150 +239,424 @@ public class Vendedor extends GerenciaBd{
         }
     }
 
-    public void confirmarCompra(Scanner tc){
-        ArrayList<Compra> compras;
-        try (ResultSet rt = recuperaComprasNaoConfirmadas()){
-            compras = trataCompra(rt);
-        } catch (SQLException e) {}
-    }
+    /**
+     * Função que realiza a confirmação das compras.
+     * @param tc o scanner para as entradas do usuário.
+     */
+    public void confirmaCompras(Scanner tc) {
+        ArrayList<Compra> compras = null;
 
-    private ArrayList<Compra> trataCompra(ResultSet rt) throws SQLException{
-        ArrayList<Compra> retorno = new ArrayList<>();
-
-        while (rt.next()) {
-            int idCompra = rt.getInt("id_compra");
-            String formaPagamento = rt.getNString("forma_pagamento");
-            Date data = rt.getDate("data");
-            int valor = rt.getInt("valor");
-            int idCarrinho = rt.getInt("id_carrinho");
-            int idVendedor = rt.getInt("id_vendedor");
-
-            retorno.add(new Compra(idCompra, formaPagamento,
-                    data, valor, idCarrinho, idVendedor));
+        try {
+            compras = comprasNaoConfirmadas();
+        } catch (SQLException e){
+            System.err.print("""
+                    Não foi possível recuperar as compras!
+                    Tente novamente mais tarde.
+                    """);
         }
 
-        return retorno;
-    }
+        if (compras == null)
+            return;
 
-    public void alteraLivro(Scanner tc){
-        try {
-            while (true) {
-                System.out.println("----------------------------------------------------------------------" +
-                        "SELECIONE O CAMPO QUE DESEJA ALTERAR \n1 - Nome \n2 - Autor \n3 - Gênero \n 4 - Tipo" +
-                        "\n5 - É de Mari? \n6 - Preço \n7 - Voltar ao menu principal");
-                int escolha = Integer.parseInt(tc.nextLine());
-                System.out.println("---------------------------------------------------------------------------");
+        if (!compras.isEmpty()) {
+            for (Compra compraAtual : compras) {
+                compraAtual.printCompras();
+                System.out.print("Deseja confirmar essa compra?\n");
 
-                switch (escolha) {
-                    case 1 -> {
-                        System.out.print("ID DO LIVRO QUE DESEJA ALTERAR: ");
-                        String id = tc.nextLine();
+                if (tc.nextLine().equalsIgnoreCase("sim")) {
+                    int verifica = -1;
+                    try {
 
-                        System.out.print("Insira o novo nome: ");
-                        String novo = tc.nextLine();
+                        do {
+                            verifica = confirmaCompra(compraAtual.getIdCompra(),
+                                    this.id);
+                        } while (verifica == -1);
 
-                        if (controle.update("livro", "nome", "'" + novo + "'",
-                                "WHERE id_livro = " + id)) {
-                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
-                        } else
-                            System.out.println("ERRO! TENTE NOVAMENTE");
+                    } catch (ConexaoException e) {
+                        trataException(e);
+
+                    } catch (NaoTemConexaoException e) {
+                        trataException(e);
+
                     }
 
-                    case 2 -> {
-                        System.out.print("ID DO LIVRO QUE DESEJA ALTERAR: ");
-                        String id = tc.nextLine();
+                    if (verifica == 1) {
+                        System.out.print(
+                                "\nCompra confirmada com sucesso!\n");
+                    } else
+                        System.out.print("""
 
-                        System.out.print("Insira o novo nome do autor: ");
-                        String novo = tc.nextLine();
+                                Não foi possível efetuar a confirmação da compra!
+                                Tente novamente mais tarde.
+                                """);
+                } else {
+                    int verifica = -1;
+                    try {
+                        do {
+                            verifica = recusaCompra(compraAtual.getIdCompra(), this.id);
+                        } while (verifica == -1);
+                    } catch (ConexaoException e) {
+                        trataException(e);
 
-                        if (controle.update("livro", "autor", "'" + novo + "'",
-                                "WHERE id_livro = " + id)) {
-                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
-                        } else
-                            System.out.println("ERRO! TENTE NOVAMENTE");
+                    } catch (NaoTemConexaoException e) {
+                        trataException(e);
+
                     }
 
-                    case 3 -> {
-                        System.out.print("ID DO LIVRO QUE DESEJA ALTERAR: ");
-                        String id = tc.nextLine();
+                    if (verifica == 1) {
+                        System.out.print(
+                                "\nCompra confirmada com sucesso!\n");
+                    } else
+                        System.out.print("""
 
-                        System.out.print("Insira o novo gênero: ");
-                        String novo = tc.nextLine();
+                                Não foi possível efetuar a confirmação da compra!
+                                Tente novamente mais tarde.
+                                """);
+                }
 
-                        if (controle.update("livro", "genero", "'" + novo + "'",
-                                "WHERE id_livro = " + id)) {
-                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
-                        } else
-                            System.out.println("ERRO! TENTE NOVAMENTE");
-                    }
-
-                    case 4 -> {
-                        System.out.print("ID DO LIVRO QUE DESEJA ALTERAR: ");
-                        String id = tc.nextLine();
-
-                        System.out.print("Insira o novo tipo: ");
-                        String novo = tc.nextLine();
-
-                        if (controle.update("livro", "tipo", "'" + novo + "'",
-                                "WHERE id_livro = " + id)) {
-                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
-                        } else
-                            System.out.println("ERRO! TENTE NOVAMENTE");
-                    }
-
-                    case 5 -> {
-                        System.out.print("ID DO LIVRO QUE DESEJA ALTERAR: ");
-                        String id = tc.nextLine();
-
-                        System.out.println("RESPONDA COM 'sim' OU 'não'");
-                        System.out.print("O livro foi escrito em Mari? ");
-                        boolean novo = tc.nextLine().equalsIgnoreCase("sim");
-
-                        if (controle.update("livro", "nome", Boolean.toString(novo),
-                                "WHERE id_livro = " + id)) {
-                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
-                        } else
-                            System.out.println("ERRO! TENTE NOVAMENTE");
-                    }
-
-                    case 6 -> {
-                        System.out.println("DESEJA ALTERAR O PREÇO DE TODOS OS LIVROS?");
-                        if (tc.nextLine().equalsIgnoreCase("sim")){
-                            System.out.println("EM QUANTOS PORCENTO (%) O PREÇO DOS LIVROS IRÃO AUMENTAR?");
-                            double aumento = Integer.parseInt(tc.nextLine());
-                            aumento = aumento/100 + 1;
-
-                            if (controle.update("livro", "preco", "preco * " +
-                                    Double.toString(aumento), "")) {
-                                System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
-                            } else
-                                System.out.println("ERRO! TENTE NOVAMENTE");
-                        } else {
-                            System.out.print("ID DO LIVRO QUE DESEJA ALTERAR: ");
-                            String id = tc.nextLine();
-
-                            System.out.print("Insira o novo preço do livro: ");
-                            double novo = Double.parseDouble(tc.nextLine());
-
-                            if (controle.update("livro", "nome", Double.toString(novo),
-                                    "WHERE id_livro = " + id)) {
-                                System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
-                            } else
-                                System.out.println("ERRO! TENTE NOVAMENTE");
-                        }
-                    }
-
-                    case 7 -> {
-                        return;
-                    }
-                    default -> System.out.println("OPÇÃO INVÁLIDA!");
+                System.out.print("""
+                        --------------------------------------------------------
+                        Deseja ir para a próxima compra as ser confirmada?
+                        """);
+                if (!tc.nextLine().equalsIgnoreCase("sim")) {
+                    break;
                 }
             }
-        }catch (Exception e){
-            System.out.println("ERRO: " + e);
+        }
+        System.out.print("""
+                ========================================================
+                Todas as compras pendentes foram verificadas!
+                ========================================================
+                """);
+    }
+
+
+    /**
+     * Função responsável por recuperar as compras não confirmadas.
+     * @return Um ArrayList contendo as compras que não foram confirmadas
+     * ainda.<br>
+     * Null caso algum erro tenha acontecido
+     * @throws SQLException
+     */
+    private ArrayList<Compra> comprasNaoConfirmadas() throws SQLException{
+        ArrayList<Compra> compras = new ArrayList<>();
+
+        try (ResultSet rt = recuperaComprasNaoConfirmadas()) {
+            while (rt.next()) {
+                int idCompra = rt.getInt("id_compra");
+                String formaPagamento = rt.getNString("forma_pagamento");
+                Date data = rt.getDate("data");
+                int valor = rt.getInt("valor");
+                int idCarrinho = rt.getInt("id_carrinho");
+
+                compras.add(new Compra(idCompra, formaPagamento,
+                        data, valor, idCarrinho));
+            }
+        } catch (ConexaoException e) {
+            trataException(e);
+        } catch (NaoTemConexaoException e) {
+            trataException(e);
+        }
+
+        for (int i = 0; i <compras.size(); ++i){
+            try(ResultSet rt = recuperaLivrosCompras(compras.get(i).getIdCompra())){
+                compras.get(i).preencheLivrosAdquiridos(rt);
+            } catch (ConexaoException e) {
+                trataException(e);
+
+            } catch (NaoTemConexaoException e) {
+                trataException(e);
+
+            } catch (SQLException e) {
+                System.err.println("""
+                            ========================================================
+                            NÃO FOI POSSÍVEL RECUPERAR OS DADOS.
+                            TENTE NOVAMENTE MAIS TARDE
+                            ========================================================
+                            """);
+                return null;
+            }
+        }
+
+        return compras;
+    }
+
+    /**
+     * Função inicial da alteração de um livro.<br>
+     * Irá receber do usuário qual o livro que ele deseja
+     * alterar.
+     * @param tc o scanner para as entradas do usuário.
+     */
+    public void alteraQualLivro(Scanner tc){
+        String entrada;
+        System.out.print("""
+                ========================================================
+                Bem-vindo ao menu de alterar livros!
+                """);
+        while (true) {
+            System.out.print("--------------------------------------------------------\n" +
+                    "Insira o código do livro a ser alterado ou -1 caso\n" +
+                    "queira sair.\n");
+            do {
+                entrada = tc.nextLine();
+                if (!funcoes.regexNum(entrada))
+                    System.err.print("\nInsira apenas números!\n");
+                else break;
+
+            } while (true);
+
+            if (Integer.parseInt(entrada) == -1)
+                break;
+
+            Livro livro = recebeLivro(Integer.parseInt(entrada));
+
+            if (livro == null) {
+                System.out.print("""
+                        Nenhum livro encontrado.
+                        """);
+                return;
+            }
+
+            System.out.print("O livro abaixo é o livro que você deseja alterar?\n" +
+                    livro);
+
+            if (!tc.nextLine().equalsIgnoreCase("sim")) {
+                continue;
+            }
+
+            alteracoesLivro(livro.getId(), tc);
         }
     }
 
+    /**
+     * Função responsável por realizar as alterações
+     * desejadas no livro.
+     * @param idLivro qual livro deseja ser alterado.
+     * @param tc o scanner para as entradas do usuário.
+     */
+    private void alteracoesLivro(int idLivro, Scanner tc){
+        ArrayList<String> coluna = new ArrayList<>();
+        ArrayList<String> novo = new ArrayList<>();
+        ArrayList<String> condicao = new ArrayList<>();
+
+        String entrada;
+        while (true){
+            System.out.print("""
+                        --------------------------------------------------------
+                        O que você deseja alterar?
+                        ATENÇÃO: Todas as alterações no livro serão salvas
+                        quando 7 (Sair) for selecionado.
+                        --------------------------------------------------------
+                        1 - Nome
+                        2 - Tipo (novo ou usado)
+                        3 - Local de escrita do livro
+                        4 - Autor
+                        5 - Gênero literário
+                        6 - Preço
+                        7 - Sair
+                        --------------------------------------------------------
+                        """);
+            entrada = tc.nextLine();
+
+            if (!funcoes.regexNum(entrada)) {
+                System.err.print("Insira apenas números!");
+                continue;
+            }
+
+            switch (Integer.parseInt(entrada)){
+                case 1 ->{
+                    System.out.print("Insira o novo nome\n");
+
+                    entrada = tc.nextLine();
+                    if (funcoes.regexNome(entrada)) {
+                        novo.add(entrada);
+                        coluna.add("nome");
+                        condicao.add("id_livro = " + idLivro);
+                    }
+                    else
+                        System.err.print("Insira um nome válido! Apenas caracteres são aceitos.\n");
+                }
+                case 2 ->{
+                    System.out.print("Insira o novo tipo\n");
+
+                    entrada = tc.nextLine();
+                    if (funcoes.regexNome(entrada)) {
+                        if (entrada.equalsIgnoreCase("novo") ||
+                                entrada.equalsIgnoreCase("usado")) {
+                            novo.add(entrada);
+                            coluna.add("tipo");
+                            condicao.add("id_livro = " + idLivro);
+                        }
+                        else
+                            System.err.print("Apenas os tipos 'novo' e 'usado' são " +
+                                    "aceitos.");
+                    }
+                    else
+                        System.err.print("Insira um nome válido! Apenas caracteres são aceitos.\n");
+                }
+                case 3 ->{
+                    System.out.print("O livro foi feito em Mari?\n");
+
+                    entrada = tc.nextLine();
+                    if (entrada.equalsIgnoreCase("sim")) {
+                        novo.add("true");
+                        coluna.add("from_mari");
+                        condicao.add("id_livro = " + idLivro);
+                    }
+                    else if (entrada.equalsIgnoreCase("nao") ||
+                            entrada.equalsIgnoreCase("não")) {
+                        novo.add("false");
+                        coluna.add("from_mari");
+                        condicao.add("id_livro = " + idLivro);
+                    }
+                    else
+                        System.out.print("Insira apenas 'sim' ou 'não' como resposta\n");
+                }
+                case 4 ->{
+                    System.out.print("Insira o novo autor\n");
+
+                    entrada = tc.nextLine();
+                    if (funcoes.regexNome(entrada)) {
+                        novo.add(entrada);
+                        coluna.add("autor");
+                        condicao.add("id_livro = " + idLivro);
+                    }
+                    else
+                        System.err.print("Insira um nome válido! Apenas caracteres são aceitos.\n");
+                }
+                case 5 ->{
+                    System.out.print("Insira o novo gênero literário\n");
+
+                    entrada = tc.nextLine();
+                    if (funcoes.regexNome(entrada)) {
+                        novo.add(entrada);
+                        coluna.add("genero");
+                        condicao.add("id_livro = " + idLivro);
+                    }
+                    else
+                        System.err.print("Insira um nome válido! Apenas caracteres são aceitos.\n");
+                }
+                case 6 ->{
+                    System.out.print("Insira o novo preço\n");
+
+                    entrada = tc.nextLine();
+                    if (funcoes.regexNum(entrada)) {
+                        novo.add(entrada);
+                        coluna.add("preco");
+                        condicao.add("id_livro = " + idLivro);
+                    }
+                    else
+                        System.err.print("""
+                                Insira um valor válido! Apenas números são aceitos.
+                                Para números decimais, use o ponto como separação.
+                                """);
+                }
+                case 7 ->{
+                    boolean verificaCon = false;
+                    int verificaUpdate = -1;
+                    do {
+                        try {
+                            verificaUpdate = variosUpdates("livro", coluna, novo, condicao);
+                        } catch (ConexaoException e) {
+                            verificaCon = trataException(e);
+
+                        } catch (NaoTemConexaoException e) {
+                            verificaCon = trataException(e);
+                        }
+                    } while (verificaCon || verificaUpdate == -1);
+                    return;
+                }
+                default -> System.err.print("Insira uma opção válida.");
+            }
+        }
+    }
+
+    /**
+     * Função responsável por converter um resultSet contendo
+     * um livro em um objeto livro.
+     * @param idLivro o id do livro que se deseja criar o objeto.
+     * @return Um objeto Livro contendo as informações do livro
+     * desejado.<br>
+     * Null caso algum erro tenha acontecido.
+     */
+    private Livro recebeLivro(int idLivro){
+        try (ResultSet rt = getLivro(idLivro)){
+            return new Livro(rt);
+        } catch (SQLException e) {
+            System.err.println("""
+                            ========================================================
+                            NÃO FOI POSSÍVEL RECUPERAR OS DADOS.
+                            TENTE NOVAMENTE MAIS TARDE
+                            ========================================================
+                            """);
+            return null;
+        } catch (ConexaoException e) {
+            trataException(e);
+
+        } catch (NaoTemConexaoException e) {
+            trataException(e);
+
+        }
+        return null;
+    }
+
+    /**
+     * Função responsável por tratar a excessão se ter uma
+     * conexão com o banco de dados que está com problemas.
+     * Ela irá tentar fechar ela e depois iniciar uma nova
+     * conexão.
+     * <P>Caso não consiga, irá encerrar o programa.</P>
+     * @param conexaoException
+     */
+    private boolean trataException (ConexaoException conexaoException){
+        try {
+            close();
+        } catch (SQLException f) {
+            System.err.println("""
+                            ========================================================
+                            FALHA CRÍTICA NO SISTEMA!
+                            A CONEXÃO COM O BANCO DE DADOS APRESENTOU ERROS E
+                            NÃO FOI POSSÍVEL ENCERRÁ-LA
+                            ========================================================
+                            """);
+            System.exit(1);
+        }
+        try {
+            criaCon(1);
+        } catch (SQLException f) {
+            System.err.println("""
+                            ========================================================
+                            FALHA CRÍTICA NO SISTEMA!
+                            NÃO FOI POSSÍVEL ESTABELECER UMA CONEXÃO COM O BANCO
+                            DE DADOS
+                            ========================================================
+                            """);
+            System.exit(1);
+        }
+        return true;
+    }
+
+    /**
+     * Função responsável por tratar a excessão de não ter uma conexão
+     * com o banco de dados. Ela irá tentar iniciar uma nova conexão.
+     * <P>Caso não consiga, irá encerrar o programa.</P>
+     * @param naoTemConexaoException
+     */
+    private boolean trataException (NaoTemConexaoException naoTemConexaoException){
+        try {
+            criaCon(1);
+        } catch (SQLException f) {
+            System.err.println("""
+                            ========================================================
+                            FALHA CRÍTICA NO SISTEMA!
+                            NÃO FOI POSSÍVEL ESTABELECER UMA CONEXÃO COM O BANCO
+                            DE DADOS
+                            ========================================================
+                            """);
+            System.exit(1);
+        }
+        return true;
+    }
 
     public Integer getId() {
         return id;
