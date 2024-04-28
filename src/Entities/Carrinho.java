@@ -87,12 +87,12 @@ public class Carrinho {
         }
 
         if(!(x >= livros.size())){
-            for (int j = 0; j < quantidade.size(); j++) {
+            for (Stack<Integer> integers : quantidade) {
 
-                for (int k = 0; k < quantidade.get(j).size(); k++) {
+                for (int k = 0; k < integers.size(); k++) {
 
-                    if (quantidade.get(j).get(k) > x) {
-                        quantidade.get(j).set(k, quantidade.get(j).get(k) - 1);
+                    if (integers.get(k) > x) {
+                        integers.set(k, integers.get(k) - 1);
                     }
                 }
             }

@@ -1,7 +1,9 @@
 package Entities;
 
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -16,16 +18,28 @@ public class Compra {
     private Date data;
     private int valor;
     private int id_carrinho;
+    private int idVendedor;
     private ArrayList<Livro> livrosAdquiridos;
 
     public Compra(int idCompra, String formaPagamento, Date data,
-                  int valor, int id_carrinho){
+                  int valor, int id_carrinho) {
         this.idCompra = idCompra;
         this.formaPagamento = formaPagamento;
         this.data = data;
         this.valor = valor;
         this.id_carrinho = id_carrinho;
         livrosAdquiridos = new ArrayList<>();
+    }
+
+    public Compra(int idCompra, String formaPagamento, Date data,
+                  int valor, int id_carrinho, int idVendedor){
+        this.idCompra = idCompra;
+        this.formaPagamento = formaPagamento;
+        this.data = data;
+        this.valor = valor;
+        this.id_carrinho = id_carrinho;
+        livrosAdquiridos = new ArrayList<>();
+        this.idVendedor = idVendedor;
     }
 
     public void preencheLivrosAdquiridos(ResultSet rt) throws SQLException {
@@ -77,5 +91,15 @@ public class Compra {
 
     public int getId_carrinho() {
         return id_carrinho;
+    }
+
+    public int getIdVendedor() { return idVendedor; }
+
+    public String toString() {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        return  "Código do pedido:" + getIdCompra() + "\n" +
+                "Forma de pagamento: " + getFormaPagamento() + "\n" +
+                "Data: " + sdf.format(getData()) + "\n" +
+                "Valor total: " + getValor() + "\n";
     }
 }
