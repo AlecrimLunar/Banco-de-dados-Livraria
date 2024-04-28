@@ -16,7 +16,7 @@ public abstract class GerenciaBd implements AutoCloseable{
     private Connection connection;
     private int usuarioBanco;
 
-
+    //=============================================================Insert=============================================================
     /**
      * Função responsável por fazer o insert no banco de dados
      * quando se quer receber o id criado para essa nova inserção.
@@ -71,202 +71,6 @@ public abstract class GerenciaBd implements AutoCloseable{
 
             return st.executeUpdate();
 
-        }
-    }
-
-
-    /**
-     * Função responsável por executar qualquer SELECT desejado.
-     * <P>Executa o SQL: SELECT 'coluna' FROM 'tabela' WHERE pesquisa.
-     * @param tabela a tabela onde será executado o SELECT.
-     * @param coluna as colunas que serão retornadas.
-     * @param pesquisa a condição para o retorno.
-     * @param con a conexão com o banco de dados.
-     * @return Um ResultSet com o retornado do banco de dados.
-     * @throws SQLException
-     */
-    private ResultSet Select(String tabela, String coluna, String pesquisa,
-                             Connection con) throws SQLException {
-
-        String consulta = "SELECT " + coluna + " FROM " + tabela +
-                " WHERE " + pesquisa + ";";
-
-        try (PreparedStatement st = con.prepareStatement(consulta)){
-            return st.executeQuery(consulta);
-
-        }
-    }
-
-    /**
-     * Função responsável por realizar updates na tabela. Irá executar o SQL
-     * "UPDATE 'tabela' SET 'coluna' = 'novo' WHERE 'condicao';".
-     * <P>Essa função pode executar múltiplos updates de uma vez em forma de
-     * transações. Para isso, basta enviar os ArrayLists com o mesmo tamanho
-     * contendo todas as informações para cada UPDATE desejado.</P>
-     * <P>Note que essa função realiza o UPDATE em apenas uma coluna por
-     * vez.</P>
-     * @Parâmetros: Recebe o nome da tabela, um ArrayList contendo o nome da
-     * coluna que vai ser atualizada em cada update, um ArrayList contendo o
-     * novo valor que será atribuído a coluna em cada update e a condição das
-     * linhas que serão atualizadas em cada update.
-     * @Retorna:
-     * <ul>
-     * <li>-1 caso algum erro tenha acontecido;</li>
-     * <li>0 caso nenhum update tenha sido realizado;
-     * <li>Qualquer outro inteiro positivo correspondente ao número total de
-     * updates realizados.
-     * </ul>
-     * @Excessão: Caso tenha ocorrido algum erro com o SQL e após o fechamento
-     * da conexão não tenha sido possível criar outra, ele irá retornar
-     * ConexaoException
-     */
-    private int update(String tabela, String mudancas, String condicao,
-                       Connection con) throws SQLException{
-
-        String consulta = "UPDATE " + tabela + " SET " + mudancas +
-                " WHERE " + condicao + ";";
-
-        try (PreparedStatement st = con.prepareStatement(consulta)) {
-
-
-            return st.executeUpdate();
-
-        }
-    }
-
-    /**
-     * Função responsável por executar deletes que respeitem uma condição.
-     * Irá executar um SQL do tipo "DELETE FROM 'tabela' WHERE 'condição';".
-     * @Parâmetros: Recebe o nome da tabela e a condição (que não pode ser
-     * vazia) para o delete.
-     * @Retorna:
-     * <ul>
-     * <li>-1 caso algum erro tenha acontecido;</li>
-     * <li>0 caso nenhum delete tenha sido executado;
-     * <li>Qualquer outro valor inteiro positivo correspondente à quantidade
-     * de linhas deletadas da tabela.
-     * </ul>
-     * @Excessão: Caso tenha havido algum erro com o SQL e após encerrar
-     * a conexão não tenha sido possível criar outra, ele irá retornar
-     * ConexaoException
-     */
-    private int delete(String tabela,
-                       String condicao, Connection con) throws SQLException{
-
-        String consulta = "DELETE FROM " + tabela + " WHERE " + condicao + ";";
-        try (PreparedStatement st = con.prepareStatement(consulta)){
-            return st.executeUpdate();
-        }
-    }
-
-    /**
-     * Função responsável por montar SETs para o update.
-     * <P>Recebe uma string de colunas que serão alteradas
-     * e uma string com os novos valores que serão atribuídos
-     * a essas colunas.
-     * @param coluna as colunas que terão os valores alterados.
-     *               Cada nome de coluna deve estar separado por
-     *               um espaço.
-     * @param novo oas novos valores que serão atribuídos a cada
-     *             colua. Os valores devem estar separados por
-     *             um espaço.
-     * @return
-     */
-    private String montaConsultaUpdate(String coluna, String novo){
-        /*
-         * Primeiro separamos as colunas que serão alteradas
-         * e os valores novos para cada uma dessas colunas.
-         * Cada alteração possui um índice no arrayList e
-         * cada coluna alterada está separada por um espaço.
-         */
-        String mudancas = "";
-        String[]colunasAlteradas = coluna.split(" ");
-        String[]valorColunasAlteradas = novo.split(" ");
-
-        /*
-         * Aqui fazemos a criação do SET do UPDATE.
-         */
-        for (int j = 0; j < colunasAlteradas.length; ++j) {
-            if (j != coluna.length() - 1)
-                mudancas += colunasAlteradas[j] + " = " + valorColunasAlteradas[j] + ", ";
-            else
-                mudancas += colunasAlteradas[j] + " = " + valorColunasAlteradas[j];
-        }
-
-        return mudancas;
-    }
-
-    /**
-     * Cria uma condição de select, update ou delete conforme
-     * as necessidades do banco.
-     * @param condicao a condição inicial para a operação
-     *                 no banco.
-     * @param tabela a tabela onde será realizada a operação.
-     * @return uma string contendo a nova operação.
-     */
-    private String montaCondicao(String condicao, String tabela){
-
-        if (!tabela.equalsIgnoreCase("carrinho_livro") &&
-                !tabela.equalsIgnoreCase("relatorio_venda")) {
-            if (condicao.isEmpty())
-                condicao = "id_" + tabela + " >= 0";
-            else
-                condicao = "id_" + tabela + " >= 0 AND " + condicao;
-
-            return condicao;
-        } else
-            return condicao;
-    }
-
-
-    /**
-     * Função responsável por criar na memória o HashMap
-     * para pegar os nomes das tabelas no banco
-     */
-    private void criaQualNomeTabelaBanco(){
-        qualNomeTabelaBanco.put("livro", "Estoque.livro");
-        qualNomeTabelaBanco.put("vendedor", "Vendedores_Info.vendedor");
-        qualNomeTabelaBanco.put("relatorio", "Vendedores_Info.relatorio");
-        qualNomeTabelaBanco.put("relatorio_venda", "Vendedores_Info.relatorio_venda");
-        qualNomeTabelaBanco.put("cliente", "Clientes_Info.cliente");
-        qualNomeTabelaBanco.put("carrinho", "Clientes_Info.carrinho");
-        qualNomeTabelaBanco.put("carrinho_livro", "Clientes_Info.carrinho_livro");
-        qualNomeTabelaBanco.put("compra", "Compras_Info.compra");
-    }
-
-    /**
-     * função responsável por criar as conexões com o banco de
-     * dados sempre que necessário.
-     * retorna o erro de não ter conexão caso ele não consiga criar
-     * a conexão
-     */
-    protected void criaCon(int quem) throws SQLException{
-
-        String dbURL = "";
-        String login = "";
-        String password = "";
-
-        switch (quem){
-            case 0 -> {
-                dbURL = "jdbc:postgresql://localhost:5432/livraria";
-                login = "cliente_role";
-                password = "12345678";
-            }
-
-            case 1 -> {
-                dbURL = "jdbc:postgresql://localhost:5432/livraria";
-                login = "vendedor_role";
-                password = "123456";
-            }
-        }
-
-        if (qualNomeTabelaBanco == null){
-            criaQualNomeTabelaBanco();
-        }
-        try {
-            connection = DriverManager.getConnection(dbURL, login, password);
-        } finally {
-            connection = null;
         }
     }
 
@@ -412,6 +216,29 @@ public abstract class GerenciaBd implements AutoCloseable{
         throw new NaoTemConexaoException();
     }
 
+    //=============================================================Select=============================================================
+    /**
+     * Função responsável por executar qualquer SELECT desejado.
+     * <P>Executa o SQL: SELECT 'coluna' FROM 'tabela' WHERE pesquisa.
+     * @param tabela a tabela onde será executado o SELECT.
+     * @param coluna as colunas que serão retornadas.
+     * @param pesquisa a condição para o retorno.
+     * @param con a conexão com o banco de dados.
+     * @return Um ResultSet com o retornado do banco de dados.
+     * @throws SQLException
+     */
+    private ResultSet Select(String tabela, String coluna, String pesquisa,
+                             Connection con) throws SQLException {
+
+        String consulta = "SELECT " + coluna + " FROM " + tabela +
+                " WHERE " + pesquisa + ";";
+
+        try (PreparedStatement st = con.prepareStatement(consulta)){
+            return st.executeQuery(consulta);
+
+        }
+    }
+
     /**
      * Função responsável por verificar se algo já existe
      * no banco de dados.
@@ -485,7 +312,6 @@ public abstract class GerenciaBd implements AutoCloseable{
         throw new NaoTemConexaoException();
     }
 
-
     /**
      * Função responsável por executar qualquer SELECT.
      * Executa o SQL: SELECT 'coluna' FROM 'tabela' WHERE 'pesquisa';.
@@ -547,81 +373,79 @@ public abstract class GerenciaBd implements AutoCloseable{
         throw new NaoTemConexaoException();
     }
 
+    //=============================================================Update=============================================================
     /**
-     * Função responsável por verificar se o login inserido
-     * pelo usuário existe no banco de dados.
-     * @param user o nome do login inserido.
-     * @param password a senha referente ao user.
-     * @param tabela a tabela onde essas informações estão
-     *               guardadas.
-     * @return -1 caso algum erro tenha acontecido e a
-     * função tenha conseguido lidar com ele. <br>
-     * 0 caso não tenha sido encontrado o user no banco
-     * de dados.<br>
-     * 1 caso o user tenha sido encontrado e a senha
-     * informada foi correta.<br>
-     * 2 caso o user tenha sido encontrado e a senha
-     * informada foi incorreta.<br>
-     * @throws NaoTemConexaoException quando não há
-     * nenhuma conexão com o banco de dados.
-     * @throws ConexaoException quando a conexão com
-     * o banco de dados existente apresentou algum
-     * problema mas não foi possível fechá-la.
+     * Função responsável por realizar updates na tabela. Irá executar o SQL
+     * "UPDATE 'tabela' SET 'coluna' = 'novo' WHERE 'condicao';".
+     * <P>Essa função pode executar múltiplos updates de uma vez em forma de
+     * transações. Para isso, basta enviar os ArrayLists com o mesmo tamanho
+     * contendo todas as informações para cada UPDATE desejado.</P>
+     * <P>Note que essa função realiza o UPDATE em apenas uma coluna por
+     * vez.</P>
+     * @Parâmetros: Recebe o nome da tabela, um ArrayList contendo o nome da
+     * coluna que vai ser atualizada em cada update, um ArrayList contendo o
+     * novo valor que será atribuído a coluna em cada update e a condição das
+     * linhas que serão atualizadas em cada update.
+     * @Retorna:
+     * <ul>
+     * <li>-1 caso algum erro tenha acontecido;</li>
+     * <li>0 caso nenhum update tenha sido realizado;
+     * <li>Qualquer outro inteiro positivo correspondente ao número total de
+     * updates realizados.
+     * </ul>
+     * @Excessão: Caso tenha ocorrido algum erro com o SQL e após o fechamento
+     * da conexão não tenha sido possível criar outra, ele irá retornar
+     * ConexaoException
      */
-    protected int login(String user, String password, String tabela)
-            throws NaoTemConexaoException, ConexaoException {
+    private int update(String tabela, String mudancas, String condicao,
+                       Connection con) throws SQLException{
 
-        if (connection != null){
-            String pesquisa = "usuario = " + user;
-            try (ResultSet rt = Select(qualNomeTabelaBanco.get(tabela), "*",
-                    pesquisa, connection)){
+        String consulta = "UPDATE " + tabela + " SET " + mudancas +
+                " WHERE " + condicao + ";";
 
-                if (rt.next()){
-                    if (password.equalsIgnoreCase(rt.getString("senha")))
-                        return 1;
-                    else
-                        return 2;
-                }
-                return 0;
+        try (PreparedStatement st = con.prepareStatement(consulta)) {
 
-            } catch (SQLException e) {
-                /*
-                 * Se der erro, vai tentar fechar a conexão atual.
-                 */
-                try {
-                    close();
 
-                } catch (SQLException f) {
-                    /*
-                     * Se não conseguir ele informa
-                     * a quem o chamou que não foi possível
-                     * encerrar a conexão com o banco e que
-                     * ela é uma conexão defeituosa.
-                     */
-                    throw new ConexaoException();
-                } try {
-                    /*
-                     * O sistema tentar criar outra conexão.
-                     */
+            return st.executeUpdate();
 
-                    criaCon(usuarioBanco);
-                } catch (SQLException f){
-                    /*
-                     * Caso ele não consiga, é necessário avisar
-                     * que existe um grave problema: não existe conexão
-                     * com o banco de dados.
-                     */
-                    throw new NaoTemConexaoException();
-                }
-            }
-            /*
-             * Caso tenha sido possível resolver os erros, a função avisa que ela
-             * teve um comportamento inesperado e foi possível resolver ele,
-             * por isso ela pode ser chamada novamente.
-             */
-            return -1;
         }
-        throw new NaoTemConexaoException();
+    }
+
+    /**
+     * Função responsável por montar SETs para o update.
+     * <P>Recebe uma string de colunas que serão alteradas
+     * e uma string com os novos valores que serão atribuídos
+     * a essas colunas.
+     * @param coluna as colunas que terão os valores alterados.
+     *               Cada nome de coluna deve estar separado por
+     *               um espaço.
+     * @param novo oas novos valores que serão atribuídos a cada
+     *             colua. Os valores devem estar separados por
+     *             um espaço.
+     * @return
+     */
+    private String montaConsultaUpdate(String coluna, String novo){
+        /*
+         * Primeiro separamos as colunas que serão alteradas
+         * e os valores novos para cada uma dessas colunas.
+         * Cada alteração possui um índice no arrayList e
+         * cada coluna alterada está separada por um espaço.
+         */
+        String mudancas = "";
+        String[]colunasAlteradas = coluna.split(" ");
+        String[]valorColunasAlteradas = novo.split(" ");
+
+        /*
+         * Aqui fazemos a criação do SET do UPDATE.
+         */
+        for (int j = 0; j < colunasAlteradas.length; ++j) {
+            if (j != coluna.length() - 1)
+                mudancas += colunasAlteradas[j] + " = " + valorColunasAlteradas[j] + ", ";
+            else
+                mudancas += colunasAlteradas[j] + " = " + valorColunasAlteradas[j];
+        }
+
+        return mudancas;
     }
 
     /**
@@ -712,6 +536,349 @@ public abstract class GerenciaBd implements AutoCloseable{
              * por isso ela pode ser chamada novamente.
              */
             return -1;
+        }
+        throw new NaoTemConexaoException();
+    }
+
+    //=============================================================Delete=============================================================
+    /**
+     * Função responsável por executar deletes que respeitem uma condição.
+     * Irá executar um SQL do tipo "DELETE FROM 'tabela' WHERE 'condição';".
+     * @Parâmetros: Recebe o nome da tabela e a condição (que não pode ser
+     * vazia) para o delete.
+     * @Retorna:
+     * <ul>
+     * <li>-1 caso algum erro tenha acontecido;</li>
+     * <li>0 caso nenhum delete tenha sido executado;
+     * <li>Qualquer outro valor inteiro positivo correspondente à quantidade
+     * de linhas deletadas da tabela.
+     * </ul>
+     * @Excessão: Caso tenha havido algum erro com o SQL e após encerrar
+     * a conexão não tenha sido possível criar outra, ele irá retornar
+     * ConexaoException
+     */
+    private int delete(String tabela,
+                       String condicao, Connection con) throws SQLException{
+
+        String consulta = "DELETE FROM " + tabela + " WHERE " + condicao + ";";
+        try (PreparedStatement st = con.prepareStatement(consulta)){
+            return st.executeUpdate();
+        }
+    }
+
+    /**
+     * Função responsável por realizar deletes no banco
+     * de dados.
+     * @param tabela a tabela onde o delete será realizado.
+     * @param condicao a condição para o delete ser realizado.
+     * @return -1 caso algum erro tenha acontecido e a
+     * função tenha conseguido lidar com ele. <br>
+     * Qualquer outro valor inteiro positivo ou zero
+     * representando a quantidade de deletes realizados
+     * no total.
+     * @throws NaoTemConexaoException quando não há
+     * nenhuma conexão com o banco de dados.
+     * @throws ConexaoException quando a conexão com
+     * o banco de dados existente apresentou algum
+     * problema mas não foi possível fechá-la.
+     */
+    protected int delete(String tabela, String condicao)
+            throws NaoTemConexaoException, ConexaoException{
+        if (connection != null) {
+            try {
+
+                condicao = montaCondicao(condicao, tabela);
+                return delete(tabela, condicao, connection);
+
+            } catch (SQLException e) {
+                /*
+                 * Se der erro, vai tentar fechar a conexão atual.
+                 */
+                try {
+                    close();
+
+                } catch (SQLException f) {
+                    /*
+                     * Se não conseguir ele informa
+                     * a quem o chamou que não foi possível
+                     * encerrar a conexão com o banco e que
+                     * ela é uma conexão defeituosa.
+                     */
+                    throw new ConexaoException();
+                } try {
+                    /*
+                     * O sistema tentar criar outra conexão.
+                     */
+
+                    criaCon(usuarioBanco);
+                } catch (SQLException f){
+                    /*
+                     * Caso ele não consiga, é necessário avisar
+                     * que existe um grave problema: não existe conexão
+                     * com o banco de dados.
+                     */
+                    throw new NaoTemConexaoException();
+                }
+            }
+            /*
+             * Caso tenha sido possível resolver os erros, a função avisa que ela
+             * teve um comportamento inesperado e foi possível resolver ele,
+             * por isso ela pode ser chamada novamente.
+             */
+            return -1;
+        }
+        throw new NaoTemConexaoException();
+    }
+
+    //=============================================================Extra=============================================================
+    /**
+     * Cria uma condição de select, update ou delete conforme
+     * as necessidades do banco.
+     * @param condicao a condição inicial para a operação
+     *                 no banco.
+     * @param tabela a tabela onde será realizada a operação.
+     * @return uma string contendo a nova operação.
+     */
+    private String montaCondicao(String condicao, String tabela){
+
+        if (!tabela.equalsIgnoreCase("carrinho_livro") &&
+                !tabela.equalsIgnoreCase("relatorio_venda")) {
+            if (condicao.isEmpty())
+                condicao = "id_" + tabela + " >= 0";
+            else
+                condicao = "id_" + tabela + " >= 0 AND " + condicao;
+
+            return condicao;
+        } else
+            return condicao;
+    }
+
+    /**
+     * Função responsável por criar na memória o HashMap
+     * para pegar os nomes das tabelas no banco
+     */
+    private void criaQualNomeTabelaBanco(){
+        qualNomeTabelaBanco.put("livro", "Estoque.livro");
+        qualNomeTabelaBanco.put("vendedor", "Vendedores_Info.vendedor");
+        qualNomeTabelaBanco.put("relatorio", "Vendedores_Info.relatorio");
+        qualNomeTabelaBanco.put("relatorio_venda", "Vendedores_Info.relatorio_venda");
+        qualNomeTabelaBanco.put("cliente", "Clientes_Info.cliente");
+        qualNomeTabelaBanco.put("carrinho", "Clientes_Info.carrinho");
+        qualNomeTabelaBanco.put("carrinho_livro", "Clientes_Info.carrinho_livro");
+        qualNomeTabelaBanco.put("compra", "Compras_Info.compra");
+    }
+
+    /**
+     * função responsável por criar as conexões com o banco de
+     * dados sempre que necessário.
+     * retorna o erro de não ter conexão caso ele não consiga criar
+     * a conexão
+     */
+    protected void criaCon(int quem) throws SQLException{
+
+        String dbURL = "";
+        String login = "";
+        String password = "";
+
+        switch (quem){
+            case 0 -> {
+                dbURL = "jdbc:postgresql://localhost:5432/livraria";
+                login = "cliente_role";
+                password = "12345678";
+            }
+
+            case 1 -> {
+                dbURL = "jdbc:postgresql://localhost:5432/livraria";
+                login = "vendedor_role";
+                password = "123456";
+            }
+        }
+
+        if (qualNomeTabelaBanco == null){
+            criaQualNomeTabelaBanco();
+        }
+        try {
+            connection = DriverManager.getConnection(dbURL, login, password);
+        } finally {
+            connection = null;
+        }
+    }
+
+    /**
+     * Função responsável por verificar se o login inserido
+     * pelo usuário existe no banco de dados.
+     * @param user o nome do login inserido.
+     * @param password a senha referente ao user.
+     * @param tabela a tabela onde essas informações estão
+     *               guardadas.
+     * @return -1 caso algum erro tenha acontecido e a
+     * função tenha conseguido lidar com ele. <br>
+     * 0 caso não tenha sido encontrado o user no banco
+     * de dados.<br>
+     * 1 caso o user tenha sido encontrado e a senha
+     * informada foi correta.<br>
+     * 2 caso o user tenha sido encontrado e a senha
+     * informada foi incorreta.<br>
+     * @throws NaoTemConexaoException quando não há
+     * nenhuma conexão com o banco de dados.
+     * @throws ConexaoException quando a conexão com
+     * o banco de dados existente apresentou algum
+     * problema mas não foi possível fechá-la.
+     */
+    protected int login(String user, String password, String tabela)
+            throws NaoTemConexaoException, ConexaoException {
+
+        if (connection != null){
+            String pesquisa = "usuario = " + user;
+            try (ResultSet rt = Select(qualNomeTabelaBanco.get(tabela), "*",
+                    pesquisa, connection)){
+
+                if (rt.next()){
+                    if (password.equalsIgnoreCase(rt.getString("senha")))
+                        return 1;
+                    else
+                        return 2;
+                }
+                return 0;
+
+            } catch (SQLException e) {
+                /*
+                 * Se der erro, vai tentar fechar a conexão atual.
+                 */
+                try {
+                    close();
+
+                } catch (SQLException f) {
+                    /*
+                     * Se não conseguir ele informa
+                     * a quem o chamou que não foi possível
+                     * encerrar a conexão com o banco e que
+                     * ela é uma conexão defeituosa.
+                     */
+                    throw new ConexaoException();
+                } try {
+                    /*
+                     * O sistema tentar criar outra conexão.
+                     */
+
+                    criaCon(usuarioBanco);
+                } catch (SQLException f){
+                    /*
+                     * Caso ele não consiga, é necessário avisar
+                     * que existe um grave problema: não existe conexão
+                     * com o banco de dados.
+                     */
+                    throw new NaoTemConexaoException();
+                }
+            }
+            /*
+             * Caso tenha sido possível resolver os erros, a função avisa que ela
+             * teve um comportamento inesperado e foi possível resolver ele,
+             * por isso ela pode ser chamada novamente.
+             */
+            return -1;
+        }
+        throw new NaoTemConexaoException();
+    }
+
+    protected ResultSet Destaques()
+            throws NaoTemConexaoException, ConexaoException {
+
+        if (connection != null) {
+
+            String coluna = "l.*";
+            String tabela = "estoque.livro as l";
+            String pesquisa = "WHERE l.id_livro >= 0 AND l.quantidade_estoque > 0 AND l.id_livro IN " +
+                    "(SELECT cl.id_livro FROM clientes_info.carrinho_livro as cl GROUP BY cl.id_livro ORDER BY COUNT(*) DESC LIMIT 3)";
+
+            try {
+                return Select(tabela, coluna, pesquisa, connection);
+            } catch (SQLException e) {
+                /*
+                 * Se der erro, vai tentar fechar a conexão atual.
+                 */
+                try {
+                    close();
+
+                } catch (SQLException f) {
+                    /*
+                     * Se não conseguir ele informa
+                     * a quem o chamou que não foi possível
+                     * encerrar a conexão com o banco e que
+                     * ela é uma conexão defeituosa.
+                     */
+                    throw new ConexaoException();
+                }
+                try {
+                    /*
+                     * O sistema tentar criar outra conexão.
+                     */
+
+                    criaCon(usuarioBanco);
+                } catch (SQLException f) {
+                    /*
+                     * Caso ele não consiga, é necessário avisar
+                     * que existe um grave problema: não existe conexão
+                     * com o banco de dados.
+                     */
+                    throw new NaoTemConexaoException();
+                }
+            }
+            /*
+             * Caso tenha sido possível resolver os erros, a função avisa que ela
+             * teve um comportamento inesperado e foi possível resolver ele,
+             * por isso ela pode ser chamada novamente.
+             */
+            return null;
+        }
+        throw new NaoTemConexaoException();
+    }
+
+    protected ResultSet pesquisaLivro(String str, String coluna)
+            throws NaoTemConexaoException, ConexaoException {
+
+        if (connection != null) {
+
+            try {
+                return Select("estoque.livro as l", "l." + coluna, "l." + coluna + " LIKE '%" + str +
+                        "%' AND l.quantidade_estoque > 0", connection);
+            } catch (SQLException e) {
+                /*
+                 * Se der erro, vai tentar fechar a conexão atual.
+                 */
+                try {
+                    close();
+
+                } catch (SQLException f) {
+                    /*
+                     * Se não conseguir ele informa
+                     * a quem o chamou que não foi possível
+                     * encerrar a conexão com o banco e que
+                     * ela é uma conexão defeituosa.
+                     */
+                    throw new ConexaoException();
+                }
+                try {
+                    /*
+                     * O sistema tentar criar outra conexão.
+                     */
+
+                    criaCon(usuarioBanco);
+                } catch (SQLException f) {
+                    /*
+                     * Caso ele não consiga, é necessário avisar
+                     * que existe um grave problema: não existe conexão
+                     * com o banco de dados.
+                     */
+                    throw new NaoTemConexaoException();
+                }
+            }
+            /*
+             * Caso tenha sido possível resolver os erros, a função avisa que ela
+             * teve um comportamento inesperado e foi possível resolver ele,
+             * por isso ela pode ser chamada novamente.
+             */
+            return null;
         }
         throw new NaoTemConexaoException();
     }
@@ -872,70 +1039,6 @@ public abstract class GerenciaBd implements AutoCloseable{
     }
 
     /**
-     * Função responsável por realizar deletes no banco
-     * de dados.
-     * @param tabela a tabela onde o delete será realizado.
-     * @param condicao a condição para o delete ser realizado.
-     * @return -1 caso algum erro tenha acontecido e a
-     * função tenha conseguido lidar com ele. <br>
-     * Qualquer outro valor inteiro positivo ou zero
-     * representando a quantidade de deletes realizados
-     * no total.
-     * @throws NaoTemConexaoException quando não há
-     * nenhuma conexão com o banco de dados.
-     * @throws ConexaoException quando a conexão com
-     * o banco de dados existente apresentou algum
-     * problema mas não foi possível fechá-la.
-     */
-    protected int delete(String tabela, String condicao)
-            throws NaoTemConexaoException, ConexaoException{
-        if (connection != null) {
-            try {
-
-                condicao = montaCondicao(condicao, tabela);
-                return delete(tabela, condicao, connection);
-
-            } catch (SQLException e) {
-                /*
-                 * Se der erro, vai tentar fechar a conexão atual.
-                 */
-                try {
-                    close();
-
-                } catch (SQLException f) {
-                    /*
-                     * Se não conseguir ele informa
-                     * a quem o chamou que não foi possível
-                     * encerrar a conexão com o banco e que
-                     * ela é uma conexão defeituosa.
-                     */
-                    throw new ConexaoException();
-                } try {
-                    /*
-                     * O sistema tentar criar outra conexão.
-                     */
-
-                    criaCon(usuarioBanco);
-                } catch (SQLException f){
-                    /*
-                     * Caso ele não consiga, é necessário avisar
-                     * que existe um grave problema: não existe conexão
-                     * com o banco de dados.
-                     */
-                    throw new NaoTemConexaoException();
-                }
-            }
-            /*
-             * Caso tenha sido possível resolver os erros, a função avisa que ela
-             * teve um comportamento inesperado e foi possível resolver ele,
-             * por isso ela pode ser chamada novamente.
-             */
-            return -1;
-        }
-        throw new NaoTemConexaoException();
-    }
-
-    /**
      * Função responsável por recuperar os livros de uma compra.
      * @param idCompra o id da compra para recuperar os livros feitos nela.
      * @return Null caso algum erro tenha acontecido e a função tenha conseguido
@@ -948,6 +1051,8 @@ public abstract class GerenciaBd implements AutoCloseable{
      * problema mas não foi possível fechá-la.
      */
 
+
+    //=============================================================Recupera Coisas=============================================================
     protected ResultSet recuperaLivrosCompras(int idCompra)
             throws NaoTemConexaoException, ConexaoException {
         if (connection != null) {
@@ -1021,6 +1126,210 @@ public abstract class GerenciaBd implements AutoCloseable{
 
             try {
                 return Select(coluna, tabela, "id_vendedor = -1 AND id_compra >= 0",
+                        connection);
+            } catch (SQLException e) {
+                /*
+                 * Se der erro, vai tentar fechar a conexão atual.
+                 */
+                try {
+                    close();
+
+                } catch (SQLException f) {
+                    /*
+                     * Se não conseguir ele informa
+                     * a quem o chamou que não foi possível
+                     * encerrar a conexão com o banco e que
+                     * ela é uma conexão defeituosa.
+                     */
+                    throw new ConexaoException();
+                }
+                try {
+                    /*
+                     * O sistema tentar criar outra conexão.
+                     */
+
+                    criaCon(usuarioBanco);
+                } catch (SQLException f) {
+                    /*
+                     * Caso ele não consiga, é necessário avisar
+                     * que existe um grave problema: não existe conexão
+                     * com o banco de dados.
+                     */
+                    throw new NaoTemConexaoException();
+                }
+            }
+            /*
+             * Caso tenha sido possível resolver os erros, a função avisa que ela
+             * teve um comportamento inesperado e foi possível resolver ele,
+             * por isso ela pode ser chamada novamente.
+             */
+            return null;
+        }
+        throw new NaoTemConexaoException();
+    }
+
+    protected ResultSet recuperaCompra(int idCliente)
+            throws NaoTemConexaoException, ConexaoException {
+
+        if (connection != null) {
+            String tabela = "Compras_Info.compra";
+            String coluna = "*";
+
+            try {
+                return Select(coluna, tabela, "id_cliente = " + idCliente,
+                        connection);
+            } catch (SQLException e) {
+                /*
+                 * Se der erro, vai tentar fechar a conexão atual.
+                 */
+                try {
+                    close();
+
+                } catch (SQLException f) {
+                    /*
+                     * Se não conseguir ele informa
+                     * a quem o chamou que não foi possível
+                     * encerrar a conexão com o banco e que
+                     * ela é uma conexão defeituosa.
+                     */
+                    throw new ConexaoException();
+                }
+                try {
+                    /*
+                     * O sistema tentar criar outra conexão.
+                     */
+
+                    criaCon(usuarioBanco);
+                } catch (SQLException f) {
+                    /*
+                     * Caso ele não consiga, é necessário avisar
+                     * que existe um grave problema: não existe conexão
+                     * com o banco de dados.
+                     */
+                    throw new NaoTemConexaoException();
+                }
+            }
+            /*
+             * Caso tenha sido possível resolver os erros, a função avisa que ela
+             * teve um comportamento inesperado e foi possível resolver ele,
+             * por isso ela pode ser chamada novamente.
+             */
+            return null;
+        }
+        throw new NaoTemConexaoException();
+    }
+
+    protected ResultSet carregaCarrinho(int idCliente)
+            throws NaoTemConexaoException, ConexaoException {
+
+        if (connection != null) {
+            String tabela = "clientes_info.carrinho as c " +
+                    "INNER JOIN clientes_info.carrinho_livro as cl ON c.id_carrinho = cl.id_carrinho " +
+                    "INNER JOIN Estoque as l ON cl.id_livro = l.id_livro";
+            String coluna = "cl.id_carrinho, cl.quantidade, l.*";
+
+            try {
+                return Select(coluna, tabela, "c.id_cliente = " + idCliente + "AND c.id_compra = -1",
+                        connection);
+            } catch (SQLException e) {
+                /*
+                 * Se der erro, vai tentar fechar a conexão atual.
+                 */
+                try {
+                    close();
+
+                } catch (SQLException f) {
+                    /*
+                     * Se não conseguir ele informa
+                     * a quem o chamou que não foi possível
+                     * encerrar a conexão com o banco e que
+                     * ela é uma conexão defeituosa.
+                     */
+                    throw new ConexaoException();
+                }
+                try {
+                    /*
+                     * O sistema tentar criar outra conexão.
+                     */
+
+                    criaCon(usuarioBanco);
+                } catch (SQLException f) {
+                    /*
+                     * Caso ele não consiga, é necessário avisar
+                     * que existe um grave problema: não existe conexão
+                     * com o banco de dados.
+                     */
+                    throw new NaoTemConexaoException();
+                }
+            }
+            /*
+             * Caso tenha sido possível resolver os erros, a função avisa que ela
+             * teve um comportamento inesperado e foi possível resolver ele,
+             * por isso ela pode ser chamada novamente.
+             */
+            return null;
+        }
+        throw new NaoTemConexaoException();
+    }
+
+    protected ResultSet recuperaCliente(String user, String senha)
+            throws NaoTemConexaoException, ConexaoException {
+
+        if (connection != null) {
+
+            try {
+                return Select("clientes_info.Cliente as c", "c.*", "c.usuario = " +
+                                user + "AND c.senha = " + senha,
+                        connection);
+            } catch (SQLException e) {
+                /*
+                 * Se der erro, vai tentar fechar a conexão atual.
+                 */
+                try {
+                    close();
+
+                } catch (SQLException f) {
+                    /*
+                     * Se não conseguir ele informa
+                     * a quem o chamou que não foi possível
+                     * encerrar a conexão com o banco e que
+                     * ela é uma conexão defeituosa.
+                     */
+                    throw new ConexaoException();
+                }
+                try {
+                    /*
+                     * O sistema tentar criar outra conexão.
+                     */
+
+                    criaCon(usuarioBanco);
+                } catch (SQLException f) {
+                    /*
+                     * Caso ele não consiga, é necessário avisar
+                     * que existe um grave problema: não existe conexão
+                     * com o banco de dados.
+                     */
+                    throw new NaoTemConexaoException();
+                }
+            }
+            /*
+             * Caso tenha sido possível resolver os erros, a função avisa que ela
+             * teve um comportamento inesperado e foi possível resolver ele,
+             * por isso ela pode ser chamada novamente.
+             */
+            return null;
+        }
+        throw new NaoTemConexaoException();
+    }
+
+    protected ResultSet recuperaVendedor(String user, String senha)
+            throws NaoTemConexaoException, ConexaoException {
+
+        if (connection != null) {
+
+            try {
+                return Select("vendedores_info.vendedor as v", "v.*", "v.usuario = " +
+                                user + "AND v.senha = " + senha,
                         connection);
             } catch (SQLException e) {
                 /*

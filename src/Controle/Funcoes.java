@@ -18,16 +18,13 @@ public class Funcoes extends GerenciaBd {
         }
     }
 
-    /****/
+    //=============================================================Destaques=============================================================
     public LinkedList<Livro> Destaques(int quem) {
         setUsuarioBanco(quem);
         LinkedList<Livro> destaques = new LinkedList<>();
-        String coluna = "l.*";
-        String tabela = "estoque.livro as l";
-        String pesquisa = "WHERE l.id_livro >= 0 AND l.quantidade_estoque > 0 AND l.id_livro IN " +
-                "(SELECT cl.id_livro FROM clientes_info.carrinho_livro as cl GROUP BY cl.id_livro ORDER BY COUNT(*) DESC LIMIT 3)";
+
         try {
-        ResultSet rt = Select(tabela, coluna, pesquisa);
+        ResultSet rt = Destaques();
 
         destaques = RecuperaLivro(rt, false);
 
@@ -201,74 +198,7 @@ public class Funcoes extends GerenciaBd {
                 " ".repeat(espDir);
     }
 
-    public LinkedList<Livro> PesquisaLivro(String str, String coluna) throws SQLException, NaoTemConexaoException, ConexaoException {
-        LinkedList<Livro> l = new LinkedList<>();
-
-        /*
-         * Esse existe tem que ser feito com o 'LIKE', se não dá pau. Serve para o mano pesquisar o nome do livro sem ser o
-         * nome completo como "Harry Potter" aí vai aparecer todos os Harry Potter */
-        int aux = Existe("estoque.livro as l", "l." + coluna, str);
-
-        if(aux > 0){
-            /*
-            * Essa pesquisa ta beeeeem livre, ela vai pegar a coluna de l, recebendo somente as entradas "nome", "autor", "genero"
-            * e vai usar um LIKE pra achar os livros com esse atributo.
-            *  */
-            ResultSet rt = Select("estoque.livro as l", "l." + coluna, " WHERE l." + coluna + " LIKE '%" + str +
-                    "%' AND l.quantidade_estoque > 0");
-
-            assert rt != null;
-            l = RecuperaLivro(rt, false);
-        } else if(aux == 0) {
-            System.out.print("Não temos nenhum livro com esse " + coluna + "!\n\n");
-        } else if(aux == -1){
-            System.out.print("Erro com a pesquisa tente novamente com um atributo diferente!\n\n");
-        }
-
-        return l;
-    }
-
-    /**
-     * Recebe um ResultSet da tabela livros e coloca todos os livros retornados em uma LinkedList de livros
-     * e a retorna.
-     * @param rt o ResultSet que contém os dados dos livros
-     * @param carrinho um booleano que indica se os livros serão adicionados ao carrinho
-     * @return uma LinkedList de Livros
-     * @throws SQLException caso ocorra algum erro ao acessar o banco de dados
-     */
-    public static LinkedList<Livro> RecuperaLivro(ResultSet rt, boolean carrinho) throws SQLException{
-        LinkedList<Livro> l = new LinkedList<>();
-
-        while(rt.next()) {
-            Livro aux = new Livro(rt.getInt("id_livro"), rt.getString("nome"),
-                    Double.parseDouble(rt.getString("preco").substring(3).replaceAll(",", ".")),
-                    rt.getString("autor"), rt.getString("genero"), rt.getString("tipo"),
-                    rt.getBoolean("from_mari"));
-            if(carrinho){
-                for(int i = 1; i <= rt.getInt("qunatidade"); i++){
-                    l.add(aux);
-                }
-            } else {
-                l.add(aux);
-            }
-        }
-
-        return l;
-    }
-
-    /**
-     * Prints the list of books in a formatted way.
-     *
-     * @param l the list of books to be printed
-     */
-    public static void PrintLivro(LinkedList<Livro> l){
-        int escolha = 1;
-        for (Livro livro : l) {
-            System.out.println(escolha + " - " + livro.toString());
-            escolha++;
-        }
-    }
-
+    //=============================================================Vendedor=============================================================
     /**
      * Recupera um vendedor pelo seu usuário e senha.
      *
@@ -278,35 +208,40 @@ public class Funcoes extends GerenciaBd {
      * @throws SQLException  Caso ocorra algum erro ao acessar o banco de dados.
      * @throws NaoTemConexaoException  Caso a conexão com o banco de dados não esteja disponível.
      */
-    public Vendedor recuperaVendedor(String user, String senha) throws SQLException, NaoTemConexaoException, ConexaoException {
-        ResultSet rt = Select("vendedores_info.vendedor as v", "v.*", "v.usuario = " + user + "AND v.senha = " + senha);
+    public Vendedor recuperaVendedorF(String user, String senha) throws SQLException, NaoTemConexaoException, ConexaoException {
+
+        ResultSet rt = recuperaVendedor(user, senha);
         assert rt != null;
+
         return new Vendedor(rt.getInt("id_vendedor"), rt.getString("nome"), Long.parseLong(rt.getString("cpf")));
     }
 
+
+    //=============================================================Cliente=============================================================
+    /**
+     * Este método recupera um cliente do banco de dados com base no seu usuário e senha.
+     * Ele também recebe um carrinho como parâmetro, que é utilizado para definir o carrinho do cliente.
+     * @param user O usuário do cliente.
+     * @param senha A senha do cliente.
+     * @param carrinho O carrinho do cliente.
+     * @return Um novo objeto do tipo Cliente com os dados recuperados do banco de dados.
+     * @throws SQLException Se houver um erro ao conectar ao banco de dados.
+     * @throws NaoTemConexaoException Se não houver uma conexão com o banco de dados.
+     * @throws ConexaoException Se houver um erro com a conexão.
+     * */
     public Cliente recuperaCliente(String user, String senha, Carrinho carrinho) throws SQLException, NaoTemConexaoException, ConexaoException {
 
-        ResultSet rt = Select("vendedores_info.vendedor as v", "v.*", "v.usuario = " + user + "AND v.senha = " + senha);
+        ResultSet rt = recuperaCliente(user, senha);
         assert rt != null;
 
         return new Cliente(rt.getString("nome"), Long.parseLong(rt.getString("cpf")), rt.getString("rua"),
                 rt.getInt("numero"), rt.getBoolean("one_piece"), rt.getBoolean("is_flamengo"),
                 rt.getBoolean("is_sousa"), rt.getString("usuario"), rt.getString("senha"), carrinho);
+
     }
 
-    public LinkedList<Compra> recuperaCompra(ResultSet rt) throws SQLException {
-        LinkedList<Compra> compras = new LinkedList<>();
 
-        while(rt.next()){
-            Compra c = new Compra(rt.getInt("id_compra"), rt.getNString("forma_pagamento"),
-                    rt.getDate("data"), rt.getInt("valor"), rt.getInt("id_Carrinho"),
-                    rt.getInt("Id_vendedor"));
-            compras.add(c);
-        }
-
-        return compras;
-    }
-
+    //=============================================================Livro=============================================================
     public Carrinho Pesquisa(Scanner sc, Carrinho carrinho) throws SQLException, NaoTemConexaoException, ConexaoException {
         LinkedList<Livro> l = new LinkedList<>();
 
@@ -326,19 +261,19 @@ public class Funcoes extends GerenciaBd {
                     System.out.print("Digite o nome do livro: ");
                     String str = sc.nextLine();
 
-                    l = PesquisaLivro(str, "nome");
+                    l = PesquisaLivroF(str, "nome");
                 }
                 case 2 -> {
                     System.out.print("Digite o nome do autor: ");
                     String str = sc.nextLine();
 
-                    l = PesquisaLivro(str, "autor");
+                    l = PesquisaLivroF(str, "autor");
                 }
                 case 3 -> {
                     System.out.print("Digite o gênero do livro: ");
                     String str = sc.nextLine();
 
-                    l = PesquisaLivro(str, "genero");
+                    l = PesquisaLivroF(str, "genero");
                 }
                 case 0 -> {return carrinho;}
                 default -> System.out.println("Opção inválida");
@@ -373,6 +308,62 @@ public class Funcoes extends GerenciaBd {
         }
     }
 
+    /**
+     * Recebe um ResultSet da tabela livros e coloca todos os livros retornados em uma LinkedList de livros
+     * e a retorna.
+     * @param rt o ResultSet que contém os dados dos livros
+     * @param carrinho um booleano que indica se os livros serão adicionados ao carrinho
+     * @return uma LinkedList de Livros
+     * @throws SQLException caso ocorra algum erro ao acessar o banco de dados
+     * **/
+    public static LinkedList<Livro> RecuperaLivro(ResultSet rt, boolean carrinho) throws SQLException{
+        LinkedList<Livro> l = new LinkedList<>();
+
+        while(rt.next()) {
+            Livro aux = new Livro(rt.getInt("id_livro"), rt.getString("nome"),
+                    Double.parseDouble(rt.getString("preco").substring(3).replaceAll(",", ".")),
+                    rt.getString("autor"), rt.getString("genero"), rt.getString("tipo"),
+                    rt.getBoolean("from_mari"));
+            if(carrinho){
+                for(int i = 1; i <= rt.getInt("qunatidade"); i++){
+                    l.add(aux);
+                }
+            } else {
+                l.add(aux);
+            }
+        }
+
+        return l;
+    }
+
+    public LinkedList<Livro> PesquisaLivroF(String str, String coluna) throws SQLException, NaoTemConexaoException, ConexaoException {
+        LinkedList<Livro> l = new LinkedList<>();
+
+        int aux = Existe("livro", coluna, str);
+
+        if(aux > 0){
+            ResultSet rt = pesquisaLivro(str, coluna);
+
+            assert rt != null;
+            l = RecuperaLivro(rt, false);
+        } else if(aux == 0) {
+            System.out.print("Não temos nenhum livro com esse " + coluna + "!\n\n");
+        } else if(aux == -1){
+            System.out.print("Erro com a pesquisa tente novamente com um atributo diferente!\n\n");
+        }
+
+        return l;
+    }
+
+    public static void PrintLivro(LinkedList<Livro> l){
+        int escolha = 1;
+        for (Livro livro : l) {
+            System.out.println(escolha + " - " + livro.toString());
+            escolha++;
+        }
+    }
+
+    //=============================================================Carrinho=============================================================
     public Carrinho Carrinho(Scanner sc, Carrinho carrinho) {
 
         if(carrinho.isEmpty()){
@@ -410,6 +401,21 @@ public class Funcoes extends GerenciaBd {
         return carrinho;
     }
 
+    public Carrinho CarregaCarrinho(Carrinho carrinho, int idC) throws SQLException, NaoTemConexaoException, ConexaoException {
+
+        ResultSet rt = carregaCarrinho(idC);
+
+        assert rt != null;
+
+        LinkedList<Livro> l = RecuperaLivro(rt, true);
+
+        carrinho.setCarrinho(l);
+        carrinho.setId(rt.getInt("id_carrinho"));
+
+        return carrinho;
+    }
+
+    //=============================================================Compras=============================================================
     public void Compra(Scanner sc, Carrinho carrinho, boolean[] desc, int idCliente) throws NaoTemConexaoException, ConexaoException {
         double precoT = 0, precoD;
 
@@ -483,28 +489,6 @@ public class Funcoes extends GerenciaBd {
         }
     }
 
-    public Carrinho CarregaCarrinho(Carrinho carrinho, int idC) throws SQLException, NaoTemConexaoException, ConexaoException {
-
-        /* SELECT cl.id_carrinho, cl.quantidade, l.* FROM clientes_info.carrinho as c
-        INNER JOIN clientes_info.carrinho_livro as cl ON c.id_carrinho = cl.id_carrinho
-        INNER JOIN Estoque as l ON cl.id_livro = l.id_livro
-        WHERE c.id_cliente = idC AND c.id_compra = -1
-        * */
-
-        ResultSet rt = Select("cl.id_carrinho, cl.quantidade, l.*", "clientes_info.carrinho as c " +
-                "INNER JOIN clientes_info.carrinho_livro as cl ON c.id_carrinho = cl.id_carrinho " +
-                "INNER JOIN Estoque as l ON cl.id_livro = l.id_livro", "c.id_cliente =" + idC + " AND c.id_compra = -1");
-
-        assert rt != null;
-
-        LinkedList<Livro> l = RecuperaLivro(rt, true);
-
-        carrinho.setCarrinho(l);
-        carrinho.setId(rt.getInt("id_carrinho"));
-
-        return carrinho;
-    }
-
     public void verPedidos(Scanner sc, int id) throws SQLException, NaoTemConexaoException, ConexaoException {
 
         ResultSet rt = recuperaCompra(id);
@@ -567,6 +551,20 @@ public class Funcoes extends GerenciaBd {
 
     }
 
+    public LinkedList<Compra> recuperaCompra(ResultSet rt) throws SQLException {
+        LinkedList<Compra> compras = new LinkedList<>();
+
+        while(rt.next()){
+            Compra c = new Compra(rt.getInt("id_compra"), rt.getNString("forma_pagamento"),
+                    rt.getDate("data"), rt.getInt("valor"), rt.getInt("id_Carrinho"),
+                    rt.getInt("Id_vendedor"));
+            compras.add(c);
+        }
+
+        return compras;
+    }
+
+    //=============================================================Regex=============================================================
     /* esse método irá verificar se alguma palavra reservada
      * do SQL está sendo utilizada */
     private static boolean verificaComandoSQL(String s){
