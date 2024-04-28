@@ -1,14 +1,16 @@
 package Entities;
 
+import Controle.ConexaoException;
 import Controle.GerenciaCon;
 import Controle.NaoTemConexaoException;
 import Controle.FuncoesEstaticas;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.Scanner;
 
-public class Cliente extends GerenciaCon {
+public class Cliente extends GerenciaBd {
     private Integer id;
     private String nome;
     private Long cpf;
@@ -20,7 +22,7 @@ public class Cliente extends GerenciaCon {
     private String user;
     private String senha;
     private static Carrinho carrinho;
-    private static FuncoesEstaticas fun;
+    private static Funcoes fun;
     private static LinkedList<Integer> pedidos;
 
     public Cliente(String nome, Long cpf, String rua, int numero,
@@ -36,7 +38,7 @@ public class Cliente extends GerenciaCon {
         this.user = user;
         this.senha = senha;
         Cliente.carrinho = carrinho;
-        fun = new FuncoesEstaticas();
+        fun = new Funcoes();
     }
 
     public void MenuCliente(Scanner sc, boolean compra) throws NaoTemConexaoException, SQLException {
@@ -137,6 +139,40 @@ public class Cliente extends GerenciaCon {
                 case 0 -> {break loop;}
             }
         }
+    }
+
+    public void removeCliente(Scanner tc) {
+        System.out.println("------------------------------------------------------------------------------" +
+                "\nLOGIN CLIENTE");
+        String user;
+        String senha;
+        ResultSet rs;
+        while (true) {
+            System.out.print("Usuário: ");
+            user = tc.nextLine();
+            System.out.print("Senha: ");
+            senha = tc.nextLine();
+            rs = controle.login(user, senha, "cliente");
+            if (rs != null)
+                break;
+            else
+                System.out.print("INFORMAÇÕES INCORRETAS! TENTE NOVAMENTE");
+        }
+
+        System.out.println("RESPONDA COM 'Sim' OU 'Não' \nDESEJA REMOVER SEU CADASTRO DA LOJA? ISSO NÃO" +
+                " IRÁ REMOVER SEU HISTÓRICO DE COMPRAS NO SISTEMA DA LOJA");
+        if (tc.nextLine().equalsIgnoreCase("sim")){
+            try {
+                if (controle.delete("cliente", "id_cliente", rs.getString("id_cliente"),
+                        false))
+                    System.out.println("REMOÇÃO FEITA COM SUCESSO!");
+                else
+                    System.out.println("ERRO! TENTE NOVAMENTE");
+            }catch (Exception e){
+                System.out.println("ERRO: " + e);
+            }
+        }
+
     }
 
     public Integer getId() {

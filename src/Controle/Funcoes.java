@@ -1,6 +1,9 @@
 package Controle;
 
-import Entities.*;
+import Entities.Carrinho;
+import Entities.Cliente;
+import Entities.Livro;
+import Entities.Vendedor;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -10,14 +13,15 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class FuncoesEstaticas extends GerenciaCon {
+public class Funcoes extends GerenciaBd {
+
     public static void clearBuffer(Scanner scanner) {
         if (scanner.hasNextLine()) {
             scanner.nextLine();
         }
     }
 
-
+    /****/
     public LinkedList<Livro> Destaques(int quem) {
         setUsuarioBanco(quem);
         LinkedList<Livro> destaques = new LinkedList<>();
@@ -203,7 +207,7 @@ public class FuncoesEstaticas extends GerenciaCon {
      * Serve para o cliente pesquisar o livro tanto pelo nome, quanto autor ou genero.
      * É retornado o ResultSet com as tabelas lançando para uma LinkedList de livros.
      * **/
-    public LinkedList<Livro> PesquisaLivro(String str, String coluna) throws SQLException, NaoTemConexaoException {
+    public static LinkedList<Livro> PesquisaLivro(String str, String coluna) throws SQLException, NaoTemConexaoException {
         LinkedList<Livro> l = new LinkedList<>();
 
         /*
@@ -472,7 +476,7 @@ public class FuncoesEstaticas extends GerenciaCon {
 
     }
 
-    public void SolicitarCompra(int tipoP, double precoT, int id_cliente, int id_carrinho) throws NaoTemConexaoException {
+    public static void SolicitarCompra(int tipoP, double precoT, int id_cliente, int id_carrinho) throws NaoTemConexaoException {
         Date date = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         String formaP = tipoP == 1 ? "Berries" : tipoP == 2 ? "Pix" : tipoP == 3 ? "Boleto" : "Cartão";
@@ -553,6 +557,20 @@ public class FuncoesEstaticas extends GerenciaCon {
         }
     }
 
+    public void printCompras(ResultSet rt){
+        try {
+            int contador = 1;
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
+            System.out.print(contador + " - Código do pedido:" + rt.getInt("id_compra") + "\n" +
+                    "Forma de pagamento: " + rt.getString("forma_pagamento") + "\n" +
+                    "Data: " + sdf.format(rt.getDate("data")) + "\n" +
+                    "Valor total: " + rt.getInt("valor") + "\n");
+        } catch (SQLException e){
+            //tem q ter algum tratamento dps
+        }
+    }
+
     /* esse método irá verificar se alguma palavra reservada
      * do SQL está sendo utilizada */
     private static boolean verificaComandoSQL(String s){
@@ -597,6 +615,10 @@ public class FuncoesEstaticas extends GerenciaCon {
             return Pattern.matches("[A-Za-zÀÃÂÁÇÉÊÍÎÓÔÕÚÛÜàãâáçéêíîóôõúûü]+", s);
         }
         return false;
+    }
+
+    public boolean regexNum(String s){
+        return Pattern.matches("[0-9]+", s);
     }
 
 

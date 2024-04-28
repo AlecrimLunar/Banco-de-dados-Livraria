@@ -1,18 +1,18 @@
 package Entities;
 
 import Controle.ConexaoException;
-import Controle.FuncoesEstaticas;
+import Controle.Funcoes;
 import Controle.NaoTemConexaoException;
 
 import java.sql.SQLException;
 import java.util.*;
 
-public class Sistema extends Controle.GerenciaCon {
+public class Sistema extends Controle.GerenciaBd {
 
-    private static FuncoesEstaticas fun;
+    private static Funcoes fun;
     private static Carrinho carrinho;
     public Sistema() {
-        fun = new FuncoesEstaticas();
+        fun = new Funcoes();
         carrinho = new Carrinho();
         setUsuarioBanco(0);
     }
@@ -80,7 +80,7 @@ public class Sistema extends Controle.GerenciaCon {
         }
     }
 
-    public static void Login(Scanner sc, Boolean c, boolean compra) throws NaoTemConexaoException, SQLException, ConexaoException {
+    public void Login(Scanner sc, Boolean c, boolean compra) throws NaoTemConexaoException, SQLException, ConexaoException {
         boolean loginEfetuado = false;
 
         String tabela = "";
@@ -127,7 +127,7 @@ public class Sistema extends Controle.GerenciaCon {
         }
     }
 
-    public static void Cadastrar(Scanner sc, boolean compra) throws ConexaoException, NaoTemConexaoException, SQLException {
+    public void Cadastrar(Scanner sc, boolean compra) throws ConexaoException, NaoTemConexaoException, SQLException {
         String nome, cpf, email, senha, rua, user;
         boolean isF, isS, one;
         int numero;
@@ -200,5 +200,6 @@ public class Sistema extends Controle.GerenciaCon {
         novoCliente.setId(id);
         Login(sc, true, compra);
     }
+
 
 }

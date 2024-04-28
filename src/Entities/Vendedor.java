@@ -1,26 +1,27 @@
 package Entities;
 import Controle.*;
 
+import java.sql.Date;
 import java.sql.ResultSet;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.LinkedList;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Vendedor {
+public class Vendedor extends GerenciaBd{
     private Integer id;
     private String nome;
     private Long cpf;
-    private ControlaBD controle;
+    Funcoes funcoes;
 
     public Vendedor(Integer id, String nome, Long cpf) {
         this.id = id;
         this.nome = nome;
         this.cpf = cpf;
+        funcoes = new Funcoes();
     }
 
-    //Cadastros
-/*
+
+
     public boolean cadastraCliente(Scanner tc) {
 
 
@@ -95,7 +96,7 @@ public class Vendedor {
         }
         return false;
     }
-    public boolean cadastraCompra(Scanner tc){
+   /* public boolean cadastraCompra(Scanner tc){
         Compra c = new Compra();
         while(true){
 
@@ -228,7 +229,7 @@ public class Vendedor {
                 return false;
             }
 
-            /* adiciona todo o carrinho no banco e decrementa a quantidade de livros no banco
+            // adiciona todo o carrinho no banco e decrementa a quantidade de livros no banco
             for (int i = 0; i < c.getsize(); i++){
                 controle.Insert("carrinho_livro", id_carrinho + ", " +
                                 c.getLivro(i).getId().toString() + ", " + c.getQuantidade(i) ,false,
@@ -252,7 +253,119 @@ public class Vendedor {
 
         c = null;
         return false;
+    }*/
+
+    /**
+     * Função responsável por realizar a alteração da quantidade de livros
+     * em estoque. Essa função deve ser utilizada quando se quer
+     * aumentar a quantidade de livros já existentes em estoque.
+     */
+    public void adicionaLivrosEstoque(Scanner tc){
+        ArrayList<Integer> livros = new ArrayList<>();
+        ArrayList<Integer> quantidades = new ArrayList<>();
+        String testes;
+
+        while (true) {
+            System.out.print("""
+                    ========================================================
+                    BEM-VINDO AO SISTEMA DE ADICIONAR LIVROS.
+                    INSIRA AS INFORMAÇÕES A SEGUIR PARA QUE A ADIÇÃO POSSA
+                    SER REALIZADA
+                    ========================================================
+                    """);
+
+            while (true) {
+                System.out.print("""
+                        QUAL O ID DO LIVRO RECEBIDO?
+                        """);
+
+                testes = tc.nextLine();
+
+                if (!funcoes.regexNum(testes)){
+                    System.err.print("""
+                            INSIRA APENAS UM VALOR NUMÉRICO.
+                            ========================================================
+                            """);
+                } else
+                    break;
+            }
+
+            livros.add(Integer.parseInt(testes));
+
+            while (true) {
+                System.out.print("""
+                        QUAL A QUANTIDADE DE LIVROS FOI RECEBIDA?
+                        """);
+
+                testes = tc.nextLine();
+
+                if (!funcoes.regexNum(testes)){
+                    System.err.print("""
+                            INSIRA APENAS UM VALOR NUMÉRICO.
+                            ========================================================
+                            """);
+                } else
+                    break;
+            }
+
+            quantidades.add(Integer.parseInt(testes));
+
+            System.out.print("""
+                    OUTRO LIVRO FOI RECEBIDO?
+                    """);
+
+            if (!tc.nextLine().equalsIgnoreCase("sim"))
+                break;
+        }
+
+        int verifica = -1;
+        try{
+            do {
+                verifica = adicionaQuantidadeLivroEstoque(livros, quantidades);
+            } while (verifica == -1);
+        } catch (ConexaoException e){
+            try {
+                close();
+            } catch (SQLException f){
+                System.err.println("""
+                ========================================================
+                FALHA CRÍTICA NO SISTEMA!
+                A CONEXÃO COM O BANCO DE DADOS APRESENTOU ERROS E
+                NÃO FOI POSSÍVEL ENCERRÁ-LA
+                ========================================================
+                """);
+                System.exit(1);
+            }
+        } catch (NaoTemConexaoException e){
+            try{
+                criaCon(1);
+            } catch (SQLException f){
+                System.err.println("""
+                ========================================================
+                FALHA CRÍTICA NO SISTEMA!
+                NÃO FOI POSSÍVEL ESTABELECER UMA CONEXÃO COM O BANCO
+                DE DADOS
+                ========================================================
+                """);
+                System.exit(1);
+            }
+        }
+
+        if (verifica == 0){
+            System.out.print("""
+                    NENHUMA ADIÇÃO FOI REALIZADA!
+                    ========================================================
+                    """);
+        } else
+            System.out.print("""
+                    ADIÇÕES FEITAS COM SUCESSO!
+                    ========================================================
+                    """);
     }
+
+    /**
+     * Função responsável por cadastrar novos livros no sistema.
+     */
     public void cadastraLivro(Scanner tc){
         System.out.print("-------------------------------ADICIONAR LIVRO------------------------------\n"+
                 "DIGITE O NOME DO LIVRO: ");
@@ -282,150 +395,105 @@ public class Vendedor {
 
         String info = "'" + tipo + "', '" + nome + "', " + Integer.toString(quantidade) + ", "
                 + Boolean.toString(from_mari) + ", '" + autor + "', '" + genero + "', " + Double.toString(preco);
-        int idLivro = controle.Insert("livro", info, true, "tipo, nome, " +
-                "quantidade_estoque, from_mari, autor, genero, preco");
-        if (idLivro != -2) {
+        ArrayList<String> argumento = new ArrayList<>();
+        argumento.add(info);
+        int idLivro = -1;
+
+        try {
+            idLivro = Insert("livro", argumento,  "tipo, nome, " +
+                    "quantidade_estoque, from_mari, autor, genero, preco");
+        } catch (ConexaoException e){
+            try {
+                close();
+            } catch (SQLException f){
+                System.err.println("""
+                ========================================================
+                FALHA CRÍTICA NO SISTEMA!
+                A CONEXÃO COM O BANCO DE DADOS APRESENTOU ERROS E
+                NÃO FOI POSSÍVEL ENCERRÁ-LA
+                ========================================================
+                """);
+                System.exit(1);
+            }
+        } catch (NaoTemConexaoException e){
+            try{
+                criaCon(1);
+            } catch (SQLException f){
+                System.err.println("""
+                ========================================================
+                FALHA CRÍTICA NO SISTEMA!
+                NÃO FOI POSSÍVEL ESTABELECER UMA CONEXÃO COM O BANCO
+                DE DADOS
+                ========================================================
+                """);
+                System.exit(1);
+            }
+        }
+        if (idLivro != -1) {
             System.out.println("\nLIVRO ADICIONADO COM SUCESSO!\nSEU NÚMERO DE CADASTRO É: " + idLivro + "\n");
         } else {
             System.out.println("ERRO NA INSERÇÃO DO LIVRO");
         }
     }
-    public void cadastraVendedor(Scanner tc){
-        while (true) {
-            System.out.print("INSIRA AS INFORMAÇÕES:\nNome: ");
-            String nome = tc.nextLine();
 
-            System.out.print("CPF (Apenas números): ");
-            String CPF = tc.nextLine();
+    public void confirmarCompra(Scanner tc){
 
-            System.out.print("Nome de acesso: ");
-            String user = tc.nextLine();
-
-            System.out.print("Senha de acesso: ");
-            String senha = tc.nextLine();
-
-
-            System.out.print("-------------------------------------------------------------------------" +
-                    "\n\nMUITO BEM, VERIFIQUE SE AS INFORMAÇÕES ESTÃO CORRETAS. SE SIM DIGITE " +
-                    "'Sim', SE NÃO DIGITE 'Não'\nNome: " + nome + "\nCPF: " + CPF + "\n");
-
-            if (tc.nextLine().equalsIgnoreCase("sim")) {
-                String insert = "'" + nome + "', '" + user + "', '" + CPF + "', '" + senha + "'";
-
-                if (controle.Insert("vendedor", insert, false, "nome, usuario, cpf, senha") != -2) {
-                    System.out.println("CADASTRO CONCLUÍDO COM SUCESSO! PARA LOGAR, UTILIZE O USUÁRIO: " +
-                            user + " E A " +
-                            "SENHA INFORMADA.");
-                    break;
-                }
-            }
-        }
     }
 
-    //Remove
+    private ResultSet recuperaComprasNaoConfirmadas(){
+        String tabela = "Compras_Info.compra";
+        String coluna = "forma_pagamento, data, valor";
 
-    public void removeLivro (Scanner tc) {
-        while (true) {
-            System.out.print("------------------------------------------------------------------" +
-                    "\nID DO LIVRO A SER REMOVIDO: ");
-            String idLivro = tc.nextLine();
-
-            if (controle.Quantos(idLivro, "livro", "") > 0) {
-                try {
-                    ResultSet rt = controle.Select("nome, autor, tipo", "livro", idLivro, "id_livro");
-                    rt.next();
-                    System.out.println("O LIVRO ABAIXO É O LIVRO QUE DESEJA REMOVER? REPONDA COM 'Sim' ou 'Não' " +
-                            "\nNome: " + rt.getString("nome") + "\nAutor: " + rt.getString("autor") +
-                            "\nTipo: " + rt.getString("tipo"));
-
-                    if (tc.nextLine().equalsIgnoreCase("sim")) {
-                        if (controle.delete("livro", "id_livro", idLivro, false))
-                            System.out.println("REMOÇÃO FEITA COM SUCESSO!!" +
-                                    "\n---------------------------------------------------------------------");
-                        else
-                            System.out.println("ERRO!! TENTE NOVAMENTE" +
-                                    "\n---------------------------------------------------------------------");
-                    }
-
-                } catch (Exception e) {
-                    System.out.println("ERRO: " + e);
-                }
-
-                System.out.println("DESEJA REMOVER OUTRO LIVRO? REPONDA COM 'Sim' ou 'Não'");
-                if (!tc.nextLine().equalsIgnoreCase("sim")) {
-                    return;
-                }
-            }
-        }
-    }
-    public void removeVendedor(Scanner tc){
-        while (true) {
-            System.out.print("------------------------------------------------------------------" +
-                    "\nID DO VENDEDOR A SER REMOVIDO: ");
-            String idVendedor = tc.nextLine();
-
-            if (controle.Quantos(idVendedor, "vendedor", "") > 0) {
-                try {
-                    ResultSet rt = controle.Select("nome, cpf", "vendedor", idVendedor,
-                            "id_vendedor");
-                    System.out.println("O VENDEDOR ABAIXO É O VENDEDOR QUE DESEJA REMOVER? REPONDA COM 'Sim' ou 'Não' " +
-                            "\nNome: " + rt.getString("nome") + "\nCPF: " + rt.getString("cpf"));
-
-                    if (tc.nextLine().equalsIgnoreCase("sim")) {
-                        if (controle.delete("vendedor", "id_vendedor", idVendedor, false))
-                            System.out.println("REMOÇÃO FEITA COM SUCESSO!!" +
-                                    "\n---------------------------------------------------------------------");
-                        else
-                            System.out.println("ERRO!! TENTE NOVAMENTE" +
-                                    "\n---------------------------------------------------------------------");
-                    }
-
-                } catch (Exception e) {
-                    System.out.println("ERRO: " + e);
-                }
-
-                System.out.println("DESEJA REMOVER OUTRO VENDEDOR? REPONDA COM 'Sim' ou 'Não'");
-                if (!tc.nextLine().equalsIgnoreCase("sim")) {
-                    return;
-                }
-            }
-        }
-    }
-    public void removeCliente(Scanner tc) {
-        System.out.println("------------------------------------------------------------------------------" +
-                "\nLOGIN CLIENTE");
-        String user;
-        String senha;
-        ResultSet rs;
-        while (true) {
-            System.out.print("Usuário: ");
-            user = tc.nextLine();
-            System.out.print("Senha: ");
-            senha = tc.nextLine();
-            rs = controle.login(user, senha, "cliente");
-            if (rs != null)
-                break;
-            else
-                System.out.print("INFORMAÇÕES INCORRETAS! TENTE NOVAMENTE");
-        }
-
-        System.out.println("RESPONDA COM 'Sim' OU 'Não' \nDESEJA REMOVER SEU CADASTRO DA LOJA? ISSO NÃO" +
-                " IRÁ REMOVER SEU HISTÓRICO DE COMPRAS NO SISTEMA DA LOJA");
-        if (tc.nextLine().equalsIgnoreCase("sim")){
+        try {
+            return Select(coluna, tabela, "id_vendedor = -1 AND id_compra >= 0");
+        } catch (ConexaoException e){
             try {
-                if (controle.delete("cliente", "id_cliente", rs.getString("id_cliente"),
-                        false))
-                    System.out.println("REMOÇÃO FEITA COM SUCESSO!");
-                else
-                    System.out.println("ERRO! TENTE NOVAMENTE");
-            }catch (Exception e){
-                System.out.println("ERRO: " + e);
+                close();
+            } catch (SQLException f){
+                System.err.println("""
+                ========================================================
+                FALHA CRÍTICA NO SISTEMA!
+                A CONEXÃO COM O BANCO DE DADOS APRESENTOU ERROS E
+                NÃO FOI POSSÍVEL ENCERRÁ-LA
+                ========================================================
+                """);
+                System.exit(1);
+            }
+        } catch (NaoTemConexaoException e){
+            try{
+                criaCon(1);
+            } catch (SQLException f){
+                System.err.println("""
+                ========================================================
+                FALHA CRÍTICA NO SISTEMA!
+                NÃO FOI POSSÍVEL ESTABELECER UMA CONEXÃO COM O BANCO
+                DE DADOS
+                ========================================================
+                """);
+                System.exit(1);
             }
         }
-
+        return null;
     }
 
-    //Alteração
+    private ArrayList<InfosCompra> trataCompra(ResultSet rt){
+        ArrayList<InfosCompra> retorno = new ArrayList<>();
+
+        try {
+            while (rt.next()) {
+                int idCompra = rt.getInt("id_compra");
+                String formaPagamento = rt.getNString("forma_pagamento");
+                Date data = rt.getDate("data");
+                int valor = rt.getInt("valor");
+                int idCarrinho = rt.getInt("id_carrinho");
+
+                retorno.add(new InfosCompra(idCompra, formaPagamento,
+                        data, valor, idCarrinho));
+            }
+            return retorno;
+        } catch (SQLException e){}
+        return null;
+    }
 
     public void alteraLivro(Scanner tc){
         try {
@@ -545,224 +613,6 @@ public class Vendedor {
             System.out.println("ERRO: " + e);
         }
     }
-    public void alteraVendedor(Scanner tc){
-        try {
-            while (true) {
-                System.out.println("----------------------------------------------------------------------" +
-                        "SELECIONE O CAMPO QUE DESEJA ALTERAR \n1 - Nome \n2 - CPF" +
-                        "\n3. Voltar ao menu principal");
-                int escolha = Integer.parseInt(tc.nextLine());
-                System.out.println("---------------------------------------------------------------------------");
-
-                switch (escolha) {
-                    case 1 -> {
-                        System.out.print("Insira o novo nome: ");
-                        String novo = tc.nextLine();
-                        if (controle.update("vendedor", "nome", "'" + novo + "'",
-                                "WHERE id_vendedor = " + Integer.toString(this.id))) {
-                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
-                        } else
-                            System.out.println("ERRO! TENTE NOVAMENTE");
-                    }
-
-                    case 2 -> {
-                        System.out.print("Insira o novo CPF: ");
-                        int novo = Integer.parseInt(tc.nextLine());
-                        if (controle.update("vendedor", "cpf", Integer.toString(novo),
-                                "WHERE id_vendedor = " + Integer.toString(this.id))) {
-                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
-                        } else
-                            System.out.println("ERRO! TENTE NOVAMENTE");
-                    }
-
-                    case 3 -> {
-                        return;
-                    }
-                    default -> System.out.println("OPÇÃO INVÁLIDA!");
-                }
-            }
-        }catch (Exception e){
-            System.out.println("ERRO: " + e);
-        }
-    }
-    public void alteraCliente(Scanner tc){
-        try {
-            System.out.println("----------------------------------------------------" +
-                    "\nLOGIN CLIENTE:");
-            String user;
-            String senha;
-            ResultSet rs;
-            while (true) {
-                System.out.print("Usuário: ");
-                user = tc.nextLine();
-                System.out.print("Senha: ");
-                senha = tc.nextLine();
-                rs = controle.login(user, senha, "cliente");
-                if (!rs.equals(null))
-                    break;
-                else
-                    System.out.print("INFORMAÇÕES INCORRETAS! TENTE NOVAMENTE");
-            }
-            System.out.println("LOGIN REALIZADO COM SUCESSO\n" +
-                    "---------------------------------------------------");
-            while (true) {
-                System.out.println("SELECIONE O CAMPO QUE DESEJA ALTERAR \n1 - Nome \n2 - CPF \n3 - Rua \n4 - Número " +
-                        "\n5 - Email \n6 - Torcer para o Flamengo \n7 - Nascer em Sousa \n8 - Assistir a One Piece " +
-                        "\n9 - Voltar ao menu principal");
-                int escolha = Integer.parseInt(tc.nextLine());
-                System.out.println("---------------------------------------------------------------------------");
-
-                switch (escolha) {
-                    case 1 -> {
-                        System.out.print("Insira o novo nome: ");
-                        String novo = tc.nextLine();
-                        if (controle.update("cliente", "nome", "'" + novo + "'",
-                                "WHERE id_cliente = " + rs.getString("id_cliente"))) {
-                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
-                        } else
-                            System.out.println("ERRO! TENTE NOVAMENTE");
-                    }
-
-                    case 2 -> {
-                        System.out.print("Insira o novo CPF: ");
-                        int novo = Integer.parseInt(tc.nextLine());
-                        if (controle.update("cliente", "cpf", Integer.toString(novo),
-                                "WHERE id_cliente = " + rs.getString("id_cliente"))) {
-                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
-                        } else
-                            System.out.println("ERRO! TENTE NOVAMENTE");
-                    }
-
-                    case 3 -> {
-                        System.out.print("Insira a nova rua: ");
-                        String novo = tc.nextLine();
-                        if (controle.update("cliente", "rua", "'" + novo + "'",
-                                "WHERE id_cliente = " + rs.getString("id_cliente"))) {
-                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
-                        } else
-                            System.out.println("ERRO! TENTE NOVAMENTE");
-                    }
-
-                    case 4 -> {
-                        System.out.print("Insira o novo número de residência: ");
-                        int novo = Integer.parseInt(tc.nextLine());
-                        if (controle.update("cliente", "numero", Integer.toString(novo),
-                                "WHERE id_cliente = " + rs.getString("id_cliente"))) {
-                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
-                        } else
-                            System.out.println("ERRO! TENTE NOVAMENTE");
-                    }
-
-                    case 5 -> {
-                        System.out.print("Insira o novo email: ");
-                        String novo = tc.nextLine();
-                        if (controle.update("cliente", "email", "'" + novo + "'",
-                                "WHERE id_cliente = " + rs.getString("id_cliente"))) {
-                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
-                        } else
-                            System.out.println("ERRO! TENTE NOVAMENTE");
-                    }
-
-                    case 6 -> {
-                        System.out.print("RESPONDA COM 'sim' OU 'não'\nTorce para o flamengo? ");
-                        boolean novo = tc.nextLine().equalsIgnoreCase("sim");
-                        if (controle.update("cliente", "is_flamengo",  Boolean.toString(novo),
-                                "WHERE id_cliente = " + rs.getString("id_cliente"))) {
-                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
-                        } else
-                            System.out.println("ERRO! TENTE NOVAMENTE");
-                    }
-
-                    case 7 -> {
-                        System.out.print("RESPONDA COM 'sim' OU 'não'\nNasceu em Sousa? ");
-                        boolean novo = tc.nextLine().equalsIgnoreCase("sim");
-                        if (controle.update("cliente", "is_sousa",  Boolean.toString(novo),
-                                "WHERE id_cliente = " + rs.getString("id_cliente"))) {
-                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
-                        } else
-                            System.out.println("ERRO! TENTE NOVAMENTE");
-                    }
-
-                    case 8 -> {
-                        System.out.print("RESPONDA COM 'sim' OU 'não'\nAssiste a One Piece? ");
-                        boolean novo = tc.nextLine().equalsIgnoreCase("sim");
-                        if (controle.update("cliente", "one_piece",  Boolean.toString(novo),
-                                "WHERE id_cliente = " + rs.getString("id_cliente"))) {
-                            System.out.println("ALTERAÇÃO REALIZADA COM SUCESSO!");
-                        } else
-                            System.out.println("ERRO! TENTE NOVAMENTE");
-                    }
-
-                    case 9 -> {
-                        return;
-                    }
-                    default -> System.out.println("OPÇÃO INVÁLIDA!");
-                }
-            }
-        }catch (Exception e){
-            System.out.println("ERRO: " + e);
-        }
-    }
-
-    //Prints
-    /*public void printLivro(String colunas){controle.printa("livro", colunas);}
-    public void printLivro(String id, String colunas){controle.printa("livro", id, colunas);}
-
-    public void printCliente(String colunas){controle.printa("cliente", colunas);}
-    public void printCliente(String id, String colunas){controle.printa("cliente", id, colunas);}
-
-    public void printVendedor(String colunas){controle.printa("vendedor", colunas);}
-    public void printVendedor(String id, String colunas){controle.printa("vendedor", id, colunas);}
-
-    public void printCompra(String colunas){controle.printa("compra", colunas);}
-    public void printCompra(String id, String colunas){
-        try {
-            ResultSet rs = controle.Select("id_carrinho", "compra", id, "id_compra");
-            rs.next();
-
-            int idCarrinho = rs.getInt("id_carrinho");
-
-            rs = controle.Select("id_livro", "carrinho_livro", Integer.toString(idCarrinho),
-                    "id_carrinho");
-
-            controle.printa("compra", id, colunas);
-            System.out.println("LIVROS PERTENCENTES AO CARRINHO DESSA COMPRA:");
-            while (rs.next()) {
-                controle.printa("livro", rs.getString("id_livro"), "nome, autor, id_livro");
-            }
-        } catch (Exception e){
-            System.out.println("ERRO: " + e);
-        }
-    }
-
-    private void livroFoiAdquirido (int id_livro, int quantidade) {//essa função faz update no banco sobre a quantidade dos livros
-        controle.update("livro", "quantidade_estoque", "quantidade_estoque - "
-                + quantidade, " WHERE id_livro = " + id_livro);
-    }
-
-    public void adicionaLivro_noEstoque(Scanner tc) {
-        LinkedList<Integer> livros = new LinkedList<>();
-        LinkedList<Integer> quantidade = new LinkedList<>();
-        while (true){
-            System.out.println("Qual o ID do livro recebido?");
-            livros.add(Integer.parseInt(tc.nextLine()));
-
-            System.out.println("Qual a quantidade de livros com esse ID que foram recebidos?");
-            quantidade.add(Integer.parseInt(tc.nextLine()));
-
-            System.out.println("Foram recebidos outros livros com IDs diferentes?");
-            if (!tc.nextLine().equalsIgnoreCase("sim"))
-                break;
-        }
-        while (!livros.isEmpty()){
-            if (!controle.update("livro", "quantidade_estoque", "quantidade_estoque + " +
-                    quantidade.pop().toString(), "WHERE id_livro =" + livros.pop()))
-                return;
-
-            System.out.println("ATUALIZAÇÃO FEITA COM SUCESSO!");
-        }
-
-    }
 
 
     public Integer getId() {
@@ -787,5 +637,5 @@ public class Vendedor {
 
     public void setCpf(Long cpf) {
         this.cpf = cpf;
-    }*/
+    }
 }
