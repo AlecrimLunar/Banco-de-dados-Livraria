@@ -1,41 +1,61 @@
 package Entities;
 
-import java.util.LinkedList;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
 
+/**
+ * Classe responsável por guardar as informações das compras.
+ * É útil na classe vendedor para guardar as compras que necessitam
+ * de ser confirmadas.
+ */
 public class Compra {
-    private LinkedList<Livro> compra;
-    private LinkedList<Integer> quantidade;
+    private int idCompra;
+    private String formaPagamento;
+    private Date data;
+    private int valor;
+    private int id_carrinho;
+    private ArrayList<Livro> livrosAdquiridos;
 
-    public Compra() {
-        compra = new LinkedList<Livro>();
-        quantidade = new LinkedList<Integer>();
+    public Compra(int idCompra, String formaPagamento, Date data,
+                  int valor, int id_carrinho){
+        this.idCompra = idCompra;
+        this.formaPagamento = formaPagamento;
+        this.data = data;
+        this.valor = valor;
+        this.id_carrinho = id_carrinho;
+        livrosAdquiridos = new ArrayList<>();
     }
 
-    /*adicionei esse quantidade pq é importante saber a quantidade d um determinado livro
-    que foi comprado*/
-    public void addLivro(Livro livro, int quantidade){
-        compra.add(livro);
-        this.quantidade.add(quantidade);
+    public void preencheLivrosAdquiridos(ResultSet rt) throws SQLException {
+        while (rt.next()){
+            int idLivro = rt.getInt("id_livro");
+            String nome = rt.getNString("nome");
+            double preco = Double.parseDouble(rt.getNString
+                    ("preco"));
+
+            livrosAdquiridos.add(new Livro(idLivro, nome, preco));
+        }
     }
 
-    public void remove (){
-        compra.remove(compra.size() - 1);
+    public Date getData() {
+        return data;
     }
 
-    public void getcompra(){
-        for(int i=0; i<compra.size(); i++)
-            System.out.print("ID: " + compra.get(i).getId() +
-                    " | Nome: " + compra.get(i).getNome() + " | Preço: R$" + compra.get(i).getPreco() + "\n");
+    public int getIdCompra() {
+        return idCompra;
     }
 
-    public int getsize(){
-        return compra.size();
-    }
-    public int getQuantidade(int index){
-        return quantidade.get(index);
+    public int getValor() {
+        return valor;
     }
 
-    public Livro getLivro(int index){
-        return compra.get(index);
+    public String getFormaPagamento() {
+        return formaPagamento;
+    }
+
+    public int getId_carrinho() {
+        return id_carrinho;
     }
 }

@@ -437,62 +437,27 @@ public class Vendedor extends GerenciaBd{
     }
 
     public void confirmarCompra(Scanner tc){
-
+        ArrayList<Compra> compras;
+        try (ResultSet rt = recuperaComprasNaoConfirmadas()){
+            compras = trataCompra(rt);
+        } catch (SQLException e) {}
     }
 
-    private ResultSet recuperaComprasNaoConfirmadas(){
-        String tabela = "Compras_Info.compra";
-        String coluna = "forma_pagamento, data, valor";
+    private ArrayList<Compra> trataCompra(ResultSet rt) throws SQLException{
+        ArrayList<Compra> retorno = new ArrayList<>();
 
-        try {
-            return Select(coluna, tabela, "id_vendedor = -1 AND id_compra >= 0");
-        } catch (ConexaoException e){
-            try {
-                close();
-            } catch (SQLException f){
-                System.err.println("""
-                ========================================================
-                FALHA CRÍTICA NO SISTEMA!
-                A CONEXÃO COM O BANCO DE DADOS APRESENTOU ERROS E
-                NÃO FOI POSSÍVEL ENCERRÁ-LA
-                ========================================================
-                """);
-                System.exit(1);
-            }
-        } catch (NaoTemConexaoException e){
-            try{
-                criaCon(1);
-            } catch (SQLException f){
-                System.err.println("""
-                ========================================================
-                FALHA CRÍTICA NO SISTEMA!
-                NÃO FOI POSSÍVEL ESTABELECER UMA CONEXÃO COM O BANCO
-                DE DADOS
-                ========================================================
-                """);
-                System.exit(1);
-            }
+        while (rt.next()) {
+            int idCompra = rt.getInt("id_compra");
+            String formaPagamento = rt.getNString("forma_pagamento");
+            Date data = rt.getDate("data");
+            int valor = rt.getInt("valor");
+            int idCarrinho = rt.getInt("id_carrinho");
+
+            retorno.add(new Compra(idCompra, formaPagamento,
+                    data, valor, idCarrinho));
         }
-        return null;
-    }
 
-    private ArrayList<InfosCompra> trataCompra(ResultSet rt){
-        ArrayList<InfosCompra> retorno = new ArrayList<>();
-
-        try {
-            while (rt.next()) {
-                int idCompra = rt.getInt("id_compra");
-                String formaPagamento = rt.getNString("forma_pagamento");
-                Date data = rt.getDate("data");
-                int valor = rt.getInt("valor");
-                int idCarrinho = rt.getInt("id_carrinho");
-
-                retorno.add(new InfosCompra(idCompra, formaPagamento,
-                        data, valor, idCarrinho));
-            }
-            return retorno;
-        } catch (SQLException e){}
-        return null;
+        return retorno;
     }
 
     public void alteraLivro(Scanner tc){

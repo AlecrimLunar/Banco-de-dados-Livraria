@@ -489,8 +489,8 @@ public abstract class GerenciaBd implements AutoCloseable{
      * Função responsável por executar qualquer SELECT.
      * Executa o SQL: SELECT 'coluna' FROM 'tabela' WHERE 'pesquisa';.
      * @param tabela a tabela onde o SELECT será feito.
-     * @param coluna as colunas que serão recebidas do SELECT.
-     * @param pesquisa a condição para retorno das linhas.
+     * @param colunas as colunas que serão recebidas do SELECT.
+     * @param condicao a condição para retorno das linhas.
      * @return -1 caso algum erro tenha acontecido e a
      * função tenha conseguido lidar com ele.<br>
      * Um ResultSet contendo as linhas retornadas
@@ -932,6 +932,130 @@ public abstract class GerenciaBd implements AutoCloseable{
             return -1;
         }
         throw new NaoTemConexaoException();
+    }
+
+    /**
+     * Função responsável por recuperar os livros de uma compra.
+     * @param idCompra o id da compra para recuperar os livros feitos nela.
+     * @return Null caso algum erro tenha acontecido e a função tenha conseguido
+     * lidar com ele.<br>
+     * Um ResultSet contendo os livros feitos na determinada compra.
+     * @throws NaoTemConexaoException quando não há
+     * nenhuma conexão com o banco de dados.
+     * @throws ConexaoException quando a conexão com
+     * o banco de dados existente apresentou algum
+     * problema mas não foi possível fechá-la.
+     */
+
+    protected ResultSet recuperaLivrosCompras(int idCompra)
+            throws NaoTemConexaoException, ConexaoException {
+        if (connection != null) {
+            String tabela = "Estoque.livro AS L INNER JOIN " +
+                    "Clientes_Info.carrinho_livro AS C " +
+                    "ON L.id_livro = C.id_livro";
+            String pesquisa = "C.id_carrinho = " + idCompra;
+
+            try {
+                return Select("*", tabela, pesquisa, connection);
+            } catch (SQLException e) {
+                /*
+                 * Se der erro, vai tentar fechar a conexão atual.
+                 */
+                try {
+                    close();
+
+                } catch (SQLException f) {
+                    /*
+                     * Se não conseguir ele informa
+                     * a quem o chamou que não foi possível
+                     * encerrar a conexão com o banco e que
+                     * ela é uma conexão defeituosa.
+                     */
+                    throw new ConexaoException();
+                }
+                try {
+                    /*
+                     * O sistema tentar criar outra conexão.
+                     */
+
+                    criaCon(usuarioBanco);
+                } catch (SQLException f) {
+                    /*
+                     * Caso ele não consiga, é necessário avisar
+                     * que existe um grave problema: não existe conexão
+                     * com o banco de dados.
+                     */
+                    throw new NaoTemConexaoException();
+                }
+            }
+            /*
+             * Caso tenha sido possível resolver os erros, a função avisa que ela
+             * teve um comportamento inesperado e foi possível resolver ele,
+             * por isso ela pode ser chamada novamente.
+             */
+            return null;
+        }
+        throw new NaoTemConexaoException();
+    }
+
+    /**
+     * Função responsável por pegar todas as compras que ainda não
+     * foram confirmadas por um vendedor.
+     * @return Null caso algum erro tenha acontecido e a função tenha conseguido
+     * lidar com ele.<br>
+     * Um ResultSet contendo todas as compras ainda não confirmadas
+     * por um vendedor.
+     * @throws NaoTemConexaoException quando não há
+     * nenhuma conexão com o banco de dados.
+     * @throws ConexaoException quando a conexão com
+     * o banco de dados existente apresentou algum
+     * problema mas não foi possível fechá-la.
+     */
+    protected ResultSet recuperaComprasNaoConfirmadas()
+            throws NaoTemConexaoException, ConexaoException {
+        String tabela = "Compras_Info.compra";
+        String coluna = "forma_pagamento, data, valor";
+
+        try {
+            return Select(coluna, tabela, "id_vendedor = -1 AND id_compra >= 0",
+                    connection);
+        } catch (SQLException e) {
+            /*
+             * Se der erro, vai tentar fechar a conexão atual.
+             */
+            try {
+                close();
+
+            } catch (SQLException f) {
+                /*
+                 * Se não conseguir ele informa
+                 * a quem o chamou que não foi possível
+                 * encerrar a conexão com o banco e que
+                 * ela é uma conexão defeituosa.
+                 */
+                throw new ConexaoException();
+            }
+            try {
+                /*
+                 * O sistema tentar criar outra conexão.
+                 */
+
+                criaCon(usuarioBanco);
+            } catch (SQLException f) {
+                /*
+                 * Caso ele não consiga, é necessário avisar
+                 * que existe um grave problema: não existe conexão
+                 * com o banco de dados.
+                 */
+                throw new NaoTemConexaoException();
+            }
+        }
+        /*
+         * Caso tenha sido possível resolver os erros, a função avisa que ela
+         * teve um comportamento inesperado e foi possível resolver ele,
+         * por isso ela pode ser chamada novamente.
+         */
+        return null;
     }
 
     protected void setUsuarioBanco(int usuarioBanco) {
