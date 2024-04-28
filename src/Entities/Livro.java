@@ -19,6 +19,11 @@ public class Livro {
         this.mari = mari;
     }
 
+    public Livro(int idLivro, String nome, double preco){
+        this.id = idLivro;
+        this.nome = nome;
+        this.preco = preco;
+    }
     public Integer getId() {
         return id;
     }

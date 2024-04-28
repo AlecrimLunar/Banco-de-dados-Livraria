@@ -3,6 +3,10 @@ package Entities;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Classe responsável por guardar as informações das compras.
@@ -29,6 +33,15 @@ public class Compra {
         livrosAdquiridos = new ArrayList<>();
     }
 
+    public void preencheLivrosAdquiridos(ResultSet rt) throws SQLException {
+        while (rt.next()){
+            int idLivro = rt.getInt("id_livro");
+            String nome = rt.getNString("nome");
+            double preco = Double.parseDouble(rt.getNString
+                    ("preco"));
+
+            livrosAdquiridos.add(new Livro(idLivro, nome, preco));
+        }
     public Date getData() {
         return data;
     }

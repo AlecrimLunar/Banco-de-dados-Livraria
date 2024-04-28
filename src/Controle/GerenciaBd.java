@@ -12,7 +12,7 @@ import java.util.HashMap;
  */
 public abstract class GerenciaBd implements AutoCloseable{
 
-    private HashMap<String, String> qualNomeTabelaBanco = null;
+    private static final HashMap<String, String> qualNomeTabelaBanco = null;
     private Connection connection;
     private int usuarioBanco;
 
@@ -205,6 +205,7 @@ public abstract class GerenciaBd implements AutoCloseable{
      * @return uma string contendo a nova operação.
      */
     private String montaCondicao(String condicao, String tabela){
+
         if (!tabela.equalsIgnoreCase("carrinho_livro") &&
                 !tabela.equalsIgnoreCase("relatorio_venda")) {
             if (condicao.isEmpty())
@@ -489,8 +490,8 @@ public abstract class GerenciaBd implements AutoCloseable{
      * Função responsável por executar qualquer SELECT.
      * Executa o SQL: SELECT 'coluna' FROM 'tabela' WHERE 'pesquisa';.
      * @param tabela a tabela onde o SELECT será feito.
-     * @param coluna as colunas que serão recebidas do SELECT.
-     * @param pesquisa a condição para retorno das linhas.
+     * @param colunas as colunas que serão recebidas do SELECT.
+     * @param condicao a condição para retorno das linhas.
      * @return -1 caso algum erro tenha acontecido e a
      * função tenha conseguido lidar com ele.<br>
      * Um ResultSet contendo as linhas retornadas
@@ -998,11 +999,29 @@ public abstract class GerenciaBd implements AutoCloseable{
         throw new NaoTemConexaoException();
     }
 
-    protected ResultSet recuperaCompra(int idCliente) throws ConexaoException, NaoTemConexaoException {
+    /**
+     * Função responsável por pegar todas as compras que ainda não
+     * foram confirmadas por um vendedor.
+     * @return Null caso algum erro tenha acontecido e a função tenha conseguido
+     * lidar com ele.<br>
+     * Um ResultSet contendo todas as compras ainda não confirmadas
+     * por um vendedor.
+     * @throws NaoTemConexaoException quando não há
+     * nenhuma conexão com o banco de dados.
+     * @throws ConexaoException quando a conexão com
+     * o banco de dados existente apresentou algum
+     * problema mas não foi possível fechá-la.
+     */
+    protected ResultSet recuperaComprasNaoConfirmadas()
+            throws NaoTemConexaoException, ConexaoException {
 
         if (connection != null) {
+            String tabela = "Compras_Info.compra";
+            String coluna = "forma_pagamento, data, valor";
+
             try {
-                return Select("c.*", "compra_Info.compra as c", "c.id_cliente = " + idCliente, connection);
+                return Select(coluna, tabela, "id_vendedor = -1 AND id_compra >= 0",
+                        connection);
             } catch (SQLException e) {
                 /*
                  * Se der erro, vai tentar fechar a conexão atual.
@@ -1043,7 +1062,6 @@ public abstract class GerenciaBd implements AutoCloseable{
         }
         throw new NaoTemConexaoException();
     }
-
 
     protected void setUsuarioBanco(int usuarioBanco) {
         this.usuarioBanco = usuarioBanco;
