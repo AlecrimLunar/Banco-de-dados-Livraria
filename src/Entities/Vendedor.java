@@ -20,6 +20,11 @@ public class Vendedor extends GerenciaBd{
         funcoes = new Funcoes();
     }
 
+    /**
+     * Função que exibe o menu do vendedor e mostra as coisas
+     * que o vendedor pode realizar.
+     * @param tc o scanner para as entradas do usuário.
+     */
     public void menuVendedor(Scanner tc){
 
         System.out.print("========================================================" + "\n" +
@@ -44,7 +49,7 @@ public class Vendedor extends GerenciaBd{
             switch (a){
                 case 1 -> cadastraLivro(tc);
 
-                case 2 -> alteraLivro(tc);
+                case 2 -> alteraQualLivro(tc);
 
                 case 3 -> adicionaLivrosEstoque(tc);
 
@@ -234,8 +239,21 @@ public class Vendedor extends GerenciaBd{
         }
     }
 
+    /**
+     * Função que realiza a confirmação das compras.
+     * @param tc o scanner para as entradas do usuário.
+     */
     public void confirmaCompras(Scanner tc) {
-        ArrayList<Compra> compras = comprasNaoConfirmadas();
+        ArrayList<Compra> compras = null;
+
+        try {
+            compras = comprasNaoConfirmadas();
+        } catch (SQLException e){
+            System.err.print("""
+                    Não foi possível recuperar as compras!
+                    Tente novamente mais tarde.
+                    """);
+        }
 
         if (compras == null)
             return;
@@ -312,18 +330,32 @@ public class Vendedor extends GerenciaBd{
                 """);
     }
 
-    private ArrayList<Compra> comprasNaoConfirmadas(){
-        ArrayList<Compra> compras = null;
-        try {
-            compras = recuperaCompras();
-        } catch (SQLException e) {
-            System.err.println("""
-                            ========================================================
-                            NÃO FOI POSSÍVEL RECUPERAR OS DADOS.
-                            TENTE NOVAMENTE MAIS TARDE
-                            ========================================================
-                            """);
-            return null;
+
+    /**
+     * Função responsável por recuperar as compras não confirmadas.
+     * @return Um ArrayList contendo as compras que não foram confirmadas
+     * ainda.<br>
+     * Null caso algum erro tenha acontecido
+     * @throws SQLException
+     */
+    private ArrayList<Compra> comprasNaoConfirmadas() throws SQLException{
+        ArrayList<Compra> compras = new ArrayList<>();
+
+        try (ResultSet rt = recuperaComprasNaoConfirmadas()) {
+            while (rt.next()) {
+                int idCompra = rt.getInt("id_compra");
+                String formaPagamento = rt.getNString("forma_pagamento");
+                Date data = rt.getDate("data");
+                int valor = rt.getInt("valor");
+                int idCarrinho = rt.getInt("id_carrinho");
+
+                compras.add(new Compra(idCompra, formaPagamento,
+                        data, valor, idCarrinho));
+            }
+        } catch (ConexaoException e) {
+            trataException(e);
+        } catch (NaoTemConexaoException e) {
+            trataException(e);
         }
 
         for (int i = 0; i <compras.size(); ++i){
@@ -345,32 +377,17 @@ public class Vendedor extends GerenciaBd{
                 return null;
             }
         }
+
         return compras;
     }
 
-    private ArrayList<Compra> recuperaCompras() throws SQLException{
-        ArrayList<Compra> retorno = new ArrayList<>();
-
-        try (ResultSet rt = recuperaComprasNaoConfirmadas()) {
-            while (rt.next()) {
-                int idCompra = rt.getInt("id_compra");
-                String formaPagamento = rt.getNString("forma_pagamento");
-                Date data = rt.getDate("data");
-                int valor = rt.getInt("valor");
-                int idCarrinho = rt.getInt("id_carrinho");
-
-                retorno.add(new Compra(idCompra, formaPagamento,
-                        data, valor, idCarrinho));
-            }
-        } catch (ConexaoException e) {
-            trataException(e);
-        } catch (NaoTemConexaoException e) {
-            trataException(e);
-        }
-        return retorno;
-    }
-
-    public void alteraLivro(Scanner tc){
+    /**
+     * Função inicial da alteração de um livro.<br>
+     * Irá receber do usuário qual o livro que ele deseja
+     * alterar.
+     * @param tc o scanner para as entradas do usuário.
+     */
+    public void alteraQualLivro(Scanner tc){
         String entrada;
         System.out.print("""
                 ========================================================
@@ -411,6 +428,12 @@ public class Vendedor extends GerenciaBd{
         }
     }
 
+    /**
+     * Função responsável por realizar as alterações
+     * desejadas no livro.
+     * @param idLivro qual livro deseja ser alterado.
+     * @param tc o scanner para as entradas do usuário.
+     */
     private void alteracoesLivro(int idLivro, Scanner tc){
         ArrayList<String> coluna = new ArrayList<>();
         ArrayList<String> novo = new ArrayList<>();
@@ -548,6 +571,14 @@ public class Vendedor extends GerenciaBd{
         }
     }
 
+    /**
+     * Função responsável por converter um resultSet contendo
+     * um livro em um objeto livro.
+     * @param idLivro o id do livro que se deseja criar o objeto.
+     * @return Um objeto Livro contendo as informações do livro
+     * desejado.<br>
+     * Null caso algum erro tenha acontecido.
+     */
     private Livro recebeLivro(int idLivro){
         try (ResultSet rt = getLivro(idLivro)){
             return new Livro(rt);
