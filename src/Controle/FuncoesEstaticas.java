@@ -1,9 +1,6 @@
 package Controle;
 
-import Entities.Carrinho;
-import Entities.Cliente;
-import Entities.Livro;
-import Entities.Vendedor;
+import Entities.*;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -20,7 +17,7 @@ public class FuncoesEstaticas extends GerenciaCon {
         }
     }
 
-    /****/
+
     public LinkedList<Livro> Destaques(int quem) {
         setUsuarioBanco(quem);
         LinkedList<Livro> destaques = new LinkedList<>();
@@ -31,7 +28,7 @@ public class FuncoesEstaticas extends GerenciaCon {
         try {
         ResultSet rt = Select(tabela, coluna, pesquisa);
 
-        destaques = RecuperaLivro(rt);
+        destaques = RecuperaLivro(rt, false);
 
         while (rt.next()) { }
         } catch (SQLException | NaoTemConexaoException e) {
@@ -206,7 +203,7 @@ public class FuncoesEstaticas extends GerenciaCon {
      * Serve para o cliente pesquisar o livro tanto pelo nome, quanto autor ou genero.
      * É retornado o ResultSet com as tabelas lançando para uma LinkedList de livros.
      * **/
-    public static LinkedList<Livro> PesquisaLivro(String str, String coluna) throws SQLException, NaoTemConexaoException {
+    public LinkedList<Livro> PesquisaLivro(String str, String coluna) throws SQLException, NaoTemConexaoException {
         LinkedList<Livro> l = new LinkedList<>();
 
         /*
@@ -223,7 +220,7 @@ public class FuncoesEstaticas extends GerenciaCon {
                     "%' AND l.quantidade_estoque > 0");
 
             assert rt != null;
-            l = RecuperaLivro(rt);
+            l = RecuperaLivro(rt, false);
         } else if(aux == 0) {
             System.out.print("Não temos nenhum livro com esse " + coluna + "!\n\n");
         } else if(aux == -1){
@@ -236,8 +233,12 @@ public class FuncoesEstaticas extends GerenciaCon {
     /**
      * Recebe um ResultSet da tabela livros e coloca todos os livros retornados em uma LinkedList de livros
      * e a retorna.
-     * **/
-    public static LinkedList<Livro> RecuperaLivro(ResultSet rt) throws SQLException{
+     * @param rt o ResultSet que contém os dados dos livros
+     * @param carrinho um booleano que indica se os livros serão adicionados ao carrinho
+     * @return uma LinkedList de Livros
+     * @throws SQLException caso ocorra algum erro ao acessar o banco de dados
+     */
+    public static LinkedList<Livro> RecuperaLivro(ResultSet rt, boolean carrinho) throws SQLException{
         LinkedList<Livro> l = new LinkedList<>();
 
         while(rt.next()) {
@@ -245,12 +246,23 @@ public class FuncoesEstaticas extends GerenciaCon {
                     Double.parseDouble(rt.getString("preco").substring(3).replaceAll(",", ".")),
                     rt.getString("autor"), rt.getString("genero"), rt.getString("tipo"),
                     rt.getBoolean("from_mari"));
-            l.add(aux);
+            if(carrinho){
+                for(int i = 1; i <= rt.getInt("qunatidade"); i++){
+                    l.add(aux);
+                }
+            } else {
+                l.add(aux);
+            }
         }
 
         return l;
     }
 
+    /**
+     * Prints the list of books in a formatted way.
+     *
+     * @param l the list of books to be printed
+     */
     public static void PrintLivro(LinkedList<Livro> l){
         int escolha = 1;
         for (Livro livro : l) {
@@ -259,6 +271,25 @@ public class FuncoesEstaticas extends GerenciaCon {
         }
     }
 
+    public void printCompras(ResultSet rt){
+        int contador = 1;
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
+        System.out.print(contador + " - Código do pedido:" + rt.getInt("id_compra") + "\n" +
+                "Forma de pagamento: " + rt.getString("forma_pagamento") + "\n" +
+                "Data: " + sdf.format(rt.getDate("data")) + "\n" +
+                "Valor total: " + rt.getInt("valor") + "\n");
+    }
+
+    /**
+     * Recupera um vendedor pelo seu usuário e senha.
+     *
+     * @param user  O usuário do vendedor.
+     * @param senha  A senha do vendedor.
+     * @return  Um objeto Vendedor caso a consulta seja bem-sucedida, caso contrário, retorna null.
+     * @throws SQLException  Caso ocorra algum erro ao acessar o banco de dados.
+     * @throws NaoTemConexaoException  Caso a conexão com o banco de dados não esteja disponível.
+     */
     public Vendedor recuperaVendedor(String user, String senha) throws SQLException, NaoTemConexaoException {
         ResultSet rt = Select("vendedores_info.vendedor as v", "v.*", "v.usuario = " + user + "AND v.senha = " + senha);
         assert rt != null;
@@ -273,6 +304,15 @@ public class FuncoesEstaticas extends GerenciaCon {
         return new Cliente(rt.getString("nome"), Long.parseLong(rt.getString("cpf")), rt.getString("rua"),
                 rt.getInt("numero"), rt.getBoolean("one_piece"), rt.getBoolean("is_flamengo"),
                 rt.getBoolean("is_sousa"), rt.getString("usuario"), rt.getString("senha"), carrinho);
+    }
+
+    public LinkedList<Compra> recuperaCompra() throws NaoTemConexaoException {
+        LinkedList<Compra> c = new LinkedList<>();
+
+        ResultSet rt = Select("estoque.compra as c", "c.*", "");
+        assert rt!= null;
+
+        return c;
     }
 
     public Carrinho Pesquisa(Scanner sc, Carrinho carrinho) throws SQLException, NaoTemConexaoException {
@@ -432,7 +472,7 @@ public class FuncoesEstaticas extends GerenciaCon {
 
     }
 
-    public static void SolicitarCompra(int tipoP, double precoT, int id_cliente, int id_carrinho) throws NaoTemConexaoException {
+    public void SolicitarCompra(int tipoP, double precoT, int id_cliente, int id_carrinho) throws NaoTemConexaoException {
         Date date = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         String formaP = tipoP == 1 ? "Berries" : tipoP == 2 ? "Pix" : tipoP == 3 ? "Boleto" : "Cartão";
@@ -448,6 +488,68 @@ public class FuncoesEstaticas extends GerenciaCon {
                     "Número do pedido: " + id);
         } else if(id == 0){
             System.out.print("Erro no cadastro da compra");
+        }
+    }
+
+    public Carrinho CarregaCarrinho(Carrinho carrinho, int idC) throws SQLException, NaoTemConexaoException {
+
+        /* SELECT cl.id_carrinho, cl.quantidade, l.* FROM clientes_info.carrinho as c
+        INNER JOIN clientes_info.carrinho_livro as cl ON c.id_carrinho = cl.id_carrinho
+        INNER JOIN Estoque as l ON cl.id_livro = l.id_livro
+        WHERE c.id_cliente = idC AND c.id_compra = -1
+        * */
+
+        ResultSet rt = Select("cl.id_carrinho, cl.quantidade, l.*", "clientes_info.carrinho as c " +
+                "INNER JOIN clientes_info.carrinho_livro as cl ON c.id_carrinho = cl.id_carrinho " +
+                "INNER JOIN Estoque as l ON cl.id_livro = l.id_livro", "c.id_cliente =" + idC + " AND c.id_compra = -1");
+
+        assert rt != null;
+
+        LinkedList<Livro> l = RecuperaLivro(rt, true);
+
+        carrinho.setCarrinho(l);
+        carrinho.setId(rt.getInt("id_carrinho"));
+
+        return carrinho;
+    }
+
+    public void verPedidos(Scanner sc, int id) throws SQLException {
+        int contador = 1;
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
+        ResultSet rt = Select("id_compra, forma_pagamento, data, valor, id_vendedor", "compra", "id_cliente = " + id);
+
+        if(!rt.wasNull()){
+            System.out.print("""
+                    ========================================================
+                    PEDIDOS
+                    ========================================================
+                    """);
+            while(rt.next()){
+
+                printCompras(rt);
+                System.out.print("Status: ");
+
+                if(rt.getInt("id_vendedor") == -1){
+                    System.out.println("Em processamento.\n");
+                } else {
+                    System.out.println("Aprovado.\n");
+                }
+                contador++;
+            }
+            System.out.println("""
+                    ========================================================
+                    Caso deseje ver mais detalhes digite o numero do pedido
+                    (Se deseja sair digite 0)
+                    """);
+            int a = Integer.parseInt(sc.nextLine());
+
+
+        } else {
+            System.out.println("""
+                    NENHUM PEDIDO ENCONTRADO!
+                    ========================================================
+                    """);
         }
     }
 

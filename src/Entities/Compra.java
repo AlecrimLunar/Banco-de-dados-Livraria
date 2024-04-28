@@ -1,10 +1,16 @@
 package Entities;
 
+import java.util.Date;
 import java.util.LinkedList;
 
 public class Compra {
-    private LinkedList<Livro> compra;
-    private LinkedList<Integer> quantidade;
+    private int id;
+    private String formaP;
+    private Date date;
+    private int valor;
+    private int idV;
+    private int idCarrinho;
+    private int idC;
 
     public Compra() {
         compra = new LinkedList<Livro>();

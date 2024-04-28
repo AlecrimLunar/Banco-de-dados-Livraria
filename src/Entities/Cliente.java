@@ -1,6 +1,5 @@
 package Entities;
 
-import Controle.ConexaoException;
 import Controle.GerenciaCon;
 import Controle.NaoTemConexaoException;
 import Controle.FuncoesEstaticas;
@@ -43,8 +42,11 @@ public class Cliente extends GerenciaCon {
     public void MenuCliente(Scanner sc, boolean compra) throws NaoTemConexaoException, SQLException {
 
         if(compra){
-            
+            fun.Compra(sc, carrinho, new boolean[]{getOnePiece(), getOnePiece(), getSouza()}, getId());
         }
+
+        carrinho = fun.CarregaCarrinho(carrinho, getId());
+
         /*Tem que ter uma função que vai buscar o carrinho anterior do cara*/
         LinkedList<Livro> destaques = fun.Destaques(0);
 
@@ -54,7 +56,7 @@ public class Cliente extends GerenciaCon {
                 ========================================================
                 """);
 
-        while(true) {
+        loop:while(true) {
 
             System.out.print("livros em destaque:\n" +
                     fun.PrintDestaques(destaques) + "\n" +
@@ -94,15 +96,45 @@ public class Cliente extends GerenciaCon {
                     }
                 }
                 case 6 ->{
-                    /*Alterar infos e pedidos feitos :D*/
+
                 }
-                case 7 ->{return;}
+                case 7 ->{break loop;}
                 case 0 -> {
                     System.out.print("Tem certeza que deseja sair?\n");
                     if (sc.nextLine().equalsIgnoreCase("sim"))
                         System.exit(1);
                 }
                 default -> System.out.println("Opção invalida:");
+            }
+        }
+    }
+
+    public void MenuConta(Scanner sc){
+
+        loop:while(true) {
+            System.out.println("========================================================\n" +
+                    "MENU CONTA - BEM VINDO " + getNome() + "!\n");
+            System.out.println("""
+                    ========================================================
+                    1 - Ver meus pedidos
+                    2 - Alterar informações
+                    3 - Deletar conta
+                    0 - Sair
+                    ========================================================
+                    """);
+            int a = Integer.parseInt(sc.nextLine());
+
+            switch (a) {
+                case 1 -> {
+
+                }
+                case 2 -> {
+
+                }
+                case 3 -> {
+
+                }
+                case 0 -> {break loop;}
             }
         }
     }
