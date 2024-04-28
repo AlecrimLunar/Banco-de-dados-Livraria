@@ -39,6 +39,26 @@ public class Compra {
         }
     }
 
+    public void printCompras(){
+        System.out.print(
+                "========================================================" + "\n" +
+                        "Número da compra: " + this.idCompra + "\n" +
+                        "Data da compra: " + this.data.toString() + "\n" +
+                        "Valor da compra: " + this.valor + "\n" +
+                        "Forma de pagamento : " + this.formaPagamento + "\n");
+        System.out.print(
+                "--------------------------------------------------------" + "\n" +
+                "Livros da compra:");
+
+        for (Livro livro : livrosAdquiridos){
+            System.out.print(
+                    "Nome: " + livro.getNome() + "\n" +
+                    "Preço: " + livro.getPreco() + "\n" +
+                    "Código do livro: " + livro.getId() + "\n" +
+                    "--------------------------------------------------------" + "\n");
+        }
+    }
+
     public Date getData() {
         return data;
     }

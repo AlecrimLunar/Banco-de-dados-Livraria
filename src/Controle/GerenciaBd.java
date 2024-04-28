@@ -936,6 +936,140 @@ public abstract class GerenciaBd implements AutoCloseable{
     }
 
     /**
+     * Função responsável por confirmar uma compra, isto é,
+     * atribuir à coluna id_vendedor em Compras_Info.compra
+     * o id de um vendedor responsável pela confirmação daquela
+     * compra.
+     * @param idCompra o código da compra a ser confimada.
+     * @param idVendedor o código do vendedor que confirmou
+     *                   a compra.
+     * @return -1 caso algum erro tenha acontecido e a
+     * função tenha conseguido lidar com ele. <br>
+     * Qualquer outro valor inteiro positivo ou zero
+     * representando a quantidade de updates realizados.
+     * @throws NaoTemConexaoException quando não há
+     * nenhuma conexão com o banco de dados.
+     * @throws ConexaoException quando a conexão com
+     * o banco de dados existente apresentou algum
+     * problema mas não foi possível fechá-la.
+     */
+
+    protected int confirmaCompra(int idCompra, int idVendedor)
+            throws NaoTemConexaoException, ConexaoException{
+        if (connection != null){
+            try{
+                update("Compras_Info.compra",
+                        "id_Vendedor = " + idVendedor,
+                        "id_Compra = " + idCompra, connection);
+            } catch (SQLException e) {
+                /*
+                 * Se der erro, vai tentar fechar a conexão atual.
+                 */
+                try {
+                    close();
+
+                } catch (SQLException f) {
+                    /*
+                     * Se não conseguir ele informa
+                     * a quem o chamou que não foi possível
+                     * encerrar a conexão com o banco e que
+                     * ela é uma conexão defeituosa.
+                     */
+                    throw new ConexaoException();
+                }
+                try {
+                    /*
+                     * O sistema tentar criar outra conexão.
+                     */
+
+                    criaCon(usuarioBanco);
+                } catch (SQLException f) {
+                    /*
+                     * Caso ele não consiga, é necessário avisar
+                     * que existe um grave problema: não existe conexão
+                     * com o banco de dados.
+                     */
+                    throw new NaoTemConexaoException();
+                }
+            }
+            /*
+             * Caso tenha sido possível resolver os erros, a função avisa que ela
+             * teve um comportamento inesperado e foi possível resolver ele,
+             * por isso ela pode ser chamada novamente.
+             */
+            return -1;
+        }
+        throw new NaoTemConexaoException();
+    }
+
+    /**
+     * Função responsável por recusar uma compra, isto é,
+     * atribuir à coluna id_vendedor em Compras_Info.compra
+     * o id de um vendedor responsável pela rejeição daquela
+     * compra e atribuir true à coluna foiRecusada.
+     * @param idCompra o código da compra a ser confimada.
+     * @param idVendedor o código do vendedor que confirmou
+     *                   a compra.
+     * @return -1 caso algum erro tenha acontecido e a
+     * função tenha conseguido lidar com ele. <br>
+     * Qualquer outro valor inteiro positivo ou zero
+     * representando a quantidade de updates realizados.
+     * @throws NaoTemConexaoException quando não há
+     * nenhuma conexão com o banco de dados.
+     * @throws ConexaoException quando a conexão com
+     * o banco de dados existente apresentou algum
+     * problema mas não foi possível fechá-la.
+     */
+    protected int recusaCompra(int idCompra, int idVendedor)
+            throws NaoTemConexaoException, ConexaoException{
+        if (connection != null){
+            try{
+                update("Compras_Info.compra",
+                        "id_vendedor = " + idVendedor +
+                                ", foiRecusada = true",
+                        "id_compra = " + idCompra, connection);
+            } catch (SQLException e) {
+                /*
+                 * Se der erro, vai tentar fechar a conexão atual.
+                 */
+                try {
+                    close();
+
+                } catch (SQLException f) {
+                    /*
+                     * Se não conseguir ele informa
+                     * a quem o chamou que não foi possível
+                     * encerrar a conexão com o banco e que
+                     * ela é uma conexão defeituosa.
+                     */
+                    throw new ConexaoException();
+                }
+                try {
+                    /*
+                     * O sistema tentar criar outra conexão.
+                     */
+
+                    criaCon(usuarioBanco);
+                } catch (SQLException f) {
+                    /*
+                     * Caso ele não consiga, é necessário avisar
+                     * que existe um grave problema: não existe conexão
+                     * com o banco de dados.
+                     */
+                    throw new NaoTemConexaoException();
+                }
+            }
+            /*
+             * Caso tenha sido possível resolver os erros, a função avisa que ela
+             * teve um comportamento inesperado e foi possível resolver ele,
+             * por isso ela pode ser chamada novamente.
+             */
+            return -1;
+        }
+        throw new NaoTemConexaoException();
+    }
+
+    /**
      * Função responsável por recuperar os livros de uma compra.
      * @param idCompra o id da compra para recuperar os livros feitos nela.
      * @return Null caso algum erro tenha acontecido e a função tenha conseguido
@@ -947,7 +1081,6 @@ public abstract class GerenciaBd implements AutoCloseable{
      * o banco de dados existente apresentou algum
      * problema mas não foi possível fechá-la.
      */
-
     protected ResultSet recuperaLivrosCompras(int idCompra)
             throws NaoTemConexaoException, ConexaoException {
         if (connection != null) {

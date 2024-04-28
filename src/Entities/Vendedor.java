@@ -436,27 +436,221 @@ public class Vendedor extends GerenciaBd{
         }
     }
 
-    public void confirmarCompra(Scanner tc){
-        ArrayList<Compra> compras;
-        try (ResultSet rt = recuperaComprasNaoConfirmadas()){
-            compras = trataCompra(rt);
-        } catch (SQLException e) {}
+    public void confirmaCompras(Scanner tc) {
+        ArrayList<Compra> compras = comprasNaoConfirmadas();
+
+        if (compras == null)
+            return;
+
+        if (!compras.isEmpty()) {
+            for (Compra compraAtual : compras) {
+                compraAtual.printCompras();
+                System.out.print("Deseja confirmar essa compra?\n");
+
+                if (tc.nextLine().equalsIgnoreCase("sim")) {
+                    int verifica = -1;
+                    try {
+
+                        do {
+                            verifica = confirmaCompra(compraAtual.getIdCompra(),
+                                    this.id);
+                        } while (verifica == -1);
+                    } catch (ConexaoException e) {
+                        try {
+                            close();
+                        } catch (SQLException f) {
+                            System.err.println("""
+                                    ========================================================
+                                    FALHA CRÍTICA NO SISTEMA!
+                                    A CONEXÃO COM O BANCO DE DADOS APRESENTOU ERROS E
+                                    NÃO FOI POSSÍVEL ENCERRÁ-LA
+                                    ========================================================
+                                    """);
+                            System.exit(1);
+                        }
+                    } catch (NaoTemConexaoException e) {
+                        try {
+                            criaCon(1);
+                        } catch (SQLException f) {
+                            System.err.println("""
+                                    ========================================================
+                                    FALHA CRÍTICA NO SISTEMA!
+                                    NÃO FOI POSSÍVEL ESTABELECER UMA CONEXÃO COM O BANCO
+                                    DE DADOS
+                                    ========================================================
+                                    """);
+                            System.exit(1);
+                        }
+                    }
+
+                    if (verifica == 1) {
+                        System.out.print(
+                                "\nCompra confirmada com sucesso!\n");
+                    } else
+                        System.out.print("""
+
+                                Não foi possível efetuar a confirmação da compra!
+                                Tente novamente mais tarde.
+                                """);
+                } else {
+                    int verifica = -1;
+                    try {
+                        do {
+                            verifica = recusaCompra(compraAtual.getIdCompra(), this.id);
+                        } while (verifica == -1);
+                    } catch (ConexaoException e) {
+                        try {
+                            close();
+                        } catch (SQLException f) {
+                            System.err.println("""
+                                    ========================================================
+                                    FALHA CRÍTICA NO SISTEMA!
+                                    A CONEXÃO COM O BANCO DE DADOS APRESENTOU ERROS E
+                                    NÃO FOI POSSÍVEL ENCERRÁ-LA
+                                    ========================================================
+                                    """);
+                            System.exit(1);
+                        }
+                    } catch (NaoTemConexaoException e) {
+                        try {
+                            criaCon(1);
+                        } catch (SQLException f) {
+                            System.err.println("""
+                                    ========================================================
+                                    FALHA CRÍTICA NO SISTEMA!
+                                    NÃO FOI POSSÍVEL ESTABELECER UMA CONEXÃO COM O BANCO
+                                    DE DADOS
+                                    ========================================================
+                                    """);
+                            System.exit(1);
+                        }
+                    }
+
+                    if (verifica == 1) {
+                        System.out.print(
+                                "\nCompra confirmada com sucesso!\n");
+                    } else
+                        System.out.print("""
+
+                                Não foi possível efetuar a confirmação da compra!
+                                Tente novamente mais tarde.
+                                """);
+                }
+
+                System.out.print("""
+                        --------------------------------------------------------
+                        Deseja ir para a próxima compra as ser confirmada?
+                        """);
+                if (!tc.nextLine().equalsIgnoreCase("sim")) {
+                    break;
+                }
+            }
+        }
+        System.out.print("""
+                ========================================================
+                Todas as compras pendentes foram verificadas!
+                ========================================================
+                """);
     }
 
-    private ArrayList<Compra> trataCompra(ResultSet rt) throws SQLException{
-        ArrayList<Compra> retorno = new ArrayList<>();
 
-        while (rt.next()) {
-            int idCompra = rt.getInt("id_compra");
-            String formaPagamento = rt.getNString("forma_pagamento");
-            Date data = rt.getDate("data");
-            int valor = rt.getInt("valor");
-            int idCarrinho = rt.getInt("id_carrinho");
-
-            retorno.add(new Compra(idCompra, formaPagamento,
-                    data, valor, idCarrinho));
+    private ArrayList<Compra> comprasNaoConfirmadas(){
+        ArrayList<Compra> compras = null;
+        try {
+            compras = recuperaCompras();
+        } catch (SQLException e) {
+            System.err.println("""
+                            ========================================================
+                            NÃO FOI POSSÍVEL RECUPERAR OS DADOS.
+                            TENTE NOVAMENTE MAIS TARDE
+                            ========================================================
+                            """);
+            return null;
         }
 
+        for (int i = 0; i <compras.size(); ++i){
+            try(ResultSet rt = recuperaLivrosCompras(compras.get(i).getIdCompra())){
+                compras.get(i).preencheLivrosAdquiridos(rt);
+            } catch (ConexaoException e) {
+                try {
+                    close();
+                } catch (SQLException f) {
+                    System.err.println("""
+                            ========================================================
+                            FALHA CRÍTICA NO SISTEMA!
+                            A CONEXÃO COM O BANCO DE DADOS APRESENTOU ERROS E
+                            NÃO FOI POSSÍVEL ENCERRÁ-LA
+                            ========================================================
+                            """);
+                    System.exit(1);
+                }
+            } catch (NaoTemConexaoException e) {
+                try {
+                    criaCon(1);
+                } catch (SQLException f) {
+                    System.err.println("""
+                            ========================================================
+                            FALHA CRÍTICA NO SISTEMA!
+                            NÃO FOI POSSÍVEL ESTABELECER UMA CONEXÃO COM O BANCO
+                            DE DADOS
+                            ========================================================
+                            """);
+                    System.exit(1);
+                }
+            } catch (SQLException e) {
+                System.err.println("""
+                            ========================================================
+                            NÃO FOI POSSÍVEL RECUPERAR OS DADOS.
+                            TENTE NOVAMENTE MAIS TARDE
+                            ========================================================
+                            """);
+                return null;
+            }
+        }
+        return compras;
+    }
+
+    private ArrayList<Compra> recuperaCompras() throws SQLException{
+        ArrayList<Compra> retorno = new ArrayList<>();
+
+        try (ResultSet rt = recuperaComprasNaoConfirmadas()) {
+            while (rt.next()) {
+                int idCompra = rt.getInt("id_compra");
+                String formaPagamento = rt.getNString("forma_pagamento");
+                Date data = rt.getDate("data");
+                int valor = rt.getInt("valor");
+                int idCarrinho = rt.getInt("id_carrinho");
+
+                retorno.add(new Compra(idCompra, formaPagamento,
+                        data, valor, idCarrinho));
+            }
+        } catch (ConexaoException e) {
+            try {
+                close();
+            } catch (SQLException f) {
+                System.err.println("""
+                            ========================================================
+                            FALHA CRÍTICA NO SISTEMA!
+                            A CONEXÃO COM O BANCO DE DADOS APRESENTOU ERROS E
+                            NÃO FOI POSSÍVEL ENCERRÁ-LA
+                            ========================================================
+                            """);
+                System.exit(1);
+            }
+        } catch (NaoTemConexaoException e) {
+            try {
+                criaCon(1);
+            } catch (SQLException f) {
+                System.err.println("""
+                            ========================================================
+                            FALHA CRÍTICA NO SISTEMA!
+                            NÃO FOI POSSÍVEL ESTABELECER UMA CONEXÃO COM O BANCO
+                            DE DADOS
+                            ========================================================
+                            """);
+                System.exit(1);
+            }
+        }
         return retorno;
     }
 

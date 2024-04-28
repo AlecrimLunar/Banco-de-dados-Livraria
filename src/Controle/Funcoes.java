@@ -366,7 +366,7 @@ public class Funcoes extends GerenciaBd {
                 if (aux > 0 && aux < carrinho.getLivros().size()) {
                     carrinho.removeLivro(aux - 1);
                     System.out.println("""
-                                Livro reirado do carrinho!
+                                Livro retirado do carrinho!
                                 """);
                 } else if (aux > carrinho.getLivros().size()) {
                     System.out.println("Livro inválido");
