@@ -1,6 +1,7 @@
 package Entities;
 import Controle.*;
 
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -436,16 +437,15 @@ public class Vendedor extends GerenciaBd{
     }
 
     public void confirmarCompra(Scanner tc){
+
     }
 
     private ResultSet recuperaComprasNaoConfirmadas(){
         String tabela = "Compras_Info.compra";
         String coluna = "forma_pagamento, data, valor";
 
-        ResultSet rt;
-
         try {
-            rt = Select(coluna, tabela, "id_vendedor = -1 AND id_compra >= 0");
+            return Select(coluna, tabela, "id_vendedor = -1 AND id_compra >= 0");
         } catch (ConexaoException e){
             try {
                 close();
@@ -473,6 +473,26 @@ public class Vendedor extends GerenciaBd{
                 System.exit(1);
             }
         }
+        return null;
+    }
+
+    private ArrayList<InfosCompra> trataCompra(ResultSet rt){
+        ArrayList<InfosCompra> retorno = new ArrayList<>();
+
+        try {
+            while (rt.next()) {
+                int idCompra = rt.getInt("id_compra");
+                String formaPagamento = rt.getNString("forma_pagamento");
+                Date data = rt.getDate("data");
+                int valor = rt.getInt("valor");
+                int idCarrinho = rt.getInt("id_carrinho");
+
+                retorno.add(new InfosCompra(idCompra, formaPagamento,
+                        data, valor, idCarrinho));
+            }
+            return retorno;
+        } catch (SQLException e){}
+        return null;
     }
 
     public void alteraLivro(Scanner tc){
