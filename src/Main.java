@@ -60,7 +60,7 @@ public class Main {
                     switch (a){
                         case 1 -> vendedor.alteraCliente(tc);
                         case 2 -> vendedor.alteraVendedor(tc);
-                        case 3 -> vendedor.alteraQualLivro(tc);
+                        case 3 -> vendedor.alteraLivro(tc);
                         case 4 -> {continue;}
                         default -> System.out.println("OPÇÃO INVÁLIDA!");
                     }
