@@ -28,14 +28,16 @@ public class Livro {
         this.preco = preco;
     }
 
-    public Livro (ResultSet rt) throws SQLException{
-        this.id = rt.getInt("id_livro");
-        this.tipo = rt.getNString("tipo");
-        this.nome = rt.getNString("nome");
-        this.mari = rt.getBoolean("from_mari");
-        this.autor = rt.getNString("autor");
-        this.genero = rt.getNString("genero");
-        this.preco = Double.parseDouble(rt.getNString("preco"));
+    public Livro(ResultSet rt) throws SQLException {
+        if (rt.next()) {
+            this.id = rt.getInt("id_livro");
+            this.nome = rt.getString("nome");
+            this.preco = Double.parseDouble(rt.getString("preco").substring(3).replaceAll(",", "."));
+            this.autor = rt.getString("autor");
+            this.genero = rt.getString("genero");
+            this.tipo = rt.getString("tipo");
+            this.mari = rt.getBoolean("from_mari");
+        }
     }
 
     public Integer getId() {

@@ -569,7 +569,7 @@ public class Funcoes extends GerenciaBd {
 
     /* esse método irá verificar se alguma palavra reservada
      * do SQL está sendo utilizada */
-    private static boolean verificaComandoSQL(String s){
+    public boolean verificaComandoSQL(String s){
         Pattern verificaComandoSQL = Pattern.compile(" *drop +| *insert +| *" +
                 "grant +| *update +| *delete +| *select +| *create +| *" +
                 "alter +| *union +", Pattern.CASE_INSENSITIVE);
@@ -608,7 +608,7 @@ public class Funcoes extends GerenciaBd {
 
     public boolean regexNome(String s) {
         if (verificaComandoSQL(s)) {
-            return Pattern.matches("[A-Za-zÀÃÂÁÇÉÊÍÎÓÔÕÚÛÜàãâáçéêíîóôõúûü]+", s);
+            return Pattern.matches("[A-Za-zÀÃÂÁÇÉÊÍÎÓÔÕÚÛÜàãâáçéêíîóôõúûü ]+", s);
         }
         return false;
     }
@@ -617,6 +617,64 @@ public class Funcoes extends GerenciaBd {
         return Pattern.matches("[0-9.]+", s);
     }
 
+
+    /**
+     * Função responsável por tratar a excessão se ter uma
+     * conexão com o banco de dados que está com problemas.
+     * Ela irá tentar fechar ela e depois iniciar uma nova
+     * conexão.
+     * <P>Caso não consiga, irá encerrar o programa.</P>
+     * @param conexaoException
+     */
+    public boolean trataException (ConexaoException conexaoException, int quem){
+        try {
+            close();
+        } catch (SQLException f) {
+            System.err.println("""
+                            ========================================================
+                            FALHA CRÍTICA NO SISTEMA!
+                            A CONEXÃO COM O BANCO DE DADOS APRESENTOU ERROS E
+                            NÃO FOI POSSÍVEL ENCERRÁ-LA
+                            ========================================================
+                            """);
+            System.exit(1);
+        }
+        try {
+            criaCon(quem);
+        } catch (SQLException f) {
+            System.err.println("""
+                            ========================================================
+                            FALHA CRÍTICA NO SISTEMA!
+                            NÃO FOI POSSÍVEL ESTABELECER UMA CONEXÃO COM O BANCO
+                            DE DADOS
+                            ========================================================
+                            """);
+            System.exit(1);
+        }
+        return true;
+    }
+
+    /**
+     * Função responsável por tratar a excessão de não ter uma conexão
+     * com o banco de dados. Ela irá tentar iniciar uma nova conexão.
+     * <P>Caso não consiga, irá encerrar o programa.</P>
+     * @param naoTemConexaoException
+     */
+    public boolean trataException (NaoTemConexaoException naoTemConexaoException, int quem){
+        try {
+            criaCon(quem);
+        } catch (SQLException f) {
+            System.err.println("""
+                            ========================================================
+                            FALHA CRÍTICA NO SISTEMA!
+                            NÃO FOI POSSÍVEL ESTABELECER UMA CONEXÃO COM O BANCO
+                            DE DADOS
+                            ========================================================
+                            """);
+            System.exit(1);
+        }
+        return true;
+    }
 
     public static void printa(ResultSet rt){
         try{

@@ -46,8 +46,8 @@ public class Compra {
         while (rt.next()){
             int idLivro = rt.getInt("id_livro");
             String nome = rt.getNString("nome");
-            double preco = Double.parseDouble(rt.getNString
-                    ("preco"));
+            double preco = Double.parseDouble(
+                    rt.getString("preco").substring(3).replaceAll(",", "."));
 
             livrosAdquiridos.add(new Livro(idLivro, nome, preco));
         }

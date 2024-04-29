@@ -8,16 +8,23 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Vendedor extends GerenciaBd{
+    private static final int qualCon = 1;
     private Integer id;
     private String nome;
-    private Long cpf;
+    private String cpf;
     Funcoes funcoes;
 
-    public Vendedor(Integer id, String nome, Long cpf) {
+    public Vendedor(Integer id, String nome, String cpf) {
         this.id = id;
         this.nome = nome;
         this.cpf = cpf;
         funcoes = new Funcoes();
+    }
+
+    public Vendedor(ResultSet rt) throws SQLException{
+        this.id = rt.getInt("id_vendedor");
+        this.nome = rt.getNString("nome");
+        this.cpf = rt.getNString("cpf");
     }
 
     /**
@@ -134,44 +141,28 @@ public class Vendedor extends GerenciaBd{
             do {
                 verifica = adicionaQuantidadeLivroEstoque(livros, quantidades);
             } while (verifica == -1);
-        } catch (ConexaoException e){
-            try {
-                close();
-            } catch (SQLException f){
-                System.err.println("""
-                ========================================================
-                FALHA CRÍTICA NO SISTEMA!
-                A CONEXÃO COM O BANCO DE DADOS APRESENTOU ERROS E
-                NÃO FOI POSSÍVEL ENCERRÁ-LA
-                ========================================================
-                """);
-                System.exit(1);
-            }
-            try {
-                criaCon(1);
-            } catch (SQLException f) {
-                System.err.println("""
-                            ========================================================
-                            FALHA CRÍTICA NO SISTEMA!
-                            NÃO FOI POSSÍVEL ESTABELECER UMA CONEXÃO COM O BANCO
-                            DE DADOS
-                            ========================================================
-                            """);
-                System.exit(1);
-            }
-        } catch (NaoTemConexaoException e){
-            try{
-                criaCon(1);
-            } catch (SQLException f){
-                System.err.println("""
-                ========================================================
-                FALHA CRÍTICA NO SISTEMA!
-                NÃO FOI POSSÍVEL ESTABELECER UMA CONEXÃO COM O BANCO
-                DE DADOS
-                ========================================================
-                """);
-                System.exit(1);
-            }
+        } catch (ConexaoException e) {
+            funcoes.trataException(e, qualCon);
+            System.out.print("""
+                             ========================================================
+                             Não foi possível atualizar as informações do banco
+                             devido a problemas com a conexão.
+                             Tente novamente mais tarde.
+                             ========================================================
+                             """);
+            return;
+
+        } catch (NaoTemConexaoException e) {
+            funcoes.trataException(e, qualCon);
+            System.out.print("""
+                             ========================================================
+                             Não foi possível atualizar as informações do banco
+                             devido a problemas com a conexão.
+                             Tente novamente mais tarde.
+                             ========================================================
+                             """);
+            return;
+
         }
 
         if (verifica == 0){
@@ -192,9 +183,25 @@ public class Vendedor extends GerenciaBd{
     public void cadastraLivro(Scanner tc){
         System.out.print("-------------------------------ADICIONAR LIVRO------------------------------\n"+
                 "DIGITE O NOME DO LIVRO: ");
-        String nome = tc.nextLine();
+
+        String nome;
+        while (true) {
+            nome = tc.nextLine();
+
+            if (funcoes.regexNome(nome))
+                if (nome.length() <= 30)
+                    break;
+                else
+                    System.err.print("""
+                                O nome deve possuir no máximo 30 caracteres!
+                                """);
+            else {
+                System.err.print("Insira um nome válido! Apenas caracteres são aceitos.\n");
+            }
+        }
 
         System.out.print("O LIVRO É NOVO OU USADO? ");
+
         String tipo = tc.nextLine();
         if (tipo.equalsIgnoreCase("novo"))
             tipo = "novo";
@@ -202,22 +209,91 @@ public class Vendedor extends GerenciaBd{
             tipo = "usado";
 
         System.out.print("QUANTOS SÃO? ");
-        int quantidade = Integer.parseInt(tc.nextLine());
+
+        String quantidade;
+        while (true) {
+            quantidade = tc.nextLine();
+
+            if (funcoes.regexNum(quantidade) || !quantidade.contains(".")){
+                break;
+            } else {
+                System.err.print("""
+                                Insira um valor válido! Apenas números são aceitos.
+                                """);
+            }
+        }
 
         System.out.print("O LIVRO FOI FEITO EM MARI? ");
-        boolean from_mari = tc.nextLine().equalsIgnoreCase("sim");
+        boolean from_mari = false;
+        String bool;
+        while (true) {
+            bool = tc.nextLine();
+            if (bool.equalsIgnoreCase("sim")) {
+                from_mari = true;
+                break;
+            }
+            else if (bool.equalsIgnoreCase("nao") ||
+                    bool.equalsIgnoreCase("não")) {
+                break;
+            }
+            else
+                System.out.print("Insira apenas 'sim' ou 'não' como resposta\n");
+        }
 
         System.out.print("DIGITE O NOME DO AUTOR: ");
-        String autor = tc.nextLine();
 
-        System.out.print("DIGITE O GÊNERO: ");
-        String genero = tc.nextLine();
+        String autor;
+        while (true) {
+           autor = tc.nextLine();
 
-        System.out.print("DIGITE O PREÇO (apenas números): ");
-        double preco = Double.parseDouble(tc.nextLine());
+           if (funcoes.regexNome(autor))
+               if (autor.length() <= 30)
+                   break;
+               else
+                   System.err.print("""
+                                O nome deve possuir no máximo 30 caracteres!
+                                """);
+           else {
+               System.err.print("Insira um nome válido! Apenas caracteres são aceitos.\n");
+           }
+        }
 
-        String info = "'" + tipo + "', '" + nome + "', " + Integer.toString(quantidade) + ", "
-                + Boolean.toString(from_mari) + ", '" + autor + "', '" + genero + "', " + Double.toString(preco);
+        System.out.print("DIGITE O GÊNERO LITERÁRIO DO LIVRO: ");
+
+        String genero;
+        while (true) {
+            genero = tc.nextLine();
+
+            if (funcoes.regexNome(genero)){
+                if (genero.length() <= 20)
+                    break;
+                else
+                    System.err.print("""
+                                O gênero deve possuir no máximo 20 caracteres!
+                                """);
+            } else {
+                System.err.print("Insira um nome válido! Apenas caracteres são aceitos.\n");
+            }
+        }
+
+        System.out.print("DIGITE O PREÇO: ");
+
+        String preco;
+        while (true) {
+            preco = tc.nextLine();
+
+            if (funcoes.regexNum(preco)){
+                break;
+            } else {
+                System.err.print("""
+                                Insira um valor válido! Apenas números são aceitos.
+                                Para números decimais, use o ponto como separação.
+                                """);
+            }
+        }
+
+        String info = "'" + tipo + "', '" + nome + "', " + quantidade + ", "
+                + from_mari + ", '" + autor + "', '" + genero + "', " + preco;
         ArrayList<String> argumento = new ArrayList<>();
         argumento.add(info);
         int idLivro = -1;
@@ -226,10 +302,26 @@ public class Vendedor extends GerenciaBd{
             idLivro = Insert("livro", argumento,  "tipo, nome, " +
                     "quantidade_estoque, from_mari, autor, genero, preco");
         } catch (ConexaoException e) {
-            trataException(e);
+            funcoes.trataException(e, qualCon);
+            System.out.print("""
+                                    ========================================================
+                                    Não foi possível inserir as informações no banco
+                                    devido a problemas com a conexão.
+                                    Tente novamente mais tarde.
+                                    ========================================================
+                                    """);
+            return;
 
         } catch (NaoTemConexaoException e) {
-            trataException(e);
+            funcoes.trataException(e, qualCon);
+            System.out.print("""
+                                    ========================================================
+                                    Não foi possível inserir as informações no banco
+                                    devido a problemas com a conexão.
+                                    Tente novamente mais tarde.
+                                    ========================================================
+                                    """);
+            return;
 
         }
         if (idLivro != -1) {
@@ -250,9 +342,12 @@ public class Vendedor extends GerenciaBd{
             compras = comprasNaoConfirmadas();
         } catch (SQLException e){
             System.err.print("""
+                    ========================================================
                     Não foi possível recuperar as compras!
                     Tente novamente mais tarde.
+                    ========================================================
                     """);
+            return;
         }
 
         if (compras == null)
@@ -273,11 +368,26 @@ public class Vendedor extends GerenciaBd{
                         } while (verifica == -1);
 
                     } catch (ConexaoException e) {
-                        trataException(e);
+                        funcoes.trataException(e, qualCon);
+                        System.out.print("""
+                             ========================================================
+                             Não foi possível receber as informações do banco
+                             devido a problemas com a conexão.
+                             Tente novamente mais tarde.
+                             ========================================================
+                             """);
+                        return;
 
                     } catch (NaoTemConexaoException e) {
-                        trataException(e);
-
+                        funcoes.trataException(e, qualCon);
+                        System.out.print("""
+                             ========================================================
+                             Não foi possível receber as informações do banco
+                             devido a problemas com a conexão.
+                             Tente novamente mais tarde.
+                             ========================================================
+                             """);
+                        return;
                     }
 
                     if (verifica == 1) {
@@ -285,7 +395,7 @@ public class Vendedor extends GerenciaBd{
                                 "\nCompra confirmada com sucesso!\n");
                     } else
                         System.out.print("""
-
+                                
                                 Não foi possível efetuar a confirmação da compra!
                                 Tente novamente mais tarde.
                                 """);
@@ -296,10 +406,26 @@ public class Vendedor extends GerenciaBd{
                             verifica = recusaCompra(compraAtual.getIdCompra(), this.id);
                         } while (verifica == -1);
                     } catch (ConexaoException e) {
-                        trataException(e);
+                       funcoes.trataException(e, qualCon);
+                        System.out.print("""
+                                    ========================================================
+                                    Não foi possível receber as informações do banco
+                                    devido a problemas com a conexão.
+                                    Tente novamente mais tarde.
+                                    ========================================================
+                                    """);
+                        return;
 
                     } catch (NaoTemConexaoException e) {
-                        trataException(e);
+                       funcoes.trataException(e, qualCon);
+                        System.out.print("""
+                                    ========================================================
+                                    Não foi possível receber as informações do banco
+                                    devido a problemas com a conexão.
+                                    Tente novamente mais tarde.
+                                    ========================================================
+                                    """);
+                        return;
 
                     }
 
@@ -308,7 +434,7 @@ public class Vendedor extends GerenciaBd{
                                 "\nCompra confirmada com sucesso!\n");
                     } else
                         System.out.print("""
-
+                                
                                 Não foi possível efetuar a confirmação da compra!
                                 Tente novamente mais tarde.
                                 """);
@@ -353,19 +479,53 @@ public class Vendedor extends GerenciaBd{
                         data, valor, idCarrinho));
             }
         } catch (ConexaoException e) {
-            trataException(e);
+           funcoes.trataException(e, qualCon);
+
+            System.out.print("""
+                             ========================================================
+                             Não foi possível receber as informações do banco
+                             devido a problemas com a conexão.
+                             Tente novamente mais tarde.
+                             ========================================================
+                             """);
+            return null;
         } catch (NaoTemConexaoException e) {
-            trataException(e);
+           funcoes.trataException(e, qualCon);
+
+            System.out.print("""
+                             ========================================================
+                             Não foi possível receber as informações do banco
+                             devido a problemas com a conexão.
+                             Tente novamente mais tarde.
+                             ========================================================
+                             """);
+            return null;
         }
 
         for (int i = 0; i <compras.size(); ++i){
             try(ResultSet rt = recuperaLivrosCompras(compras.get(i).getIdCompra())){
                 compras.get(i).preencheLivrosAdquiridos(rt);
             } catch (ConexaoException e) {
-                trataException(e);
+               funcoes.trataException(e, qualCon);
+                System.out.print("""
+                             ========================================================
+                             Não foi possível receber as informações do banco
+                             devido a problemas com a conexão.
+                             Tente novamente mais tarde.
+                             ========================================================
+                             """);
+                return null;
 
             } catch (NaoTemConexaoException e) {
-                trataException(e);
+               funcoes.trataException(e, qualCon);
+                System.out.print("""
+                             ========================================================
+                             Não foi possível receber as informações do banco
+                             devido a problemas com a conexão.
+                             Tente novamente mais tarde.
+                             ========================================================
+                             """);
+                return null;
 
             } catch (SQLException e) {
                 System.err.println("""
@@ -552,18 +712,35 @@ public class Vendedor extends GerenciaBd{
                                 """);
                 }
                 case 7 ->{
-                    boolean verificaCon = false;
                     int verificaUpdate = -1;
                     do {
                         try {
                             verificaUpdate = variosUpdates("livro", coluna, novo, condicao);
                         } catch (ConexaoException e) {
-                            verificaCon = trataException(e);
+                            funcoes.trataException(e, qualCon);
+
+                            System.out.print("""
+                             ========================================================
+                             Não foi possível atualizar as informações do banco
+                             devido a problemas com a conexão.
+                             Tente novamente mais tarde.
+                             ========================================================
+                             """);
+                            return;
 
                         } catch (NaoTemConexaoException e) {
-                            verificaCon = trataException(e);
+                            funcoes.trataException(e, qualCon);
+
+                            System.out.print("""
+                             ========================================================
+                             Não foi possível atualizar as informações do banco
+                             devido a problemas com a conexão.
+                             Tente novamente mais tarde.
+                             ========================================================
+                             """);
+                            return;
                         }
-                    } while (verificaCon || verificaUpdate == -1);
+                    } while (verificaUpdate == -1);
                     return;
                 }
                 default -> System.err.print("Insira uma opção válida.");
@@ -591,71 +768,28 @@ public class Vendedor extends GerenciaBd{
                             """);
             return null;
         } catch (ConexaoException e) {
-            trataException(e);
+           funcoes.trataException(e, qualCon);
+            System.out.print("""
+                             ========================================================
+                             Não foi possível atualizar as informações do banco
+                             devido a problemas com a conexão.
+                             Tente novamente mais tarde.
+                             ========================================================
+                             """);
+            return null;
 
         } catch (NaoTemConexaoException e) {
-            trataException(e);
+           funcoes.trataException(e, qualCon);
+            System.out.print("""
+                             ========================================================
+                             Não foi possível atualizar as informações do banco
+                             devido a problemas com a conexão.
+                             Tente novamente mais tarde.
+                             ========================================================
+                             """);
+            return null;
 
         }
-        return null;
-    }
-
-    /**
-     * Função responsável por tratar a excessão se ter uma
-     * conexão com o banco de dados que está com problemas.
-     * Ela irá tentar fechar ela e depois iniciar uma nova
-     * conexão.
-     * <P>Caso não consiga, irá encerrar o programa.</P>
-     * @param conexaoException
-     */
-    private boolean trataException (ConexaoException conexaoException){
-        try {
-            close();
-        } catch (SQLException f) {
-            System.err.println("""
-                            ========================================================
-                            FALHA CRÍTICA NO SISTEMA!
-                            A CONEXÃO COM O BANCO DE DADOS APRESENTOU ERROS E
-                            NÃO FOI POSSÍVEL ENCERRÁ-LA
-                            ========================================================
-                            """);
-            System.exit(1);
-        }
-        try {
-            criaCon(1);
-        } catch (SQLException f) {
-            System.err.println("""
-                            ========================================================
-                            FALHA CRÍTICA NO SISTEMA!
-                            NÃO FOI POSSÍVEL ESTABELECER UMA CONEXÃO COM O BANCO
-                            DE DADOS
-                            ========================================================
-                            """);
-            System.exit(1);
-        }
-        return true;
-    }
-
-    /**
-     * Função responsável por tratar a excessão de não ter uma conexão
-     * com o banco de dados. Ela irá tentar iniciar uma nova conexão.
-     * <P>Caso não consiga, irá encerrar o programa.</P>
-     * @param naoTemConexaoException
-     */
-    private boolean trataException (NaoTemConexaoException naoTemConexaoException){
-        try {
-            criaCon(1);
-        } catch (SQLException f) {
-            System.err.println("""
-                            ========================================================
-                            FALHA CRÍTICA NO SISTEMA!
-                            NÃO FOI POSSÍVEL ESTABELECER UMA CONEXÃO COM O BANCO
-                            DE DADOS
-                            ========================================================
-                            """);
-            System.exit(1);
-        }
-        return true;
     }
 
     public Integer getId() {
@@ -666,7 +800,7 @@ public class Vendedor extends GerenciaBd{
         return nome;
     }
 
-    public Long getCpf() {
+    public String getCpf() {
         return cpf;
     }
 
@@ -678,7 +812,12 @@ public class Vendedor extends GerenciaBd{
         this.nome = nome;
     }
 
-    public void setCpf(Long cpf) {
+    public void setCpf(String cpf) {
         this.cpf = cpf;
+    }
+
+    public String toString(){
+        return "Nome: " + this.nome +
+                "\nCPF: " + this.cpf;
     }
 }
