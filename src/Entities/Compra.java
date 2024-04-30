@@ -1,9 +1,10 @@
 package Entities;
 
-
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -22,24 +23,14 @@ public class Compra {
     private ArrayList<Livro> livrosAdquiridos;
 
     public Compra(int idCompra, String formaPagamento, Date data,
-                  int valor, int id_carrinho) {
-        this.idCompra = idCompra;
-        this.formaPagamento = formaPagamento;
-        this.data = data;
-        this.valor = valor;
-        this.id_carrinho = id_carrinho;
-        livrosAdquiridos = new ArrayList<>();
-    }
-
-    public Compra(int idCompra, String formaPagamento, Date data,
                   int valor, int id_carrinho, int idVendedor){
         this.idCompra = idCompra;
         this.formaPagamento = formaPagamento;
         this.data = data;
         this.valor = valor;
         this.id_carrinho = id_carrinho;
-        livrosAdquiridos = new ArrayList<>();
         this.idVendedor = idVendedor;
+        livrosAdquiridos = new ArrayList<>();
     }
 
     public void preencheLivrosAdquiridos(ResultSet rt) throws SQLException {
@@ -50,26 +41,6 @@ public class Compra {
                     ("preco"));
 
             livrosAdquiridos.add(new Livro(idLivro, nome, preco));
-        }
-    }
-
-    public void printCompras(){
-        System.out.print(
-                "========================================================" + "\n" +
-                        "Número da compra: " + this.idCompra + "\n" +
-                        "Data da compra: " + this.data.toString() + "\n" +
-                        "Valor da compra: " + this.valor + "\n" +
-                        "Forma de pagamento : " + this.formaPagamento + "\n");
-        System.out.print(
-                "--------------------------------------------------------" + "\n" +
-                "Livros da compra:");
-
-        for (Livro livro : livrosAdquiridos){
-            System.out.print(
-                    "Nome: " + livro.getNome() + "\n" +
-                    "Preço: " + livro.getPreco() + "\n" +
-                    "Código do livro: " + livro.getId() + "\n" +
-                    "--------------------------------------------------------" + "\n");
         }
     }
 
