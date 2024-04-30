@@ -8,16 +8,23 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Vendedor extends GerenciaBd{
+    private static final int qualCon = 1;
     private Integer id;
     private String nome;
-    private Long cpf;
+    private String cpf;
     Funcoes funcoes;
 
-    public Vendedor(Integer id, String nome, Long cpf) {
+    public Vendedor(Integer id, String nome, String cpf) {
         this.id = id;
         this.nome = nome;
         this.cpf = cpf;
         funcoes = new Funcoes();
+    }
+
+    public Vendedor(ResultSet rt) throws SQLException{
+        this.id = rt.getInt("id_vendedor");
+        this.nome = rt.getNString("nome");
+        this.cpf = rt.getNString("cpf");
     }
 
     /**
@@ -135,7 +142,7 @@ public class Vendedor extends GerenciaBd{
                 verifica = adicionaQuantidadeLivroEstoque(livros, quantidades);
             } while (verifica == -1);
         } catch (ConexaoException e) {
-            funcoes.trataException(e);
+            funcoes.trataException(e, qualCon);
             System.out.print("""
                              ========================================================
                              Não foi possível atualizar as informações do banco
@@ -146,7 +153,7 @@ public class Vendedor extends GerenciaBd{
             return;
 
         } catch (NaoTemConexaoException e) {
-            funcoes.trataException(e);
+            funcoes.trataException(e, qualCon);
             System.out.print("""
                              ========================================================
                              Não foi possível atualizar as informações do banco
@@ -176,9 +183,25 @@ public class Vendedor extends GerenciaBd{
     public void cadastraLivro(Scanner tc){
         System.out.print("-------------------------------ADICIONAR LIVRO------------------------------\n"+
                 "DIGITE O NOME DO LIVRO: ");
-        String nome = tc.nextLine();
+
+        String nome;
+        while (true) {
+            nome = tc.nextLine();
+
+            if (funcoes.regexNome(nome))
+                if (nome.length() <= 30)
+                    break;
+                else
+                    System.err.print("""
+                                O nome deve possuir no máximo 30 caracteres!
+                                """);
+            else {
+                System.err.print("Insira um nome válido! Apenas caracteres são aceitos.\n");
+            }
+        }
 
         System.out.print("O LIVRO É NOVO OU USADO? ");
+
         String tipo = tc.nextLine();
         if (tipo.equalsIgnoreCase("novo"))
             tipo = "novo";
@@ -186,22 +209,91 @@ public class Vendedor extends GerenciaBd{
             tipo = "usado";
 
         System.out.print("QUANTOS SÃO? ");
-        int quantidade = Integer.parseInt(tc.nextLine());
+
+        String quantidade;
+        while (true) {
+            quantidade = tc.nextLine();
+
+            if (funcoes.regexNum(quantidade) || !quantidade.contains(".")){
+                break;
+            } else {
+                System.err.print("""
+                                Insira um valor válido! Apenas números são aceitos.
+                                """);
+            }
+        }
 
         System.out.print("O LIVRO FOI FEITO EM MARI? ");
-        boolean from_mari = tc.nextLine().equalsIgnoreCase("sim");
+        boolean from_mari = false;
+        String bool;
+        while (true) {
+            bool = tc.nextLine();
+            if (bool.equalsIgnoreCase("sim")) {
+                from_mari = true;
+                break;
+            }
+            else if (bool.equalsIgnoreCase("nao") ||
+                    bool.equalsIgnoreCase("não")) {
+                break;
+            }
+            else
+                System.out.print("Insira apenas 'sim' ou 'não' como resposta\n");
+        }
 
         System.out.print("DIGITE O NOME DO AUTOR: ");
-        String autor = tc.nextLine();
 
-        System.out.print("DIGITE O GÊNERO: ");
-        String genero = tc.nextLine();
+        String autor;
+        while (true) {
+           autor = tc.nextLine();
 
-        System.out.print("DIGITE O PREÇO (apenas números): ");
-        double preco = Double.parseDouble(tc.nextLine());
+           if (funcoes.regexNome(autor))
+               if (autor.length() <= 30)
+                   break;
+               else
+                   System.err.print("""
+                                O nome deve possuir no máximo 30 caracteres!
+                                """);
+           else {
+               System.err.print("Insira um nome válido! Apenas caracteres são aceitos.\n");
+           }
+        }
 
-        String info = "'" + tipo + "', '" + nome + "', " + Integer.toString(quantidade) + ", "
-                + Boolean.toString(from_mari) + ", '" + autor + "', '" + genero + "', " + Double.toString(preco);
+        System.out.print("DIGITE O GÊNERO LITERÁRIO DO LIVRO: ");
+
+        String genero;
+        while (true) {
+            genero = tc.nextLine();
+
+            if (funcoes.regexNome(genero)){
+                if (genero.length() <= 20)
+                    break;
+                else
+                    System.err.print("""
+                                O gênero deve possuir no máximo 20 caracteres!
+                                """);
+            } else {
+                System.err.print("Insira um nome válido! Apenas caracteres são aceitos.\n");
+            }
+        }
+
+        System.out.print("DIGITE O PREÇO: ");
+
+        String preco;
+        while (true) {
+            preco = tc.nextLine();
+
+            if (funcoes.regexNum(preco)){
+                break;
+            } else {
+                System.err.print("""
+                                Insira um valor válido! Apenas números são aceitos.
+                                Para números decimais, use o ponto como separação.
+                                """);
+            }
+        }
+
+        String info = "'" + tipo + "', '" + nome + "', " + quantidade + ", "
+                + from_mari + ", '" + autor + "', '" + genero + "', " + preco;
         ArrayList<String> argumento = new ArrayList<>();
         argumento.add(info);
         int idLivro = -1;
@@ -210,7 +302,7 @@ public class Vendedor extends GerenciaBd{
             idLivro = Insert("livro", argumento,  "tipo, nome, " +
                     "quantidade_estoque, from_mari, autor, genero, preco");
         } catch (ConexaoException e) {
-            funcoes.trataException(e);
+            funcoes.trataException(e, qualCon);
             System.out.print("""
                                     ========================================================
                                     Não foi possível inserir as informações no banco
@@ -221,7 +313,7 @@ public class Vendedor extends GerenciaBd{
             return;
 
         } catch (NaoTemConexaoException e) {
-            funcoes.trataException(e);
+            funcoes.trataException(e, qualCon);
             System.out.print("""
                                     ========================================================
                                     Não foi possível inserir as informações no banco
@@ -276,7 +368,7 @@ public class Vendedor extends GerenciaBd{
                         } while (verifica == -1);
 
                     } catch (ConexaoException e) {
-                        funcoes.trataException(e);
+                        funcoes.trataException(e, qualCon);
                         System.out.print("""
                              ========================================================
                              Não foi possível receber as informações do banco
@@ -287,7 +379,7 @@ public class Vendedor extends GerenciaBd{
                         return;
 
                     } catch (NaoTemConexaoException e) {
-                        funcoes.trataException(e);
+                        funcoes.trataException(e, qualCon);
                         System.out.print("""
                              ========================================================
                              Não foi possível receber as informações do banco
@@ -314,7 +406,7 @@ public class Vendedor extends GerenciaBd{
                             verifica = recusaCompra(compraAtual.getIdCompra(), this.id);
                         } while (verifica == -1);
                     } catch (ConexaoException e) {
-                        funcoes.trataException(e);
+                       funcoes.trataException(e, qualCon);
                         System.out.print("""
                                     ========================================================
                                     Não foi possível receber as informações do banco
@@ -325,7 +417,7 @@ public class Vendedor extends GerenciaBd{
                         return;
 
                     } catch (NaoTemConexaoException e) {
-                        funcoes.trataException(e);
+                       funcoes.trataException(e, qualCon);
                         System.out.print("""
                                     ========================================================
                                     Não foi possível receber as informações do banco
@@ -387,7 +479,7 @@ public class Vendedor extends GerenciaBd{
                         data, valor, idCarrinho));
             }
         } catch (ConexaoException e) {
-            funcoes.trataException(e);
+           funcoes.trataException(e, qualCon);
 
             System.out.print("""
                              ========================================================
@@ -398,7 +490,7 @@ public class Vendedor extends GerenciaBd{
                              """);
             return null;
         } catch (NaoTemConexaoException e) {
-            funcoes.trataException(e);
+           funcoes.trataException(e, qualCon);
 
             System.out.print("""
                              ========================================================
@@ -414,7 +506,7 @@ public class Vendedor extends GerenciaBd{
             try(ResultSet rt = recuperaLivrosCompras(compras.get(i).getIdCompra())){
                 compras.get(i).preencheLivrosAdquiridos(rt);
             } catch (ConexaoException e) {
-                funcoes.trataException(e);
+               funcoes.trataException(e, qualCon);
                 System.out.print("""
                              ========================================================
                              Não foi possível receber as informações do banco
@@ -425,7 +517,7 @@ public class Vendedor extends GerenciaBd{
                 return null;
 
             } catch (NaoTemConexaoException e) {
-                funcoes.trataException(e);
+               funcoes.trataException(e, qualCon);
                 System.out.print("""
                              ========================================================
                              Não foi possível receber as informações do banco
@@ -625,7 +717,7 @@ public class Vendedor extends GerenciaBd{
                         try {
                             verificaUpdate = variosUpdates("livro", coluna, novo, condicao);
                         } catch (ConexaoException e) {
-                            funcoes.trataException(e);
+                            funcoes.trataException(e, qualCon);
 
                             System.out.print("""
                              ========================================================
@@ -637,7 +729,7 @@ public class Vendedor extends GerenciaBd{
                             return;
 
                         } catch (NaoTemConexaoException e) {
-                            funcoes.trataException(e);
+                            funcoes.trataException(e, qualCon);
 
                             System.out.print("""
                              ========================================================
@@ -676,7 +768,7 @@ public class Vendedor extends GerenciaBd{
                             """);
             return null;
         } catch (ConexaoException e) {
-            funcoes.trataException(e);
+           funcoes.trataException(e, qualCon);
             System.out.print("""
                              ========================================================
                              Não foi possível atualizar as informações do banco
@@ -687,7 +779,7 @@ public class Vendedor extends GerenciaBd{
             return null;
 
         } catch (NaoTemConexaoException e) {
-            funcoes.trataException(e);
+           funcoes.trataException(e, qualCon);
             System.out.print("""
                              ========================================================
                              Não foi possível atualizar as informações do banco
@@ -708,7 +800,7 @@ public class Vendedor extends GerenciaBd{
         return nome;
     }
 
-    public Long getCpf() {
+    public String getCpf() {
         return cpf;
     }
 
@@ -720,7 +812,12 @@ public class Vendedor extends GerenciaBd{
         this.nome = nome;
     }
 
-    public void setCpf(Long cpf) {
+    public void setCpf(String cpf) {
         this.cpf = cpf;
+    }
+
+    public String toString(){
+        return "Nome: " + this.nome +
+                "\nCPF: " + this.cpf;
     }
 }

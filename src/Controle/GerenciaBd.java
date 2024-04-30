@@ -1562,6 +1562,66 @@ public abstract class GerenciaBd implements AutoCloseable{
         throw new NaoTemConexaoException();
     }
 
+    /**
+     * Função responsável por retornar um vendedor.
+     * @param idVendedor o código do vendedor a ser retornado
+     * @return Null caso algum erro tenha acontecido e a função tenha conseguido
+     * lidar com ele.<br>
+     * Um ResultSet contendo todas as compras ainda não confirmadas
+     * por um vendedor.
+     * @throws NaoTemConexaoException quando não há
+     * nenhuma conexão com o banco de dados.
+     * @throws ConexaoException quando a conexão com
+     * o banco de dados existente apresentou algum
+     * problema mas não foi possível fechá-la.
+     */
+    protected ResultSet getVendedor(int idVendedor) throws NaoTemConexaoException, ConexaoException {
+        if (connection != null) {
+            try {
+                String tabela = "Vendedores_Info.vendedor";
+                String pesquisa = "id_vendedor = " + idVendedor;
+
+                return Select(tabela, "*", pesquisa, connection);
+            } catch (SQLException e) {
+                /*
+                 * Se der erro, vai tentar fechar a conexão atual.
+                 */
+                try {
+                    close();
+
+                } catch (SQLException f) {
+                    /*
+                     * Se não conseguir ele informa
+                     * a quem o chamou que não foi possível
+                     * encerrar a conexão com o banco e que
+                     * ela é uma conexão defeituosa.
+                     */
+                    throw new ConexaoException();
+                }
+                try {
+                    /*
+                     * O sistema tentar criar outra conexão.
+                     */
+
+                    criaCon(usuarioBanco);
+                } catch (SQLException f) {
+                    /*
+                     * Caso ele não consiga, é necessário avisar
+                     * que existe um grave problema: não existe conexão
+                     * com o banco de dados.
+                     */
+                    throw new NaoTemConexaoException();
+                }
+            }
+            /*
+             * Caso tenha sido possível resolver os erros, a função avisa que ela
+             * teve um comportamento inesperado e foi possível resolver ele,
+             * por isso ela pode ser chamada novamente.
+             */
+            return null;
+        }
+        throw new NaoTemConexaoException();
+    }
     protected int InsertCompra(String tabela, String info, String atributos) throws NaoTemConexaoException, ConexaoException{
         if (connection != null){
             try{

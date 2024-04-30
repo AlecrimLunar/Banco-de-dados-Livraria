@@ -29,14 +29,17 @@ public class Livro {
     }
 
     public Livro(ResultSet rt) throws SQLException {
-        this.id = rt.getInt("id_livro");
-        this.nome = rt.getString("nome");
-        this.preco = Double.parseDouble(rt.getString("preco").substring(3).replaceAll(",", "."));
-        this.autor = rt.getString("autor");
-        this.genero = rt.getString("genero");
-        this.tipo = rt.getString("tipo");
-        this.mari = rt.getBoolean("from_mari");
+        if (rt.next()) {
+            this.id = rt.getInt("id_livro");
+            this.nome = rt.getString("nome");
+            this.preco = Double.parseDouble(rt.getString("preco").substring(3).replaceAll(",", "."));
+            this.autor = rt.getString("autor");
+            this.genero = rt.getString("genero");
+            this.tipo = rt.getString("tipo");
+            this.mari = rt.getBoolean("from_mari");
+        }
     }
+
     public Integer getId() {
         return id;
     }
