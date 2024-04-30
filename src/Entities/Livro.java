@@ -1,5 +1,8 @@
 package Entities;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 public class Livro {
     private Integer id;
     private String nome;
@@ -23,6 +26,16 @@ public class Livro {
         this.id = idLivro;
         this.nome = nome;
         this.preco = preco;
+    }
+
+    public Livro(ResultSet rt) throws SQLException {
+        this.id = rt.getInt("id_livro");
+        this.nome = rt.getString("nome");
+        this.preco = Double.parseDouble(rt.getString("preco").substring(3).replaceAll(",", "."));
+        this.autor = rt.getString("autor");
+        this.genero = rt.getString("genero");
+        this.tipo = rt.getString("tipo");
+        this.mari = rt.getBoolean("from_mari");
     }
     public Integer getId() {
         return id;

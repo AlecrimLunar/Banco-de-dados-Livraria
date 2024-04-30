@@ -53,8 +53,6 @@ public class Compra {
         }
     }
 
-    }
-
     public void printCompras(){
         System.out.print(
                 "========================================================" + "\n" +

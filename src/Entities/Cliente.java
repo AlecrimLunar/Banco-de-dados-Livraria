@@ -2,8 +2,6 @@ package Entities;
 
 import Controle.*;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Scanner;
@@ -11,9 +9,10 @@ import java.util.Scanner;
 public class Cliente extends GerenciaBd {
     private Integer id;
     private String nome;
-    private Long cpf;
+    private String cpf;
     private String rua;
     private int numero;
+    private String email;
     private Boolean onePiece;
     private Boolean flamengo;
     private Boolean souza;
@@ -21,15 +20,16 @@ public class Cliente extends GerenciaBd {
     private String senha;
     private static Carrinho carrinho;
     private static Funcoes fun;
-    private static LinkedList<Integer> pedidos;
+    private final int quem = 0;
 
-    public Cliente(String nome, Long cpf, String rua, int numero,
+    public Cliente(String nome, String cpf, String rua, int numero, String email,
                    Boolean onePiece, Boolean flamengo, Boolean souza, String user,
                    String senha, Carrinho carrinho) {
         this.nome = nome;
         this.cpf = cpf;
         this.rua = rua;
         this.numero = numero;
+        this.email = email;
         this.onePiece = onePiece;
         this.flamengo = flamengo;
         this.souza = souza;
@@ -39,13 +39,19 @@ public class Cliente extends GerenciaBd {
         fun = new Funcoes();
     }
 
-    public void MenuCliente(Scanner sc, boolean compra) throws NaoTemConexaoException, SQLException, ConexaoException {
+    /**
+     * Método responsável por exibir a tela principal do cliente.
+     * @param sc Scanner utilizado para ler as entradas do usuário.
+     * @param compra Booliano que indica se a compra deve ser realizada.
+     */
+    public void MenuCliente(Scanner sc, boolean compra) {
+        setUsuarioBanco(quem);
 
         if(compra){
-            fun.Compra(sc, carrinho, new boolean[]{getOnePiece(), getOnePiece(), getSouza()}, getId());
+            fun.Compra(sc, carrinho, new boolean[]{getOnePiece(), getOnePiece(), getSouza()}, getId(), quem);
         }
 
-        carrinho = fun.CarregaCarrinho(carrinho, getId());
+        carrinho = fun.CarregaCarrinho(carrinho, getId(), quem);
 
         LinkedList<Livro> destaques = fun.Destaques(0);
 
@@ -54,7 +60,7 @@ public class Cliente extends GerenciaBd {
                 BEM-VINDO AO SISTEMA DIGITAL DA LIVRARIA MOOGLES
                 ========================================================
                 """);
-
+        int a;
         loop:while(true) {
 
             System.out.print("livros em destaque:\n" +
@@ -66,7 +72,17 @@ public class Cliente extends GerenciaBd {
                     "0 - Sair\n" +
                     "========================================================\n");
 
-            int a = Integer.parseInt(sc.nextLine());
+            while(true) {
+
+                String resp = sc.nextLine();
+
+                if(fun.regexNum(resp)) {
+                    a = Integer.parseInt(resp);
+                    break;
+                }
+                else
+                    System.out.println("Digite apenas números!");
+            }
 
             switch (a) {
                 case 1 -> {
@@ -85,13 +101,13 @@ public class Cliente extends GerenciaBd {
                         carrinho.setLivro(destaques.get(2));
                 }
 
-                case 4 -> carrinho = fun.Pesquisa(sc, carrinho);
+                case 4 -> carrinho = fun.Pesquisa(sc, carrinho, quem);
                 case 5 -> {
                     carrinho = fun.Carrinho(sc, carrinho);
 
                     System.out.print("Deseja finalizar a compra?\n");
                     if(sc.nextLine().equalsIgnoreCase("sim")){
-                        fun.Compra(sc, carrinho, new boolean[]{getOnePiece(), getOnePiece(), getSouza()}, getId());
+                        fun.Compra(sc, carrinho, new boolean[]{getOnePiece(), getOnePiece(), getSouza()}, getId(), quem);
                     }
                 }
                 case 6 -> MenuConta(sc);
@@ -103,10 +119,16 @@ public class Cliente extends GerenciaBd {
                 }
                 default -> System.out.println("Opção invalida:");
             }
+
         }
     }
 
-    public void MenuConta(Scanner sc) throws NaoTemConexaoException, SQLException, ConexaoException {
+    /**
+     * Método responsável por exibir o menu da conta do cliente.
+     * @param sc Scanner utilizado para ler as entradas do usuário.
+     */
+    public void MenuConta(Scanner sc) {
+        int a;
 
         loop:while(true) {
             System.out.println("========================================================\n" +
@@ -114,15 +136,25 @@ public class Cliente extends GerenciaBd {
             System.out.println("""
                     ========================================================
                     1 - Ver meus pedidos
-                    2 - Alterar informações
+                    2 - Suas Informações
                     3 - Deletar conta
                     0 - Sair
                     ========================================================
                     """);
-            int a = Integer.parseInt(sc.nextLine());
+            while(true) {
+
+                String resp = sc.nextLine();
+
+                if(fun.regexNum(resp)) {
+                    a = Integer.parseInt(resp);
+                    break;
+                }
+                else
+                    System.out.println("Digite apenas números!");
+            }
 
             switch (a) {
-                case 1 -> fun.verPedidos(sc, getId());
+                case 1 -> fun.verPedidos(sc, getId(), quem);
                 case 2 -> alteraCliente(sc);
                 case 3 -> {
                     removeCliente(sc);
@@ -133,100 +165,194 @@ public class Cliente extends GerenciaBd {
         }
     }
 
-    // Ainda tem que fazer o tratamento de erros aq!
-    public void removeCliente(Scanner tc) throws NaoTemConexaoException, ConexaoException {
+    /**
+     * Método responsável por exibir a opção de remover o cadastro do cliente.
+     * @param tc Scanner utilizado para ler as entradas do usuário.
+     */
+    public void removeCliente(Scanner tc) {
 
         System.out.print("""
                 RESPONDA COM 'Sim' OU 'Não'.\s
                 DESEJA REMOVER SEU CADASTRO DA LOJA? ISSO NÃO IRÁ REMOVER SEU HISTÓRICO DE COMPRAS NO SISTEMA DA LOJA!
                 """);
+        try {
+            if (tc.nextLine().equalsIgnoreCase("sim")) {
+                delete("cliente", "id_cliente = " + getId());
+            }
 
-        if (tc.nextLine().equalsIgnoreCase("sim")){
-            delete("cliente", "id_cliente = " + getId());
+        } catch (NaoTemConexaoException e) {
+            fun.trataException(e, quem);
+            System.out.print("""
+                                 ========================================================
+                                 Erro na conexão.
+                                 Tente novamente mais tarde.
+                                 ========================================================
+                                 """);
+        } catch (ConexaoException e) {
+            fun.trataException(e, quem);
+            System.out.print("""
+                    ========================================================
+                    Erro na conexão.
+                    Tente novamente mais tarde.
+                    ========================================================
+                    """);
         }
-
     }
 
-    // Precisa de tratamento de dados PARA CARALHO, mas são duas da manhã eu vou dormir
+    /**
+     * Método responsável por alterar as informações de um cliente.
+     * @param tc Scanner utilizado para ler as entradas do usuário.
+     */
     public void alteraCliente(Scanner tc){
+        int a;
         try {
             loop: while (true) {
+                System.out.print("================================\n" +
+                        this + "\nDeseja Alterar alguma informação?");
+                if(tc.nextLine().equalsIgnoreCase("sim")){
 
-                System.out.println("SELECIONE O CAMPO QUE DESEJA ALTERAR \n1 - Nome \n2 - CPF \n3 - Rua \n4 - Número " +
-                        "\n5 - Email \n6 - Torcer para o Flamengo \n7 - Nascer em Sousa \n8 - Assistir a One Piece " +
-                        "\n0 - Voltar ao menu principal");
-                int escolha = Integer.parseInt(tc.nextLine());
+                System.out.println("""
+                        SELECIONE O CAMPO QUE DESEJA ALTERAR
+                        1 - Nome
+                        2 - CPF
+                        3 - Rua
+                        4 - Número
+                        5 - Email
+                        6 - Torcer para o Flamengo
+                        7 - Nascer em Sousa
+                        8 - Assistir a One Piece
+                        0 - Voltar ao menu principal""");
+                while(true) {
+
+                    String resp = tc.nextLine();
+
+                    if(fun.regexNum(resp)) {
+                        a = Integer.parseInt(resp);
+                        break;
+                    }
+                    else
+                        System.out.println("Digite apenas números!");
+                }
+
+
                 System.out.println("===========================================================================");
 
-                switch (escolha) {
+                switch (a) {
                     case 1 -> {
                         ArrayList<String> coluna = new ArrayList<>();
                         ArrayList<String> novoU = new ArrayList<>();
                         ArrayList<String> condicao = new ArrayList<>();
+                        String novo;
 
-                        System.out.print("Insira o novo nome: ");
-                        String novo = tc.nextLine();
+                        while(true){
+
+                            System.out.print("Insira o novo nome: ");
+                            novo = tc.nextLine();
+
+                            String[] nomes = nome.split(" ");
+                            boolean foi = true;
+
+                            for(String aux : nomes) {
+                                if (!fun.regexNome(aux)) {
+                                    System.out.print("Escreva um nome válido! Sem números.");
+                                    foi = false;
+                                    break;
+                                }
+                            }
+                            if(foi){
+                                break;
+                            }
+
+                        }
 
                         coluna.add("nome");
                         novoU.add("'" + novo + "'");
                         condicao.add("id_cliente = " + getId());
                         variosUpdates("cliente", coluna, novoU, condicao);
+                        nome = novo;
                     }
 
                     case 2 -> {
                         ArrayList<String> coluna = new ArrayList<>();
                         ArrayList<String> novoU = new ArrayList<>();
                         ArrayList<String> condicao = new ArrayList<>();
+                        String novo;
 
-                        System.out.print("Insira o novo CPF: ");
-                        int novo = Integer.parseInt(tc.nextLine());
+                        while (true) {
+                            System.out.print("Insira o novo CPF: ");
+                            novo = tc.nextLine();
+
+                            if (!fun.regexCPF(novo))
+                                System.out.print("Escreva um CPF válido! Somente números.");
+                            else break;
+                        }
 
                         coluna.add("cpf");
                         novoU.add("'" + novo + "'");
                         condicao.add("id_cliente = " + getId());
                         variosUpdates("cliente", coluna, novoU, condicao);
+                        cpf = novo;
                     }
 
                     case 3 -> {
                         ArrayList<String> coluna = new ArrayList<>();
                         ArrayList<String> novoU = new ArrayList<>();
                         ArrayList<String> condicao = new ArrayList<>();
+                        String novo;
 
-                        System.out.print("Insira a nova rua: ");
-                        String novo = tc.nextLine();
+                        do {
+                            System.out.print("Insira a nova rua: ");
+                            novo = tc.nextLine();
+
+                        } while (!fun.verificaComandoSQL(novo));
 
                         coluna.add("rua");
                         novoU.add("'" + novo + "'");
                         condicao.add("id_cliente = " + getId());
                         variosUpdates("cliente", coluna, novoU, condicao);
+                        rua = novo;
                     }
 
                     case 4 -> {
                         ArrayList<String> coluna = new ArrayList<>();
                         ArrayList<String> novoU = new ArrayList<>();
                         ArrayList<String> condicao = new ArrayList<>();
+                        String s;
+                        int novo;
 
-                        System.out.print("Insira o novo número de residência: ");
-                        int novo = Integer.parseInt(tc.nextLine());
+                        while(true){
+                            System.out.print("Insira o novo número de residência: ");
+                            s = tc.nextLine();
+
+                            if(fun.regexNum(s)){
+                                novo = Integer.parseInt(s);
+                                break;
+                            }
+                        }
 
                         coluna.add("numero");
                         novoU.add("" + novo);
                         condicao.add("id_cliente = " + getId());
                         variosUpdates("cliente", coluna, novoU, condicao);
+                        numero = novo;
                     }
 
                     case 5 -> {
                         ArrayList<String> coluna = new ArrayList<>();
                         ArrayList<String> novoU = new ArrayList<>();
                         ArrayList<String> condicao = new ArrayList<>();
+                        String novo;
 
-                        System.out.print("Insira o novo email: ");
-                        String novo = tc.nextLine();
+                        do {
+                            System.out.print("Insira o novo email: ");
+                            novo = tc.nextLine();
+                        }while(fun.regexEmail(novo));
 
                         coluna.add("email");
                         novoU.add("'" + novo + "'");
                         condicao.add("id_cliente = " + getId());
                         variosUpdates("cliente", coluna, novoU, condicao);
+                        email = novo;
                     }
 
                     case 6 -> {
@@ -241,6 +367,7 @@ public class Cliente extends GerenciaBd {
                         novoU.add("" + novo);
                         condicao.add("id_cliente = " + getId());
                         variosUpdates("cliente", coluna, novoU, condicao);
+                        flamengo = novo;
                     }
 
                     case 7 -> {
@@ -255,6 +382,7 @@ public class Cliente extends GerenciaBd {
                         novoU.add("" + novo);
                         condicao.add("id_cliente = " + getId());
                         variosUpdates("cliente", coluna, novoU, condicao);
+                        souza = novo;
                     }
 
                     case 8 -> {
@@ -269,6 +397,7 @@ public class Cliente extends GerenciaBd {
                         novoU.add("" + novo);
                         condicao.add("id_cliente = " + getId());
                         variosUpdates("cliente", coluna, novoU, condicao);
+                        onePiece = novo;
                     }
 
                     case 0 -> {
@@ -276,6 +405,9 @@ public class Cliente extends GerenciaBd {
                     }
                     default -> System.out.println("OPÇÃO INVÁLIDA!");
                 }
+                }
+                else
+                    break;
             }
         }catch (Exception e){
             System.out.println("ERRO: " + e);
@@ -290,7 +422,7 @@ public class Cliente extends GerenciaBd {
         return nome;
     }
 
-    public Long getCpf() {
+    public String getCpf() {
         return cpf;
     }
 
@@ -316,5 +448,17 @@ public class Cliente extends GerenciaBd {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String toString(){
+        return "===========================================================================\n" +
+                "Nome: " + nome + "\n" +
+                "CPF: " + cpf + "\n" +
+                "Email: " + email + "\n" +
+                "Endereço: " + rua + ", " + numero + "\n" +
+                "Assiste One Piece: " + (onePiece ? "Sim" : "Não") + "\n" +
+                "Torce pro Flamengo: " + (flamengo ? "Sim" : "Não") + "\n" +
+                "É de Sousa: " + (souza ? "Sim" : "Não") + "\n" +
+                "===========================================================================";
     }
 }

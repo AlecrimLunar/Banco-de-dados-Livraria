@@ -1038,6 +1038,7 @@ public abstract class GerenciaBd implements AutoCloseable{
         throw new NaoTemConexaoException();
     }
 
+    //=============================================================Recupera Coisas=============================================================
     /**
      * Função responsável por recuperar os livros de uma compra.
      * @param idCompra o id da compra para recuperar os livros feitos nela.
@@ -1050,11 +1051,9 @@ public abstract class GerenciaBd implements AutoCloseable{
      * o banco de dados existente apresentou algum
      * problema mas não foi possível fechá-la.
      */
-
-
-    //=============================================================Recupera Coisas=============================================================
     protected ResultSet recuperaLivrosCompras(int idCompra)
             throws NaoTemConexaoException, ConexaoException {
+
         if (connection != null) {
             String tabela = "Estoque.livro AS L INNER JOIN " +
                     "Clientes_Info.carrinho_livro AS C " +
@@ -1105,7 +1104,6 @@ public abstract class GerenciaBd implements AutoCloseable{
     }
 
     /**
-<<<<<<< HEAD
      * Função responsável por confirmar uma compra, isto é,
      * atribuir à coluna id_vendedor em Compras_Info.compra
      * o id de um vendedor responsável pela confirmação daquela
@@ -1253,7 +1251,6 @@ public abstract class GerenciaBd implements AutoCloseable{
      * problema mas não foi possível fechá-la.
      */
     protected ResultSet recuperaComprasNaoConfirmadas()
-    protected ResultSet recuperaLivrosCompras(int idCompra)
             throws NaoTemConexaoException, ConexaoException {
 
         if (connection != null) {
@@ -1262,57 +1259,6 @@ public abstract class GerenciaBd implements AutoCloseable{
 
             try {
                 return Select(coluna, tabela, "id_vendedor = -1 AND id_compra >= 0",
-                        connection);
-            } catch (SQLException e) {
-                /*
-                 * Se der erro, vai tentar fechar a conexão atual.
-                 */
-                try {
-                    close();
-
-                } catch (SQLException f) {
-                    /*
-                     * Se não conseguir ele informa
-                     * a quem o chamou que não foi possível
-                     * encerrar a conexão com o banco e que
-                     * ela é uma conexão defeituosa.
-                     */
-                    throw new ConexaoException();
-                }
-                try {
-                    /*
-                     * O sistema tentar criar outra conexão.
-                     */
-
-                    criaCon(usuarioBanco);
-                } catch (SQLException f) {
-                    /*
-                     * Caso ele não consiga, é necessário avisar
-                     * que existe um grave problema: não existe conexão
-                     * com o banco de dados.
-                     */
-                    throw new NaoTemConexaoException();
-                }
-            }
-            /*
-             * Caso tenha sido possível resolver os erros, a função avisa que ela
-             * teve um comportamento inesperado e foi possível resolver ele,
-             * por isso ela pode ser chamada novamente.
-             */
-            return null;
-        }
-        throw new NaoTemConexaoException();
-    }
-
-    protected ResultSet recuperaCompra(int idCliente)
-            throws NaoTemConexaoException, ConexaoException {
-
-        if (connection != null) {
-            String tabela = "Compras_Info.compra";
-            String coluna = "*";
-
-            try {
-                return Select(coluna, tabela, "id_cliente = " + idCliente,
                         connection);
             } catch (SQLException e) {
                 /*
@@ -1555,10 +1501,6 @@ public abstract class GerenciaBd implements AutoCloseable{
         throw new NaoTemConexaoException();
     }
 
-    protected void setUsuarioBanco(int usuarioBanco) {
-        this.usuarioBanco = usuarioBanco;
-    }
-
     /**
      * Função responsável por retornar um livro.
      * @param idLivro o código do livro a ser retornado
@@ -1618,6 +1560,56 @@ public abstract class GerenciaBd implements AutoCloseable{
             return null;
         }
         throw new NaoTemConexaoException();
+    }
+
+    protected int InsertCompra(String tabela, String info, String atributos) throws NaoTemConexaoException, ConexaoException{
+        if (connection != null){
+            try{
+                String retornando = "RETURNING id_" + tabela;
+                return InsertRetornando(tabela, info, atributos, retornando,connection);
+            } catch (SQLException e) {
+                /*
+                 * Se der erro, vai tentar fechar a conexão atual.
+                 */
+                try {
+                    close();
+
+                } catch (SQLException f) {
+                    /*
+                     * Se não conseguir ele informa
+                     * a quem o chamou que não foi possível
+                     * encerrar a conexão com o banco e que
+                     * ela é uma conexão defeituosa.
+                     */
+                    throw new ConexaoException();
+                }
+                try {
+                    /*
+                     * O sistema tentar criar outra conexão.
+                     */
+
+                    criaCon(usuarioBanco);
+                } catch (SQLException f) {
+                    /*
+                     * Caso ele não consiga, é necessário avisar
+                     * que existe um grave problema: não existe conexão
+                     * com o banco de dados.
+                     */
+                    throw new NaoTemConexaoException();
+                }
+            }
+            /*
+             * Caso tenha sido possível resolver os erros, a função avisa que ela
+             * teve um comportamento inesperado e foi possível resolver ele,
+             * por isso ela pode ser chamada novamente.
+             */
+            return -1;
+        }
+        throw new NaoTemConexaoException();
+    }
+
+    protected void setUsuarioBanco(int usuarioBanco) {
+        this.usuarioBanco = usuarioBanco;
     }
 
     @Override
