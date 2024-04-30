@@ -12,8 +12,64 @@ import java.util.Scanner;
 
 public class DonoLivraria extends GerenciaBd {
 
+    private String nome;
+    private String cpf;
     private static final int qualCon = 2;
     private static final Funcoes funcoes = new Funcoes();
+
+    public DonoLivraria(String nome, String cpf) {
+        this.nome = nome;
+        this.cpf = cpf;
+    }
+
+    public void MenuDono(Scanner tc){
+        System.out.print("========================================================\n" +
+                "BEM-VINDO A SEU MENU, " + nome + "!\n");
+
+        do{
+
+            System.out.print("""
+
+                    QUAL A LEITURA DE HOJE?
+                    ========================================================
+                    1 - Alterar informações
+                    2 - Cadastrar vendedor
+                    3 - Remove vendedor
+                    4 - Relatorio de vendas
+                    0 - Sair
+                    ========================================================
+                    """);
+            int a;
+
+            while(true) {
+
+                String resp = tc.nextLine();
+
+                if(funcoes.regexNum(resp)) {
+                    a = Integer.parseInt(resp);
+                    break;
+                }
+                else
+                    System.out.println("Digite apenas números!");
+            }
+
+            switch (a){
+                case 1 -> alteraDono(tc);
+                case 2 -> cadastraVendedor(tc);
+
+                case 3 -> removeVendedor(tc);
+
+                case 4 -> {}
+
+                case 0 -> {
+                    System.out.print("========================================================");
+                    return;
+                }
+
+                default -> System.out.println("OPÇÃO INVÁLIDA!");
+            }
+        }while(true);
+    }
 
     public void cadastraVendedor(Scanner tc){
         while (true) {
@@ -86,7 +142,7 @@ public class DonoLivraria extends GerenciaBd {
                 ArrayList<String> infos = new ArrayList<>();
                 infos.add(insert);
 
-                int verificaInsert = -1;
+                int verificaInsert;
                 do {
                     try {
                         verificaInsert = Insert("vendedor", infos, "nome, usuario, cpf, senha");
@@ -172,7 +228,7 @@ public class DonoLivraria extends GerenciaBd {
         }
 
         if (vaiRemover){
-            int verifica = -1;
+            int verifica;
             do {
                 try {
                     verifica = delete("vendedor", "id_vendedor = " + vendedor.getId());
@@ -251,39 +307,9 @@ public class DonoLivraria extends GerenciaBd {
         }
     }
 
-    public void removeLivro (Scanner tc) {
-        while (true) {
-            System.out.print("------------------------------------------------------------------" +
-                    "\nID DO LIVRO A SER REMOVIDO: ");
-            String idLivro = tc.nextLine();
-
-            if (controle.Quantos(idLivro, "livro", "") > 0) {
-                try {
-                    ResultSet rt = controle.Select("nome, autor, tipo", "livro", idLivro, "id_livro");
-                    rt.next();
-                    System.out.println("O LIVRO ABAIXO É O LIVRO QUE DESEJA REMOVER? REPONDA COM 'Sim' ou 'Não' " +
-                            "\nNome: " + rt.getString("nome") + "\nAutor: " + rt.getString("autor") +
-                            "\nTipo: " + rt.getString("tipo"));
-
-                    if (tc.nextLine().equalsIgnoreCase("sim")) {
-                        if (controle.delete("livro", "id_livro", idLivro, false))
-                            System.out.println("REMOÇÃO FEITA COM SUCESSO!!" +
-                                    "\n---------------------------------------------------------------------");
-                        else
-                            System.out.println("ERRO!! TENTE NOVAMENTE" +
-                                    "\n---------------------------------------------------------------------");
-                    }
-
-                } catch (Exception e) {
-                    System.out.println("ERRO: " + e);
-                }
-
-                System.out.println("DESEJA REMOVER OUTRO LIVRO? REPONDA COM 'Sim' ou 'Não'");
-                if (!tc.nextLine().equalsIgnoreCase("sim")) {
-                    return;
-                }
-            }
-        }
+    private void alteraDono(Scanner tc){
+        /*altera nome/cpf do dono da livraria
+        só pq sim.*/
     }
 
 }

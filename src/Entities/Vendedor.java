@@ -42,7 +42,6 @@ public class Vendedor extends GerenciaBd{
             System.out.println("""
 
                     QUAL A LEITURA DE HOJE?
-                    (ESCOLHA UMA DAS OPÇÕES ABAIXO)
                     --------------------------------------------------------
                     1 - Cadastrar livro
                     2 - Alterar informação de um livro
@@ -355,8 +354,8 @@ public class Vendedor extends GerenciaBd{
 
         if (!compras.isEmpty()) {
             for (Compra compraAtual : compras) {
-                compraAtual.printCompras();
-                System.out.print("Deseja confirmar essa compra?\n");
+                System.out.print(compraAtual +
+                        "\nDeseja confirmar essa compra?\n");
 
                 if (tc.nextLine().equalsIgnoreCase("sim")) {
                     int verifica = -1;
@@ -476,7 +475,7 @@ public class Vendedor extends GerenciaBd{
                 int idCarrinho = rt.getInt("id_carrinho");
 
                 compras.add(new Compra(idCompra, formaPagamento,
-                        data, valor, idCarrinho));
+                        data, valor, idCarrinho, id));
             }
         } catch (ConexaoException e) {
            funcoes.trataException(e, qualCon);

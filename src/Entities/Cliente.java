@@ -2,6 +2,7 @@ package Entities;
 
 import Controle.*;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Scanner;
@@ -21,6 +22,7 @@ public class Cliente extends GerenciaBd {
     private static Carrinho carrinho;
     private static Funcoes fun;
     private final int quem = 0;
+    private boolean delete;
 
     public Cliente(String nome, String cpf, String rua, int numero, String email,
                    Boolean onePiece, Boolean flamengo, Boolean souza, String user,
@@ -110,7 +112,12 @@ public class Cliente extends GerenciaBd {
                         fun.Compra(sc, carrinho, new boolean[]{getOnePiece(), getOnePiece(), getSouza()}, getId(), quem);
                     }
                 }
-                case 6 -> MenuConta(sc);
+                case 6 -> {
+                    MenuConta(sc);
+                    if(delete){
+                        break loop;
+                    }
+                }
                 case 7 ->{break loop;}
                 case 0 -> {
                     System.out.print("Tem certeza que deseja sair?\n");
@@ -157,8 +164,10 @@ public class Cliente extends GerenciaBd {
                 case 1 -> fun.verPedidos(sc, getId(), quem);
                 case 2 -> alteraCliente(sc);
                 case 3 -> {
-                    removeCliente(sc);
-                    break loop;
+                    if(removeCliente(sc)){
+                        delete = true;
+                        break loop;
+                    }
                 }
                 case 0 -> {break loop;}
             }
@@ -169,34 +178,58 @@ public class Cliente extends GerenciaBd {
      * Método responsável por exibir a opção de remover o cadastro do cliente.
      * @param tc Scanner utilizado para ler as entradas do usuário.
      */
-    public void removeCliente(Scanner tc) {
+    public boolean removeCliente(Scanner tc) {
 
         System.out.print("""
                 RESPONDA COM 'Sim' OU 'Não'.\s
                 DESEJA REMOVER SEU CADASTRO DA LOJA? ISSO NÃO IRÁ REMOVER SEU HISTÓRICO DE COMPRAS NO SISTEMA DA LOJA!
                 """);
-        try {
-            if (tc.nextLine().equalsIgnoreCase("sim")) {
-                delete("cliente", "id_cliente = " + getId());
-            }
+        boolean remove = tc.nextLine().equalsIgnoreCase("sim");
+        if(remove) {
+            int verifica;
+            do {
+                try {
+                   verifica = delete("cliente", "id_cliente = " + getId());
+                } catch (NaoTemConexaoException e) {
+                    fun.trataException(e, quem);
+                    System.out.print("""
+                            ========================================================
+                            Erro na conexão.
+                            Tente novamente mais tarde.
+                            ========================================================
+                            """);
+                    return false;
+                } catch (ConexaoException e) {
+                    fun.trataException(e, quem);
+                    System.out.print("""
+                            ========================================================
+                            Erro na conexão.
+                            Tente novamente mais tarde.
+                            ========================================================
+                            """);
+                    return false;
+                }
+            } while(verifica == -1);
 
-        } catch (NaoTemConexaoException e) {
-            fun.trataException(e, quem);
-            System.out.print("""
-                                 ========================================================
-                                 Erro na conexão.
-                                 Tente novamente mais tarde.
-                                 ========================================================
-                                 """);
-        } catch (ConexaoException e) {
-            fun.trataException(e, quem);
-            System.out.print("""
-                    ========================================================
-                    Erro na conexão.
-                    Tente novamente mais tarde.
-                    ========================================================
-                    """);
-        }
+            if(verifica == 1){
+                System.out.print("""
+                        ========================================================
+                        CONTA REMOVIDA COM SUCESSO!
+                        ========================================================
+                        """);
+                return true;
+
+            } else {
+                System.out.print("""
+                        ========================================================
+                        NÃO FOI POSSÍVEL APAGAR A CONTA!
+                        POR FAVOR TENTE NOVAMENTE MAIS TARDE.
+                        ========================================================
+                        """);
+                return false;
+            }
+        } else
+            return false;
     }
 
     /**
@@ -409,8 +442,22 @@ public class Cliente extends GerenciaBd {
                 else
                     break;
             }
-        }catch (Exception e){
-            System.out.println("ERRO: " + e);
+        } catch (NaoTemConexaoException e) {
+            fun.trataException(e, quem);
+            System.out.print("""
+                             ========================================================
+                             Erro na conexão.
+                             Tente novamente mais tarde.
+                             ========================================================
+                             """);
+        } catch (ConexaoException e) {
+            fun.trataException(e, quem);
+            System.out.print("""
+                             ========================================================
+                             Erro na conexão.
+                             Tente novamente mais tarde.
+                             ========================================================
+                             """);
         }
     }
 

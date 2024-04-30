@@ -106,65 +106,74 @@ public class Sistema extends Controle.GerenciaBd {
         int quem = 0;
 
         String tabela = "";
-        if(c == null) {
+        if (c == null) {
             System.out.print("Deseja realizar login como Vendedor ou cliente?\n");
-            tabela = sc.nextLine().equalsIgnoreCase("vendedor") ? "vendedores_info.vendedor" : "clientes_info.cliente";
-        } else if(c) {
-            tabela = "clientes_info.cliente";
+            tabela = sc.nextLine().equalsIgnoreCase("vendedor") ? "vendedor" : "cliente";
+        } else if (c) {
+            tabela = "cliente";
         }
 
-        try{
-            System.out.print("Deseja realizar [1]-login ou [2]-criar uma conta?\n");
-            if("2".equalsIgnoreCase(sc.nextLine())){
-                Cadastrar(sc, compra);
-            } else {
-                String user = "";
-                String senha = "";
-                while (!loginEfetuado) {
-                    System.out.print("Usuário: ");
-                    user = sc.nextLine();
+        try {
+            if (tabela.equalsIgnoreCase("cliente")) {
+                System.out.print("Deseja realizar [1]-login ou [2]-criar uma conta?\n");
+                if ("2".equalsIgnoreCase(sc.nextLine()))
+                    Cadastrar(sc, compra);
+            } else if (tabela.equalsIgnoreCase("vendedor")) {
+                System.out.print("Deseja realizar [1]-login como vendedor ou [3}-login como dono da livraria?\n");
+                if ("3".equalsIgnoreCase(sc.nextLine()))
+                    tabela = "Dono";
+            }
 
-                    System.out.print("Senha: ");
-                    senha = sc.nextLine();
+            String user = "";
+            String senha = "";
+            while (!loginEfetuado) {
+                System.out.print("Usuário: ");
+                user = sc.nextLine();
 
-                    int aux = login(user, senha, tabela);
+                System.out.print("Senha: ");
+                senha = sc.nextLine();
 
-                    switch (aux) {
-                        case -1 -> System.out.println("Erro no banco");
-                        case 0 -> System.out.println("Usuário não existente");
-                        case 1 -> {
-                            System.out.println("login efetuado com sucesso");
-                            loginEfetuado = true;
-                        }
-                        case 2 -> System.out.println("Senha incorreta");
+                int aux = login(user, senha, tabela);
+
+                switch (aux) {
+                    case -1 -> System.out.println("Erro no banco");
+                    case 0 -> System.out.println("Usuário não existente");
+                    case 1 -> {
+                        System.out.println("login efetuado com sucesso");
+                        loginEfetuado = true;
                     }
-                }
-
-                if (tabela.equalsIgnoreCase("vendedores_info.vendedor")) {
-                    quem = 1;
-                    Vendedor vendedor = fun.recuperaVendedorF(user, senha, quem);
-                    vendedor.menuVendedor(sc);
-                } else {
-                    Cliente cliente = fun.recuperaCliente(user, senha, carrinho, quem);
-                    cliente.MenuCliente(sc, compra);
+                    case 2 -> System.out.println("Senha incorreta");
                 }
             }
-        } catch (NaoTemConexaoException e) {
+
+            if (tabela.equalsIgnoreCase("vendedor")) {
+                quem = 1;
+                Vendedor vendedor = fun.recuperaVendedorF(user, senha, quem);
+                vendedor.menuVendedor(sc);
+            } else if (tabela.equalsIgnoreCase("cliente")) {
+                Cliente cliente = fun.recuperaCliente(user, senha, carrinho, quem);
+                cliente.MenuCliente(sc, compra);
+            } else {
+                DonoLivraria dono = fun.recuperaDono(user, senha, 2);
+                dono.MenuDono(sc);
+            }
+
+        } catch(NaoTemConexaoException e){
             fun.trataException(e, quem);
             System.out.print("""
-                             ========================================================
-                             Erro na conexão.
-                             Tente novamente mais tarde.
-                             ========================================================
-                             """);
-        } catch (ConexaoException e) {
+                        ========================================================
+                        Erro na conexão.
+                        Tente novamente mais tarde.
+                        ========================================================
+                        """);
+        } catch(ConexaoException e){
             fun.trataException(e, quem);
             System.out.print("""
-                             ========================================================
-                             Erro na conexão.
-                             Tente novamente mais tarde.
-                             ========================================================
-                             """);
+                        ========================================================
+                        Erro na conexão.
+                        Tente novamente mais tarde.
+                        ========================================================
+                        """);
         }
     }
 

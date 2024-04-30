@@ -258,7 +258,7 @@ public class Funcoes extends GerenciaBd {
 
             assert rt != null;
 
-            return new Vendedor(rt.getInt("id_vendedor"), rt.getString("nome"), Long.parseLong(rt.getString("cpf")));
+            return new Vendedor(rt.getInt("id_vendedor"), rt.getString("nome"), rt.getString("cpf"));
         } catch (NaoTemConexaoException e) {
             trataException(e, quem);
             System.out.print("""
@@ -338,7 +338,45 @@ public class Funcoes extends GerenciaBd {
         }
     }
 
+    //=============================================================Tratamento de Erro=============================================================
 
+    public DonoLivraria recuperaDono(String user, String senha, int quem) {
+        setUsuarioBanco(2);
+        try{
+            ResultSet rt = recuperaDono(user, senha);
+            assert rt != null;
+
+            return new DonoLivraria(rt.getString("nome"), rt.getString("cpf"));
+
+        } catch (NaoTemConexaoException e) {
+            trataException(e, quem);
+            System.out.print("""
+                             ========================================================
+                             Erro na conexão.
+                             Tente novamente mais tarde.
+                             ========================================================
+                             """);
+            return null;
+        } catch (ConexaoException e) {
+            trataException(e, quem);
+            System.out.print("""
+                             ========================================================
+                             Erro na conexão.
+                             Tente novamente mais tarde.
+                             ========================================================
+                             """);
+            return null;
+        } catch (SQLException e) {
+            System.out.print("""
+                             ========================================================
+                             Erro na conexão.
+                             Tente novamente mais tarde.
+                             ========================================================
+                             """);
+            return null;
+
+        }
+    }
     //=============================================================Livro=============================================================
     /**
      * Recebe um Scanner e um Carrinho, e retorna o Carrinho após realizar uma pesquisa por nome, autor ou gênero.
@@ -938,65 +976,6 @@ public class Funcoes extends GerenciaBd {
     }
 
     //=============================================================Tratamento de Erro=============================================================
-    /**
-     * Função responsável por tratar a excessão se ter uma
-     * conexão com o banco de dados que está com problemas.
-     * Ela irá tentar fechar ela e depois iniciar uma nova
-     * conexão.
-     * <P>Caso não consiga, irá encerrar o programa.</P>
-     * @param conexaoException
-     */
-    public boolean trataException (ConexaoException conexaoException, int quem){
-        try {
-            close();
-        } catch (SQLException f) {
-            System.err.println("""
-                            ========================================================
-                            FALHA CRÍTICA NO SISTEMA!
-                            A CONEXÃO COM O BANCO DE DADOS APRESENTOU ERROS E
-                            NÃO FOI POSSÍVEL ENCERRÁ-LA
-                            ========================================================
-                            """);
-            System.exit(1);
-        }
-        try {
-            criaCon(quem);
-        } catch (SQLException f) {
-            System.err.println("""
-                            ========================================================
-                            FALHA CRÍTICA NO SISTEMA!
-                            NÃO FOI POSSÍVEL ESTABELECER UMA CONEXÃO COM O BANCO
-                            DE DADOS
-                            ========================================================
-                            """);
-            System.exit(1);
-        }
-        return true;
-    }
-
-    /**
-     * Função responsável por tratar a excessão de não ter uma conexão
-     * com o banco de dados. Ela irá tentar iniciar uma nova conexão.
-     * <P>Caso não consiga, irá encerrar o programa.</P>
-     * @param naoTemConexaoException
-     */
-    public boolean trataException (NaoTemConexaoException naoTemConexaoException, int quem){
-        try {
-            criaCon(quem);
-        } catch (SQLException f) {
-            System.err.println("""
-                            ========================================================
-                            FALHA CRÍTICA NO SISTEMA!
-                            NÃO FOI POSSÍVEL ESTABELECER UMA CONEXÃO COM O BANCO
-                            DE DADOS
-                            ========================================================
-                            """);
-            System.exit(1);
-        }
-        return true;
-    }
-
-
     /**
      * Função responsável por tratar a excessão se ter uma
      * conexão com o banco de dados que está com problemas.
