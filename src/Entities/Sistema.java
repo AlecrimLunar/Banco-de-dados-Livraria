@@ -4,6 +4,7 @@ import Controle.ConexaoException;
 import Controle.Funcoes;
 import Controle.NaoTemConexaoException;
 
+import java.sql.SQLException;
 import java.util.*;
 
 public class Sistema extends Controle.GerenciaBd {
@@ -14,6 +15,19 @@ public class Sistema extends Controle.GerenciaBd {
         fun = new Funcoes();
         carrinho = new Carrinho();
         setUsuarioBanco(0);
+        try{
+            criaCon(0);
+        } catch (SQLException e){
+            System.err.println("""
+                            ========================================================
+                            FALHA CRÍTICA NO SISTEMA!
+                            A CONEXÃO COM O BANCO DE DADOS APRESENTOU ERROS E
+                            NÃO FOI POSSÍVEL ENCERRÁ-LA
+                            ========================================================
+                            """);
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     /**
@@ -121,7 +135,7 @@ public class Sistema extends Controle.GerenciaBd {
             } else if (tabela.equalsIgnoreCase("vendedor")) {
                 System.out.print("Deseja realizar [1]-login como vendedor ou [3}-login como dono da livraria?\n");
                 if ("3".equalsIgnoreCase(sc.nextLine()))
-                    tabela = "Dono";
+                    tabela = "donoLivraria";
             }
 
             String user = "";

@@ -25,6 +25,9 @@ public class Vendedor extends GerenciaBd{
         this.id = rt.getInt("id_vendedor");
         this.nome = rt.getNString("nome");
         this.cpf = rt.getNString("cpf");
+
+        setUsuarioBanco(1);
+        criaCon(1);
     }
 
     /**
@@ -33,6 +36,7 @@ public class Vendedor extends GerenciaBd{
      * @param tc o scanner para as entradas do usuário.
      */
     public void menuVendedor(Scanner tc){
+
 
         System.out.print("========================================================" + "\n" +
                 "BEM-VINDO AO MENU DE VENDEDOR");
