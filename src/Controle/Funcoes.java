@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 public class Funcoes extends GerenciaBd {
 
     public Funcoes(int quem){
+        //setUsuario
         try {
             criaCon(quem);
         } catch (SQLException e) {
@@ -33,6 +34,7 @@ public class Funcoes extends GerenciaBd {
      * @return uma lista ligada de objetos Livro representando os livros destacados
      */
     public LinkedList<Livro> Destaques(int quem) {
+
         LinkedList<Livro> destaques;
 
         try {
@@ -92,6 +94,8 @@ public class Funcoes extends GerenciaBd {
         StringBuilder sb = new StringBuilder();
         sb.append("+=====================1=====================+=====================2=====================+=====================3=====================+\n");
 
+        if (livros == null)
+            return "";
         Livro aux = livros.get(0);
         ArrayList<String> nome1 = new ArrayList<>();
 
@@ -344,7 +348,8 @@ public class Funcoes extends GerenciaBd {
             ResultSet rt = recuperaDono(user, senha);
             assert rt != null;
 
-            return new DonoLivraria(rt.getString("nome"), rt.getString("cpf"));
+            if (rt.next())
+                return new DonoLivraria(rt.getString("nome"), rt.getString("cpf"));
 
         } catch (NaoTemConexaoException e) {
             trataException(e, quem);
@@ -374,6 +379,7 @@ public class Funcoes extends GerenciaBd {
             return null;
 
         }
+        return null;
     }
     //=============================================================Livro=============================================================
     /**
@@ -492,6 +498,9 @@ public class Funcoes extends GerenciaBd {
      * @throws SQLException caso ocorra algum erro ao acessar o banco de dados
      * **/
     public static LinkedList<Livro> RecuperaLivro(ResultSet rt, boolean carrinho) throws SQLException{
+        if (rt == null)
+            return null;
+
         LinkedList<Livro> l = new LinkedList<>();
         if(rt == null){
             return new LinkedList<>();

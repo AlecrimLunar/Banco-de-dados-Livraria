@@ -15,6 +15,19 @@ public class Sistema extends Controle.GerenciaBd {
         fun = new Funcoes(0);
         carrinho = new Carrinho();
         setUsuarioBanco(0);
+        try{
+            criaCon(0);
+        } catch (SQLException e){
+            System.err.println("""
+                            ========================================================
+                            FALHA CRÍTICA NO SISTEMA!
+                            A CONEXÃO COM O BANCO DE DADOS APRESENTOU ERROS E
+                            NÃO FOI POSSÍVEL ENCERRÁ-LA
+                            ========================================================
+                            """);
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     /**
@@ -131,6 +144,7 @@ public class Sistema extends Controle.GerenciaBd {
                 if ("2".equalsIgnoreCase(sc.nextLine()))
                     Cadastrar(sc, compra);
             } else if (tabela.equalsIgnoreCase("vendedor")) {
+
                 System.out.print("Deseja realizar [1]-login como vendedor ou [2}-login como dono da livraria?\n");
                 if ("2".equalsIgnoreCase(sc.nextLine()))
                     tabela = "donolivraria";
@@ -167,6 +181,9 @@ public class Sistema extends Controle.GerenciaBd {
                 cliente.MenuCliente(sc, compra);
             } else {
                 DonoLivraria dono = fun.recuperaDono(user, senha, 2);
+
+                if (dono == null)
+                    return;
                 dono.MenuDono(sc);
             }
 

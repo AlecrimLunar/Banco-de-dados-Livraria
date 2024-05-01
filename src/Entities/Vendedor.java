@@ -25,6 +25,9 @@ public class Vendedor extends GerenciaBd{
         this.id = rt.getInt("id_vendedor");
         this.nome = rt.getNString("nome");
         this.cpf = rt.getNString("cpf");
+
+        setUsuarioBanco(1);
+        criaCon(1);
     }
 
     /**
