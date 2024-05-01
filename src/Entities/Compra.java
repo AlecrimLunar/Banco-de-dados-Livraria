@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
 
 /**
  * Classe responsável por guardar as informações das compras.

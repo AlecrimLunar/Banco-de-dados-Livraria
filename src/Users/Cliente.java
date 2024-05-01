@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Scanner;
 
+/**
+ * Classe que representa o cliente do sistema.
+ */
 public class Cliente extends GerenciaBd {
     private Integer id;
     private String nome;

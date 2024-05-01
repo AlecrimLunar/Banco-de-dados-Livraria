@@ -3,6 +3,9 @@ package Entities;
 import java.util.LinkedList;
 import java.util.Stack;
 
+/**
+ * Classe responsável por guardar um carrinho.
+ */
 public class Carrinho {
 
     private LinkedList<Livro> livros;

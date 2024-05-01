@@ -6,9 +6,7 @@ import Exceptions.ConexaoException;
 import Exceptions.NaoTemConexaoException;
 import Sistema.Funcoes;
 
-import java.sql.Date;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 

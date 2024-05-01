@@ -90,7 +90,7 @@ public class Funcoes extends GerenciaBd {
      * divide o nome em duas partes e exibe essas partes em linhas separadas.
      *
      * @param livros uma lista de livros destaque
-     * @return uma string contendo a tabela formatada de livros destaque
+     * @return uma string contendo a tabela formatada de livros destaque.
      */
     public String PrintDestaques(LinkedList<Livro> livros){
         if(livros == null ||livros.isEmpty()){

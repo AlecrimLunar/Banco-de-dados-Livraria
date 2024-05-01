@@ -9,8 +9,8 @@ import java.util.HashMap;
 
 /**
  * Classe responsável por fazer as chamadas de ControlaBD.
- * <P>Nela são tratados os erros possíveis que possam ter acontecidos
- * e é gerenciada a conexão com o banco de dados.
+ * <P>Nela são tratados os erros possíveis que possam ter acontecido
+ * da conexão com o banco de dados.
  */
 public abstract class GerenciaBd implements AutoCloseable{
 

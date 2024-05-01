@@ -3,6 +3,9 @@ package Entities;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * Classe que guarda os livros.
+ */
 public class Livro {
     private Integer id;
     private String nome;
@@ -13,6 +16,7 @@ public class Livro {
     private Boolean mari;
 
     private int quantidade;
+
 
     public Livro(Integer id, String nome, Double preco, String autor, String genero, String tipo, Boolean mari, int quantidade) {
         this.id = id;

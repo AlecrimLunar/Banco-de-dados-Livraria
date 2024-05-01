@@ -3,7 +3,6 @@ package Sistema;
 import Entities.Carrinho;
 import Entities.Livro;
 import Exceptions.ConexaoException;
-import Sistema.Funcoes;
 import Exceptions.NaoTemConexaoException;
 import Users.Cliente;
 import Users.DonoLivraria;

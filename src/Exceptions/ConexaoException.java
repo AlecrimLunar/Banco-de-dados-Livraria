@@ -1,11 +1,11 @@
 package Exceptions;
 
+/**
+ * Exceção utilizada quando a conexão atual com
+ * o banco deu algum problema.
+ */
 public class ConexaoException extends Exception{
 
-    /**
-     * Exceção utilizada quando não foi possível criar
-     * uma conexão com o banco de dados
-     */
     public ConexaoException (){
         super();
     }

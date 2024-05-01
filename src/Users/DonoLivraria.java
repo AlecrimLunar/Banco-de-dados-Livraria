@@ -11,6 +11,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Scanner;
 
+/**
+ * Classe que representa o dono da livraria.
+ */
 public class DonoLivraria extends GerenciaBd {
 
     private String nome;
