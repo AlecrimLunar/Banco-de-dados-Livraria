@@ -48,7 +48,7 @@ public class Sistema extends Controle.GerenciaBd {
             System.out.print("livros em destaque:\n" +
                     fun.PrintDestaques(destaques) + "\n" +
                     "4 - Procurar livro\n" +
-                    "5 - Carrinho" +
+                    "5 - Carrinho\n" +
                     "6 - Realizar login\n" +
                     "7 - Cadastrar-se\n" +
                     "0 - Sair\n" +
@@ -146,6 +146,7 @@ public class Sistema extends Controle.GerenciaBd {
 
                 System.out.print("Senha: ");
                 senha = sc.nextLine();
+                user = "'" + user + "'";
 
                 int aux = login(user, senha, tabela);
 

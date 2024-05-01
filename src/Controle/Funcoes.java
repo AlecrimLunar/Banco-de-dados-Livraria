@@ -21,6 +21,11 @@ public class Funcoes extends GerenciaBd {
      */
     public LinkedList<Livro> Destaques(int quem) {
         setUsuarioBanco(quem);
+        try{
+            criaCon(0);
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
         LinkedList<Livro> destaques;
 
         try {
@@ -72,6 +77,8 @@ public class Funcoes extends GerenciaBd {
         StringBuilder sb = new StringBuilder();
         sb.append("+=====================1=====================+=====================2=====================+=====================3=====================+\n");
 
+        if (livros == null)
+            return "";
         Livro aux = livros.get(0);
         ArrayList<String> nome1 = new ArrayList<>();
 
@@ -472,6 +479,9 @@ public class Funcoes extends GerenciaBd {
      * @throws SQLException caso ocorra algum erro ao acessar o banco de dados
      * **/
     public static LinkedList<Livro> RecuperaLivro(ResultSet rt, boolean carrinho) throws SQLException{
+        if (rt == null)
+            return null;
+
         LinkedList<Livro> l = new LinkedList<>();
 
         try{
