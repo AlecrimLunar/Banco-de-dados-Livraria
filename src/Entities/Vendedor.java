@@ -308,12 +308,10 @@ public class Vendedor extends GerenciaBd{
 
         String info = "'" + tipo + "', '" + nome + "', " + quantidade + ", "
                 + from_mari + ", '" + autor + "', '" + genero + "', " + preco;
-        ArrayList<String> argumento = new ArrayList<>();
-        argumento.add(info);
         int idLivro = -1;
 
         try {
-            idLivro = Insert("livro", argumento,  "tipo, nome, " +
+            idLivro = InsertRetornando("livro", info,  "tipo, nome, " +
                     "quantidade_estoque, from_mari, autor, genero, preco");
         } catch (ConexaoException e) {
             funcoes.trataException(e, qualCon);
@@ -563,7 +561,7 @@ public class Vendedor extends GerenciaBd{
                 """);
         while (true) {
             System.out.print("--------------------------------------------------------\n" +
-                    "Insira o código do livro a ser alterado ou -1 caso\n" +
+                    "Insira o código do livro a ser alterado ou 0 caso\n" +
                     "queira sair.\n");
             do {
                 entrada = tc.nextLine();
@@ -573,7 +571,7 @@ public class Vendedor extends GerenciaBd{
 
             } while (true);
 
-            if (Integer.parseInt(entrada) == -1)
+            if (Integer.parseInt(entrada) == 0)
                 break;
 
             Livro livro = recebeLivro(Integer.parseInt(entrada));
@@ -585,7 +583,7 @@ public class Vendedor extends GerenciaBd{
                 return;
             }
 
-            System.out.print("O livro abaixo é o livro que você deseja alterar?\n" +
+            System.out.println("O livro abaixo é o livro que você deseja alterar?\n" +
                     livro);
 
             if (!tc.nextLine().equalsIgnoreCase("sim")) {
@@ -708,7 +706,7 @@ public class Vendedor extends GerenciaBd{
                     System.out.print("Insira o novo preço\n");
 
                     entrada = tc.nextLine();
-                    if (funcoes.regexNum(entrada)) {
+                    if (funcoes.regexPreco(entrada)) {
                         novo.add(entrada);
                         coluna.add("preco");
                         condicao.add("id_livro = " + idLivro);
@@ -720,7 +718,7 @@ public class Vendedor extends GerenciaBd{
                                 """);
                 }
                 case 7 ->{
-                    int verificaUpdate = -1;
+                    int verificaUpdate;
                     do {
                         try {
                             verificaUpdate = variosUpdates("livro", coluna, novo, condicao);

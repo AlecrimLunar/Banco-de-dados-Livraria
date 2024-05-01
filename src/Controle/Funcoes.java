@@ -1021,6 +1021,9 @@ public class Funcoes extends GerenciaBd {
     public boolean regexNum(String s){
         return Pattern.matches("[0-9]+", s);
     }
+    public boolean regexPreco(String s){
+        return Pattern.matches("[0-9.]+", s);
+    }
 
     //=============================================================Tratamento de Erro=============================================================
     /**
