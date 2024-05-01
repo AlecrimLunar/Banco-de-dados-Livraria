@@ -132,20 +132,24 @@ public class Cliente extends GerenciaBd {
                 case 4 -> carrinho = fun.Pesquisa(sc, carrinho, quem);
                 case 5 -> {
                     carrinho = fun.Carrinho(sc, carrinho);
-                    if(carrinho.isEmpty()) {
+                    if(!carrinho.isEmpty()) {
                         System.out.print("Deseja finalizar a compra?\n");
                         if (sc.nextLine().equalsIgnoreCase("sim")) {
                             fun.Compra(sc, carrinho, new boolean[]{getOnePiece(), getFlamengo(), getSouza()}, getId(), quem);
                         }
                     }
+                    carrinho = new Carrinho();
                 }
                 case 6 -> {
                     MenuConta(sc);
                     if(delete){
+
                         break loop;
                     }
                 }
-                case 7 ->{break loop;}
+                case 7 ->{
+
+                    break loop;}
                 case 0 -> {
                     System.out.print("Tem certeza que deseja sair?\n");
                     if (sc.nextLine().equalsIgnoreCase("sim"))

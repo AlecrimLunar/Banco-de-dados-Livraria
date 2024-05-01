@@ -23,8 +23,8 @@ public class Vendedor extends GerenciaBd{
 
     public Vendedor(ResultSet rt) throws SQLException{
         this.id = rt.getInt("id_vendedor");
-        this.nome = rt.getNString("nome");
-        this.cpf = rt.getNString("cpf");
+        this.nome = rt.getString("nome");
+        this.cpf = rt.getString("cpf");
 
         setUsuarioBanco(1);
         criaCon(1);
@@ -150,7 +150,7 @@ public class Vendedor extends GerenciaBd{
                 break;
         }
 
-        int verifica = -1;
+        int verifica;
         try{
             do {
                 verifica = adicionaQuantidadeLivroEstoque(livros, quantidades);
@@ -354,14 +354,8 @@ public class Vendedor extends GerenciaBd{
 
         try {
             compras = comprasNaoConfirmadas();
-        } catch (SQLException e){
-            System.err.print("""
-                    ========================================================
-                    Não foi possível recuperar as compras!
-                    Tente novamente mais tarde.
-                    ========================================================
-                    """);
-            return;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         if (compras == null)
@@ -373,7 +367,7 @@ public class Vendedor extends GerenciaBd{
                         "\nDeseja confirmar essa compra?\n");
 
                 if (tc.nextLine().equalsIgnoreCase("sim")) {
-                    int verifica = -1;
+                    int verifica;
                     try {
 
                         do {
@@ -484,7 +478,7 @@ public class Vendedor extends GerenciaBd{
         try (ResultSet rt = recuperaComprasNaoConfirmadas()) {
             while (rt.next()) {
                 int idCompra = rt.getInt("id_compra");
-                String formaPagamento = rt.getNString("forma_pagamento");
+                String formaPagamento = rt.getString("forma_pagamento");
                 Date data = rt.getDate("data");
                 int valor = rt.getInt("valor");
                 int idCarrinho = rt.getInt("id_carrinho");

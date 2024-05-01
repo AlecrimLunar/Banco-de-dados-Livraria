@@ -3,6 +3,7 @@ package Controle;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 /**
  * Classe responsável por fazer as chamadas de ControlaBD.
@@ -36,11 +37,15 @@ public abstract class GerenciaBd implements AutoCloseable{
 
         String consulta = "INSERT INTO " + tabela + " (" + atributos +
                 ") VALUES (" + infos + ") " + retornando + ";";
+        System.out.println(consulta);
         try (PreparedStatement st = con.prepareStatement(consulta);
              ResultSet rt = st.executeQuery()){
-            if (rt.next())
+            if (rt.next()) {
+                if ("carrinho_livro".equalsIgnoreCase(tabelaOriginal)) {
+                    return rt.getInt("id_carrinho");
+                }
                 return rt.getInt("id_" + tabelaOriginal);
-            else
+            } else
                 return -1;
 
         } catch (Exception e) {
@@ -96,7 +101,11 @@ public abstract class GerenciaBd implements AutoCloseable{
             throws NaoTemConexaoException, ConexaoException{
         if (connection != null) {
             try {
-                String retornando = "RETURNING id_" + tabela;
+                String retornando;
+                if ("carrinho_livro".equalsIgnoreCase(tabela)) {
+                    retornando = "RETURNING id_carrinho";
+                } else
+                    retornando = "RETURNING id_" + tabela;
                 return InsertRetornando(qualNomeTabelaBanco.get(tabela),
                         infos, atributos, retornando, tabela, connection);
 
@@ -403,8 +412,8 @@ public abstract class GerenciaBd implements AutoCloseable{
         String consulta = "UPDATE " + tabela + " SET " + mudancas +
                 " WHERE " + condicao + ";";
 
+        System.out.println(consulta);
         try (PreparedStatement st = con.prepareStatement(consulta)) {
-
 
             return st.executeUpdate();
 
@@ -439,7 +448,7 @@ public abstract class GerenciaBd implements AutoCloseable{
          * Aqui fazemos a criação do SET do UPDATE.
          */
         for (int j = 0; j < colunasAlteradas.length; ++j) {
-            if (j != coluna.length() - 1)
+            if (j != colunasAlteradas.length - 1)
                 mudancas += colunasAlteradas[j] + " = " + valorColunasAlteradas[j] + ", ";
             else
                 mudancas += colunasAlteradas[j] + " = " + valorColunasAlteradas[j];
@@ -667,7 +676,7 @@ public abstract class GerenciaBd implements AutoCloseable{
         qualNomeTabelaBanco.put("carrinho", "Clientes_Info.carrinho");
         qualNomeTabelaBanco.put("carrinho_livro", "Clientes_Info.carrinho_livro");
         qualNomeTabelaBanco.put("compra", "Compras_Info.compra");
-        qualNomeTabelaBanco.put("donoLivraria", "Vendedores_Info.donoLivraria");
+        qualNomeTabelaBanco.put("donolivraria", "Vendedores_Info.donolivraria");
     }
 
     /**
@@ -858,50 +867,22 @@ public abstract class GerenciaBd implements AutoCloseable{
     }
 
     protected ResultSet Destaques()
-            throws NaoTemConexaoException, ConexaoException {
+            throws NaoTemConexaoException, ConexaoException, SQLException {
         if (connection != null) {
 
-            try (PreparedStatement st = connection.prepareStatement("SELECT * FROM ?")){
-                st.setString(1, "destaques");
+            try {
+                Statement st = connection.createStatement();
 
-                return st.executeQuery();
-            } catch (SQLException e) {
-                /*
-                 * Se der erro, vai tentar fechar a conexão atual.
-                 */
-                try {
-                    close();
-
-                } catch (SQLException f) {
-                    /*
-                     * Se não conseguir ele informa
-                     * a quem o chamou que não foi possível
-                     * encerrar a conexão com o banco e que
-                     * ela é uma conexão defeituosa.
-                     */
-                    throw new ConexaoException();
-                }
-                try {
-                    /*
-                     * O sistema tentar criar outra conexão.
-                     */
-
-                    criaCon(usuarioBanco);
-                } catch (SQLException f) {
-                    /*
-                     * Caso ele não consiga, é necessário avisar
-                     * que existe um grave problema: não existe conexão
-                     * com o banco de dados.
-                     */
-                    throw new NaoTemConexaoException();
-                }
+                return st.executeQuery("SELECT * FROM destaques;");
+            }catch (Exception e){
+                e.printStackTrace();
             }
+
             /*
              * Caso tenha sido possível resolver os erros, a função avisa que ela
              * teve um comportamento inesperado e foi possível resolver ele,
              * por isso ela pode ser chamada novamente.
              */
-            return null;
         }
         throw new NaoTemConexaoException();
     }
@@ -1059,7 +1040,7 @@ public abstract class GerenciaBd implements AutoCloseable{
 
                 for (int i = 0; i < idLivro.size(); ++i) {
                     String tabela = "Estoque.livro";
-                    String mudancas = "id_livro = quantidade_estoque + " + quantidade.get(i);
+                    String mudancas = "quantidade_estoque = quantidade_estoque + " + quantidade.get(i);
                     String condicao = "id_livro = " + idLivro.get(i);
 
                     totalUpdates += update(tabela, mudancas, condicao, connection);
@@ -1131,7 +1112,7 @@ public abstract class GerenciaBd implements AutoCloseable{
             throws NaoTemConexaoException, ConexaoException{
         if (connection != null){
             try{
-                update("Compras_Info.compra",
+                return update("Compras_Info.compra",
                         "id_Vendedor = " + idVendedor,
                         "id_Compra = " + idCompra, connection);
             } catch (SQLException e) {
@@ -1321,10 +1302,10 @@ public abstract class GerenciaBd implements AutoCloseable{
             String tabela = "Estoque.livro AS L INNER JOIN " +
                     "Clientes_Info.carrinho_livro AS C " +
                     "ON L.id_livro = C.id_livro";
-            String pesquisa = "C.id_carrinho = " + idCompra;
+            String pesquisa = "C.id_carrinho = " + idCompra + " AND c.id_carrinho >= 0";
 
             try {
-                return Select("*", tabela, pesquisa, connection);
+                return Select(tabela, "*", pesquisa, connection);
             } catch (SQLException e) {
                 /*
                  * Se der erro, vai tentar fechar a conexão atual.
@@ -1384,10 +1365,10 @@ public abstract class GerenciaBd implements AutoCloseable{
 
         if (connection != null) {
             String tabela = "Compras_Info.compra";
-            String coluna = "forma_pagamento, data, valor";
+            String coluna = "*";
 
             try {
-                return Select(coluna, tabela, "id_vendedor = -1 AND id_compra >= 0",
+                return Select(tabela, coluna, "id_vendedor = -1 AND id_compra >= 0",
                         connection);
             } catch (SQLException e) {
                 /*
@@ -1449,11 +1430,11 @@ public abstract class GerenciaBd implements AutoCloseable{
         if (connection != null) {
             String tabela = "clientes_info.carrinho as c " +
                     "INNER JOIN clientes_info.carrinho_livro as cl ON c.id_carrinho = cl.id_carrinho " +
-                    "INNER JOIN Estoque as l ON cl.id_livro = l.id_livro";
+                    "INNER JOIN Estoque.livro as l ON cl.id_livro = l.id_livro";
             String coluna = "cl.id_carrinho, cl.quantidade, l.*";
 
             try {
-                return Select(coluna, tabela, "c.id_cliente = " + idCliente + "AND c.id_compra = -1",
+                return Select(tabela, coluna, "c.id_cliente = " + idCliente + " AND c.id_compra = -1",
                         connection);
             } catch (SQLException e) {
                 /*
@@ -1693,38 +1674,10 @@ public abstract class GerenciaBd implements AutoCloseable{
 
             try {
                 return Select("vendedores_info.vendedor as v", "v.*", "v.usuario = " +
-                                user + "AND v.senha = " + senha,
+                                user + " AND v.senha = " + senha,
                         connection);
-            } catch (SQLException e) {
-                /*
-                 * Se der erro, vai tentar fechar a conexão atual.
-                 */
-                try {
-                    close();
-
-                } catch (SQLException f) {
-                    /*
-                     * Se não conseguir ele informa
-                     * a quem o chamou que não foi possível
-                     * encerrar a conexão com o banco e que
-                     * ela é uma conexão defeituosa.
-                     */
-                    throw new ConexaoException();
-                }
-                try {
-                    /*
-                     * O sistema tentar criar outra conexão.
-                     */
-
-                    criaCon(usuarioBanco);
-                } catch (SQLException f) {
-                    /*
-                     * Caso ele não consiga, é necessário avisar
-                     * que existe um grave problema: não existe conexão
-                     * com o banco de dados.
-                     */
-                    throw new NaoTemConexaoException();
-                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
             /*
              * Caso tenha sido possível resolver os erros, a função avisa que ela
@@ -1754,7 +1707,7 @@ public abstract class GerenciaBd implements AutoCloseable{
 
         if (connection != null) {
             try {
-                return Select("c.*", "compra_Info.compra as c", "c.id_cliente = " + idCliente, connection);
+                return Select("compras_Info.compra", "*", "id_cliente = " + idCliente, connection);
 
             } catch (SQLException e) {
                 /*
@@ -1940,7 +1893,7 @@ public abstract class GerenciaBd implements AutoCloseable{
         if (connection != null){
             try{
                 String tabela = "Vendedores_Info.relatorio AS R INNER JOIN " +
-                        "Vendedores_Info.relatorio_venda AS RV" +
+                        "Vendedores_Info.relatorio_venda AS RV " +
                         "ON R.id_relatorio = RV.id_relatorio";
                 String pesquisa = "to_Char(R.data, 'MM-YYYY') = '" + data + "'" +
                         " AND R.id_vendedor = " + codigoVend;
@@ -1992,8 +1945,8 @@ public abstract class GerenciaBd implements AutoCloseable{
             try {
                 String tabela = "Compras_Info.compra AS C INNER JOIN " +
                         "Clientes_Info.carrinho AS CA" +
-                        " ON C.id_compra = CA.id_compra" +
-                        "INNER JOIN Clientes_Info.carrinho_livro AS CL" +
+                        " ON C.id_compra = CA.id_compra " +
+                        "INNER JOIN Clientes_Info.carrinho_livro AS CL " +
                         "ON CA.id_carrinho = CL.id_carrinho";
                 String pesquisa = "C.id_compra = " + idCompra;
 
@@ -2041,11 +1994,13 @@ public abstract class GerenciaBd implements AutoCloseable{
 
     protected int criaRelatorios(String data) throws NaoTemConexaoException, ConexaoException {
         if (connection != null) {
-            try (PreparedStatement st = connection.prepareCall("CALL criar_relatorio(?, ?)")) {
-                st.setInt(1, Integer.parseInt(data.substring(0,1)));
-                st.setInt(2, Integer.parseInt(data.substring(3,6)));
+            try (PreparedStatement st = connection.prepareCall("CALL criar_relatorio(?, ?);")) {
+                st.setInt(1, Integer.parseInt(data.substring(0,2)));
+                st.setInt(2, Integer.parseInt(data.substring(3)));
 
-                return st.execute() ? 1 : 0;
+                System.out.print(st.toString());
+                st.execute();
+                return 1;
             } catch (SQLException e) {
                 /*
                  * Se der erro, vai tentar fechar a conexão atual.

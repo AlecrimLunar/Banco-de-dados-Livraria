@@ -68,7 +68,7 @@ public class Compra {
 
     public String toString() {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        return  "Código do pedido:" + getIdCompra() + "\n" +
+        return  "Código do pedido: " + getIdCompra() + "\n" +
                 "Forma de pagamento: " + getFormaPagamento() + "\n" +
                 "Data: " + sdf.format(getData()) + "\n" +
                 "Valor total: " + getValor() + "\n";

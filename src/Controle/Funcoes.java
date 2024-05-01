@@ -39,42 +39,16 @@ public class Funcoes extends GerenciaBd {
 
         try {
             ResultSet rt = Destaques();
-
             destaques = RecuperaLivro(rt, false);
 
-        } catch (NaoTemConexaoException e) {
-            trataException(e, quem);
-            System.out.print("""
-                             ========================================================
-                             Erro na conexão.
-                             Tente novamente mais tarde.
-                             ========================================================
-                             """);
-            System.out.println("amem2");
-            return null;
-        } catch (ConexaoException e) {
-            trataException(e, quem);
-            System.out.print("""
-                             ========================================================
-                             Erro na conexão.
-                             Tente novamente mais tarde.
-                             ========================================================
-                             """);
-            System.out.println("amem3");
-            return null;
-        } catch (SQLException e) {
-            System.out.print("""
-                             ========================================================
-                             Erro na conexão.
-                             Tente novamente mais tarde.
-                             ========================================================
-                             """);
-            return null;
+            return destaques;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        if(destaques == null){
+        /*if(destaques == null){
             return new LinkedList<>();
-        }
-        return destaques;
+        }*/
+        return null;
     }
 
     /**
@@ -96,15 +70,16 @@ public class Funcoes extends GerenciaBd {
 
         if (livros == null)
             return "";
+
         Livro aux = livros.get(0);
         ArrayList<String> nome1 = new ArrayList<>();
 
         if(aux.getNome().length() > 43){
             nome1 = DividirNoMeio(aux.getNome());
         } else {
-            nome1.set(0, aux.getNome());
+            nome1.add(aux.getNome());
         }
-        sb.append("|" + AdicionaEspacos(nome1.get(0)) + "|");
+        sb.append("|" + AdicionaEspacos(nome1.get(0)));
 
         aux = livros.get(1);
         ArrayList<String> nome2 = new ArrayList<>();
@@ -112,9 +87,9 @@ public class Funcoes extends GerenciaBd {
         if(aux.getNome().length() > 43){
             nome2 = DividirNoMeio(aux.getNome());
         } else {
-            nome2.set(0, aux.getNome());
+            nome2.add(aux.getNome());
         }
-        sb.append("|" + AdicionaEspacos(nome2.get(0)) + "|");
+        sb.append("|" + AdicionaEspacos(nome2.get(0)));
 
         aux = livros.get(2);
         ArrayList<String> nome3 = new ArrayList<>();
@@ -122,26 +97,26 @@ public class Funcoes extends GerenciaBd {
         if(aux.getNome().length() > 43){
             nome3 = DividirNoMeio(aux.getNome());
         } else {
-            nome3.set(0, aux.getNome());
+            nome3.add(aux.getNome());
         }
         sb.append("|" + AdicionaEspacos(nome3.get(0)) + "|\n");
 
         if(nome1.size() > 1){
-            sb.append("|" + AdicionaEspacos(nome1.get(1)) + "|");
+            sb.append("|" + AdicionaEspacos(nome1.get(1)));
         } else {
             aux = livros.get(0);
-            sb.append("|" + AdicionaEspacos(aux.getAutor()) + "|");
+            sb.append("|" + AdicionaEspacos(aux.getAutor()));
         }
 
         if(nome2.size() > 1){
-            sb.append("|" + AdicionaEspacos(nome2.get(1)) + "|");
+            sb.append("|" + AdicionaEspacos(nome2.get(1)));
         } else {
             aux = livros.get(1);
-            sb.append("|" + AdicionaEspacos(aux.getAutor()) + "|");
+            sb.append("|" + AdicionaEspacos(aux.getAutor()));
         }
 
         if(nome3.size() > 1){
-            sb.append("|" + AdicionaEspacos(nome3.get(1)) + "|");
+            sb.append("|" + AdicionaEspacos(nome3.get(1)));
         } else {
             aux = livros.get(2);
             sb.append("|" + AdicionaEspacos(aux.getAutor()) + "|\n");
@@ -149,74 +124,74 @@ public class Funcoes extends GerenciaBd {
 
         if(nome1.size() > 1){
             aux = livros.get(0);
-            sb.append("|" + AdicionaEspacos(aux.getAutor()) + "|");
+            sb.append("|" + AdicionaEspacos(aux.getAutor()));
         } else {
             aux = livros.get(0);
-            sb.append("|" + AdicionaEspacos(aux.getTipo()) + "|");
+            sb.append("|" + AdicionaEspacos(aux.getTipo()));
         }
 
         if(nome2.size() > 1){
             aux = livros.get(1);
-            sb.append("|" + AdicionaEspacos(aux.getAutor()) + "|");
+            sb.append("|" + AdicionaEspacos(aux.getAutor()));
         } else {
             aux = livros.get(1);
-            sb.append("|" + AdicionaEspacos(aux.getTipo()) + "|");
+            sb.append("|" + AdicionaEspacos(aux.getTipo()));
         }
 
         if(nome3.size() > 1){
             aux = livros.get(2);
-            sb.append("|" + AdicionaEspacos(aux.getAutor()) + "|");
+            sb.append("|" + AdicionaEspacos(aux.getAutor()));
         } else {
             aux = livros.get(2);
-            sb.append("|" + AdicionaEspacos(aux.getTipo()) + "|");
+            sb.append("|" + AdicionaEspacos(aux.getTipo()) + "|\n");
         }
 
         if(nome1.size() > 1){
             aux = livros.get(0);
-            sb.append("|" + AdicionaEspacos(aux.getTipo()) + "|");
+            sb.append("|" + AdicionaEspacos(aux.getTipo()));
         } else {
             aux = livros.get(0);
-            sb.append("|" + AdicionaEspacos(aux.getGeneroAndMari()) + "|");
+            sb.append("|" + AdicionaEspacos(aux.getGeneroAndMari()));
         }
 
         if(nome2.size() > 1){
             aux = livros.get(1);
-            sb.append("|" + AdicionaEspacos(aux.getTipo()) + "|");
+            sb.append("|" + AdicionaEspacos(aux.getTipo()));
         } else {
             aux = livros.get(1);
-            sb.append("|" + AdicionaEspacos(aux.getGeneroAndMari()) + "|");
+            sb.append("|" + AdicionaEspacos(aux.getGeneroAndMari()));
         }
 
         if(nome3.size() > 1){
             aux = livros.get(2);
-            sb.append("|" + AdicionaEspacos(aux.getTipo()) + "|");
+            sb.append("|" + AdicionaEspacos(aux.getTipo()));
         } else {
             aux = livros.get(2);
-            sb.append("|" + AdicionaEspacos(aux.getGeneroAndMari()) + "|");
+            sb.append("|" + AdicionaEspacos(aux.getGeneroAndMari()) + "|\n");
         }
 
         if(nome1.size() > 1){
             aux = livros.get(0);
-            sb.append("|" + AdicionaEspacos(aux.getGeneroAndMari()) + "|");
+            sb.append("|" + AdicionaEspacos(aux.getGeneroAndMari()));
         } else {
-            sb.append("|" + " ".repeat(43) + "|");
+            sb.append("|" + " ".repeat(43));
         }
 
         if(nome2.size() > 1){
             aux = livros.get(1);
-            sb.append("|" + AdicionaEspacos(aux.getGeneroAndMari()) + "|");
+            sb.append("|" + AdicionaEspacos(aux.getGeneroAndMari()));
         } else {
-            sb.append("|" + " ".repeat(43) + "|");
+            sb.append("|" + " ".repeat(43));
         }
 
         if(nome3.size() > 1){
             aux = livros.get(2);
-            sb.append("|" + AdicionaEspacos(aux.getGeneroAndMari()) + "|");
+            sb.append("|" + AdicionaEspacos(aux.getGeneroAndMari()) + "|\n");
         } else {
             sb.append("|" + " ".repeat(43) + "|");
         }
 
-        sb.append("+===========================================+===========================================+===========================================+\n");
+        sb.append("\n+===========================================+===========================================+===========================================+\n");
         sb.append("|" + AdicionaEspacos("R$ " + String.format("%.2f", livros.get(0).getPreco())) + "|" + AdicionaEspacos("R$ " +
                 String.format("%.2f", livros.get(1).getPreco())) + "|" +
                 AdicionaEspacos("R$ " + String.format("%.2f", livros.get(2).getPreco())) + "|\n");
@@ -261,7 +236,7 @@ public class Funcoes extends GerenciaBd {
      * @return o nome com espaços adicionados
      */
     public static String AdicionaEspacos(String nome){
-        int espEsq = (43 - nome.length()/2), espDir = (43-nome.length()-espEsq);
+        int espEsq = (43 - nome.length())/2, espDir = (43-nome.length()-espEsq);
 
         return " ".repeat(espEsq) +
                 nome +
@@ -277,12 +252,11 @@ public class Funcoes extends GerenciaBd {
      * @return  Um objeto Vendedor caso a consulta seja bem-sucedida, caso contrário, retorna null.
      */
     public Vendedor recuperaVendedorF(String user, String senha, int quem){
-        setUsuarioBanco(1);
         try {
-            ResultSet rt = recuperaVendedor(user, senha);
+            criaCon(2);
+            ResultSet rt = recuperaVendedor("'" + user + "'", "'" + senha + "'");
 
-            assert rt != null;
-
+            rt.next();
             return new Vendedor(rt.getInt("id_vendedor"), rt.getString("nome"), rt.getString("cpf"));
         } catch (NaoTemConexaoException e) {
             trataException(e, quem);
@@ -345,6 +319,7 @@ public class Funcoes extends GerenciaBd {
     public DonoLivraria recuperaDono(String user, String senha, int quem) {
         setUsuarioBanco(2);
         try{
+            criaCon(2);
             ResultSet rt = recuperaDono(user, senha);
             assert rt != null;
 
@@ -675,18 +650,15 @@ public class Funcoes extends GerenciaBd {
 
             ResultSet rt = carregaCarrinho(idC);
 
-            if(rt == null){
+            if(rt.next()) {
+                carrinho.setId(rt.getInt("id_carrinho"));
+                LinkedList<Livro> l = RecuperaLivro(rt, true);
+
+                assert l != null;
+                carrinho.setCarrinho(l);
+            } else {
                 return new Carrinho();
             }
-
-            assert rt != null;
-
-            LinkedList<Livro> l = RecuperaLivro(rt, true);
-
-            assert l != null;
-
-            carrinho.setCarrinho(l);
-            carrinho.setId(rt.getInt("id_carrinho"));
 
         } catch (NaoTemConexaoException e) {
             trataException(e, quem);
@@ -696,7 +668,7 @@ public class Funcoes extends GerenciaBd {
                              Tente novamente mais tarde.
                              ========================================================
                              """);
-            return null;
+            return new Carrinho();
         } catch (ConexaoException e) {
             trataException(e, quem);
             System.out.print("""
@@ -705,7 +677,7 @@ public class Funcoes extends GerenciaBd {
                              Tente novamente mais tarde.
                              ========================================================
                              """);
-            return null;
+            return new Carrinho();
         } catch (SQLException e) {
             System.out.print("""
                              ========================================================
@@ -713,11 +685,16 @@ public class Funcoes extends GerenciaBd {
                              Tente novamente mais tarde.
                              ========================================================
                              """);
-            return null;
+            return new Carrinho();
         }
 
         return carrinho;
     }
+
+    /*public void InsertCarrinho(Carrinho carrinho, int idC){
+
+        Insert();
+    }*/
 
     //=============================================================Compras=============================================================
     /**
@@ -725,7 +702,7 @@ public class Funcoes extends GerenciaBd {
      * Ele recebe como parâmetros o Scanner, o carrinho de compras, um array de booleanos
      * indicando as desconto aplicadas, o id do cliente.
      * O método imprime o valor total da compra e solicita ao usuário qual forma de pagamento ele deseja utilizar.
-     * Depois, ele chama o método {@link #SolicitarCompra(int, double, int, int, int)} com o tipo de pagamento escolhido,
+     * Depois, ele chama o método {@link #SolicitarCompra(int, double, int, int, int, Carrinho)} com o tipo de pagamento escolhido,
      * o valor total da compra, o id do cliente, o id do carrinho e o id do cliente para finalizar a compra.
      * @param sc Scanner utilizado para ler as entradas do usuário
      * @param carrinho Carrinho de compras que contém os livros selecionados pelo cliente
@@ -776,10 +753,10 @@ public class Funcoes extends GerenciaBd {
         int a = Integer.parseInt(sc.nextLine());
 
         switch (a) {
-            case 1 -> SolicitarCompra(1, precoD, idCliente, carrinho.getId(), quem);
-            case 2 -> SolicitarCompra(2, precoD, idCliente, carrinho.getId(), quem);
-            case 3 -> SolicitarCompra(3, precoD, idCliente, carrinho.getId(), quem);
-            case 4 -> SolicitarCompra(4, precoD, idCliente, carrinho.getId(), quem);
+            case 1 -> SolicitarCompra(1, precoD, idCliente, carrinho.getId(), quem, carrinho);
+            case 2 -> SolicitarCompra(2, precoD, idCliente, carrinho.getId(), quem, carrinho);
+            case 3 -> SolicitarCompra(3, precoD, idCliente, carrinho.getId(), quem, carrinho);
+            case 4 -> SolicitarCompra(4, precoD, idCliente, carrinho.getId(), quem, carrinho);
             case 0 -> System.out.println("COMPRA CANCELADA");
             default -> System.out.println("Opção inválida");
         }
@@ -794,23 +771,53 @@ public class Funcoes extends GerenciaBd {
      * @param id_carrinho id do carrinho
      * @param quem um inteiro que representa a conexão com o banco para o tratamento de erros
      */
-    public void SolicitarCompra(int tipoP, double precoT, int id_cliente, int id_carrinho, int quem) {
+    public void SolicitarCompra(int tipoP, double precoT, int id_cliente, int id_carrinho, int quem, Carrinho carrinho) {
         Date date = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         String formaP = tipoP == 1 ? "Berries" : tipoP == 2 ? "Pix" : tipoP == 3 ? "Boleto" : "Cartão";
         try {
             String tabela = "compra";
             String infos = "forma_pagamento, data, valor, id_carrinho, id_cliente";
-            String atributos = formaP + "', date('" + sdf.format(date) + "'), " + precoT + ", " + id_carrinho + ", " + id_cliente;
+            String atributos = "'" + formaP + "', date('" + sdf.format(date) + "'), " + ((int)precoT) + ", " + id_carrinho + ", " + id_cliente;
 
-            int id = InsertCompra(tabela, infos, atributos);
+            int id = InsertCompra(tabela, atributos, infos);
+
+            tabela = "carrinho";
+            infos = "id_cliente, id_compra";
+            atributos = id_cliente + ", " + id;
+            int idC = InsertRetornando(tabela, atributos, infos);
+
+            LinkedList<Integer> aux = new LinkedList<>();
+            for(Livro l : carrinho.getLivros()) {
+                if(!aux.contains(l.getId())) {
+                    tabela = "carrinho_livro";
+                    infos = "id_carrinho, id_livro, quantidade";
+                    atributos = idC + ", " + l.getId() + ", " + carrinho.getQuantidade(l.getId());
+
+                    InsertRetornando(tabela, atributos, infos);
+                }
+
+                aux.add(l.getId());
+            }
+
+            criaCon(2);
+            ArrayList<String> coluna = new ArrayList<>();
+            ArrayList<String> novoU = new ArrayList<>();
+            ArrayList<String> condicao = new ArrayList<>();
+            coluna.add("id_carrinho");
+            novoU.add(idC + "");
+            condicao.add("id_compra = " + id);
+            variosUpdates("compra", coluna, novoU, condicao);
+            criaCon(0);
+
 
             if(id > 0){
-                System.out.print("================================================\n" +
+                System.out.println("================================================\n" +
                         "COMPRA FINALIZADA\n" +
                         "================================================\n" +
                         "O seu pedido está em processamento! Logo logo será aprovada, não se preocupe!\n" +
-                        "Número do pedido: " + id);
+                        "Número do pedido: " + id +
+                        "\n================================================\n");
             } else if(id == 0){
                 System.out.print("Erro no cadastro da compra");
             }
@@ -830,6 +837,8 @@ public class Funcoes extends GerenciaBd {
                              Tente novamente mais tarde.
                              ========================================================
                              """);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -845,6 +854,7 @@ public class Funcoes extends GerenciaBd {
             LinkedList<Compra> compras = recuperaCompra(rt);
 
             if(!compras.isEmpty()) {
+                while(true) {
                 System.out.print("""
                         ========================================================
                         PEDIDOS
@@ -852,16 +862,16 @@ public class Funcoes extends GerenciaBd {
                         """);
                     printCompras(compras);
 
-                System.out.println("""
-                        ========================================================
-                        Caso deseje ver mais detalhes digite o numero do pedido
-                        (Se deseja sair digite 0)
-                        """);
-                int a = Integer.parseInt(sc.nextLine());
 
-                while(true) {
+                    System.out.println("""
+                            ========================================================
+                            Caso deseje ver mais detalhes digite o numero do pedido
+                            (Se deseja sair digite 0)
+                            """);
+                    int a = Integer.parseInt(sc.nextLine());
 
-                    if (a > 0 && a < compras.size()) {
+
+                    if (a > 0 && a <= compras.size()) {
                         ResultSet rts = recuperaLivrosCompras(compras.get(a-1).getId_carrinho());
                         LinkedList<Livro> livros = RecuperaLivro(rts, false);
                         System.out.print("========================================================\n" +
@@ -872,12 +882,15 @@ public class Funcoes extends GerenciaBd {
                         PrintLivro(livros);
                         System.out.print("""
                                 ========================================================
+                                Para continuar pressione ENTER;
                                 """);
+                        sc.nextLine();
                     } else if (a > compras.size()) {
                         System.out.println("compra inválido");
                     } else if(a == 0){
                         break;
                     }
+
                 }
 
             } else {
@@ -945,20 +958,14 @@ public class Funcoes extends GerenciaBd {
                 return new LinkedList<>();
             }
             while(rt.next()){
-                Compra c = new Compra(rt.getInt("id_compra"), rt.getNString("forma_pagamento"),
+                Compra c = new Compra(rt.getInt("id_compra"), rt.getString("forma_pagamento"),
                         rt.getDate("data"), rt.getInt("valor"), rt.getInt("id_Carrinho"),
                         rt.getInt("Id_vendedor"));
                 compras.add(c);
             }
 
-        } catch (SQLException e) {
-            System.out.print("""
-                             ========================================================
-                             Erro na conexão.
-                             Tente novamente mais tarde.
-                             ========================================================
-                             """);
-            return null;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return compras;

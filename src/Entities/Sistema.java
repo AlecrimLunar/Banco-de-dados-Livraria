@@ -146,7 +146,7 @@ public class Sistema extends Controle.GerenciaBd {
             } else if (tabela.equalsIgnoreCase("vendedor")) {
 
                 System.out.print("Deseja realizar [1]-login como vendedor ou [2}-login como dono da livraria?\n");
-                if ("2".equalsIgnoreCase(sc.nextLine()))
+                if (sc.nextLine().equalsIgnoreCase("2"))
                     tabela = "donolivraria";
             }
 

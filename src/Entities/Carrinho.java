@@ -73,6 +73,21 @@ public class Carrinho {
         return id;
     }
 
+    public int getQuantidade(int id){
+        int i = 0;
+        for(Livro l : livros){
+            if(l.getId() == id){
+                for(Stack<Integer> y : quantidade){
+                    if(y.contains(i)){
+                        return y.size();
+                    }
+                }
+            }
+            i++;
+        }
+        return quantidade.get(i).size();
+    }
+
     public void setId(int id) {
         this.id = id;
     }

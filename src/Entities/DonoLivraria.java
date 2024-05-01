@@ -221,7 +221,7 @@ public class DonoLivraria extends GerenciaBd {
                 --------------------------------------------------------
                 O vendedor abaixo é o que você deseja remover?
                 """);
-        System.out.print(vendedor);
+        System.out.println(vendedor);
 
         boolean vaiRemover = false;
         while (true) {
@@ -282,6 +282,7 @@ public class DonoLivraria extends GerenciaBd {
 
     private Vendedor recuperaVendedor(int idVendedor) {
         try (ResultSet rt = getVendedor(idVendedor)) {
+            rt.next();
             return new Vendedor(rt);
         } catch (SQLException e) {
             System.out.print("""
@@ -368,7 +369,7 @@ public class DonoLivraria extends GerenciaBd {
             try (ResultSet rt = getCompra(i)){
                 print += " ========================================================\n" +
                         "Código da Compra: " + i + "\n" +
-                        "Livros da compra\n";
+                        "Livros da compra:\n";
 
                 boolean foiRecusada = false;
                 while (rt.next()){
@@ -470,7 +471,7 @@ public class DonoLivraria extends GerenciaBd {
             loop:
             while (true) {
                 System.out.print("================================\n" +
-                        this + "\nDeseja Alterar alguma informação?");
+                        toStrting() + "\nDeseja Alterar alguma informação? ");
                 if (tc.nextLine().equalsIgnoreCase("sim")) {
 
                     System.out.println("""
@@ -522,8 +523,8 @@ public class DonoLivraria extends GerenciaBd {
 
                             coluna.add("nome");
                             novoU.add("'" + novo + "'");
-                            condicao.add("cpf = " + cpf);
-                            variosUpdates("Dono", coluna, novoU, condicao);
+                            condicao.add("cpf = '" + cpf + "'");
+                            variosUpdates("donolivraria", coluna, novoU, condicao);
                             nome = novo;
                         }
 
@@ -544,8 +545,8 @@ public class DonoLivraria extends GerenciaBd {
 
                             coluna.add("cpf");
                             novoU.add("'" + novo + "'");
-                            condicao.add("cpf = " + cpf);
-                            variosUpdates("Dono", coluna, novoU, condicao);
+                            condicao.add("cpf = '" + cpf + "'");
+                            variosUpdates("donolivraria", coluna, novoU, condicao);
                             cpf = novo;
                         }
                         case 0 -> {
@@ -553,6 +554,8 @@ public class DonoLivraria extends GerenciaBd {
                         }
                         default -> System.out.println("OPÇÃO INVÁLIDA!");
                     }
+                } else {
+                    break;
                 }
             }
         } catch (NaoTemConexaoException e) {
@@ -594,7 +597,7 @@ public class DonoLivraria extends GerenciaBd {
                     """);
         }
 
-        int verifica = -1;
+        int verifica;
         do {
             try {
                 verifica = criaRelatorios(data);
