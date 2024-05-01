@@ -1,4 +1,3 @@
---DROP TABLE vendedor, cliente, compra, livro, carrinho, carrinho_livro;
 CREATE SCHEMA Estoque;
 
 CREATE TABLE Estoque.livro(
@@ -228,4 +227,3 @@ BEGIN
   AND EXTRACT(YEAR FROM r.data) = ano_entrada;
 
 END $$;
-
