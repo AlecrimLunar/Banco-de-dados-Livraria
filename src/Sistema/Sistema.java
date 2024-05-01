@@ -1,8 +1,13 @@
-package Entities;
+package Sistema;
 
-import Controle.ConexaoException;
-import Controle.Funcoes;
-import Controle.NaoTemConexaoException;
+import Entities.Carrinho;
+import Entities.Livro;
+import Exceptions.ConexaoException;
+import Sistema.Funcoes;
+import Exceptions.NaoTemConexaoException;
+import Users.Cliente;
+import Users.DonoLivraria;
+import Users.Vendedor;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -25,7 +30,6 @@ public class Sistema extends Controle.GerenciaBd {
                             NÃO FOI POSSÍVEL ENCERRÁ-LA
                             ========================================================
                             """);
-            e.printStackTrace();
             System.exit(1);
         }
     }
@@ -112,7 +116,7 @@ public class Sistema extends Controle.GerenciaBd {
                 case 0 -> {
                     System.out.print("Tem certeza que deseja sair?\n");
                     if (sc.nextLine().equalsIgnoreCase("sim"))
-                        System.exit(1);
+                        System.exit(0);
                 }
                 default -> System.out.println("Opção invalida");
             }

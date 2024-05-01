@@ -1,4 +1,4 @@
-package Controle;
+package Exceptions;
 
 public class ConexaoException extends Exception{
 

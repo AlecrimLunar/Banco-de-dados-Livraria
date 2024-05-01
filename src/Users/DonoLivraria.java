@@ -1,9 +1,9 @@
-package Entities;
+package Users;
 
-import Controle.ConexaoException;
-import Controle.Funcoes;
+import Exceptions.ConexaoException;
+import Sistema.Funcoes;
 import Controle.GerenciaBd;
-import Controle.NaoTemConexaoException;
+import Exceptions.NaoTemConexaoException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

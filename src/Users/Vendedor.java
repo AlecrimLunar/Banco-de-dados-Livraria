@@ -1,5 +1,10 @@
-package Entities;
+package Users;
 import Controle.*;
+import Entities.Compra;
+import Entities.Livro;
+import Exceptions.ConexaoException;
+import Exceptions.NaoTemConexaoException;
+import Sistema.Funcoes;
 
 import java.sql.Date;
 import java.sql.ResultSet;
@@ -353,7 +358,7 @@ public class Vendedor extends GerenciaBd{
         try {
             compras = comprasNaoConfirmadas();
         } catch (Exception e) {
-            e.printStackTrace();
+            return;
         }
 
         if (compras == null)

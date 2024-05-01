@@ -1,6 +1,12 @@
-package Controle;
+package Sistema;
 
+import Controle.GerenciaBd;
 import Entities.*;
+import Exceptions.ConexaoException;
+import Exceptions.NaoTemConexaoException;
+import Users.Cliente;
+import Users.DonoLivraria;
+import Users.Vendedor;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -11,6 +17,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Funcoes extends GerenciaBd {
+
+    private final int qualCon = 0;
 
     public Funcoes(int quem){
         //setUsuario
@@ -42,13 +50,36 @@ public class Funcoes extends GerenciaBd {
             destaques = RecuperaLivro(rt, false);
 
             return destaques;
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            System.out.print("""
+                    ========================================================
+                    Não foi possível receber as informações do banco de
+                    dados devido a problemas com a conexão.
+                    Tente novamente mais tarde.
+                    ========================================================
+                    """);
+            return null;
+        } catch (ConexaoException e) {
+            trataException(e, qualCon);
+            System.out.print("""
+                    ========================================================
+                    Não foi possível receber as informações do banco de
+                    dados devido a problemas com a conexão.
+                    Tente novamente mais tarde.
+                    ========================================================
+                    """);
+            return null;
+        } catch (NaoTemConexaoException e){
+            trataException(e, qualCon);
+            System.out.print("""
+                    ========================================================
+                    Não foi possível receber as informações do banco de
+                    dados devido a problemas com a conexão.
+                    Tente novamente mais tarde.
+                    ========================================================
+                    """);
+            return null;
         }
-        /*if(destaques == null){
-            return new LinkedList<>();
-        }*/
-        return null;
     }
 
     /**
@@ -62,7 +93,7 @@ public class Funcoes extends GerenciaBd {
      * @return uma string contendo a tabela formatada de livros destaque
      */
     public String PrintDestaques(LinkedList<Livro> livros){
-        if(livros.isEmpty()){
+        if(livros == null ||livros.isEmpty()){
             return "";
         }
         StringBuilder sb = new StringBuilder();
@@ -308,8 +339,35 @@ public class Funcoes extends GerenciaBd {
                         rt.getBoolean("is_sousa"), rt.getString("usuario"), rt.getString("senha"), carrinho, rt.getInt("id_cliente"));
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            System.out.print("""
+                    ========================================================
+                    Não foi possível receber as informações do banco de
+                    dados devido a problemas com a conexão.
+                    Tente novamente mais tarde.
+                    ========================================================
+                    """);
+            return null;
+        } catch (ConexaoException e) {
+            trataException(e, qualCon);
+            System.out.print("""
+                    ========================================================
+                    Não foi possível receber as informações do banco de
+                    dados devido a problemas com a conexão.
+                    Tente novamente mais tarde.
+                    ========================================================
+                    """);
+            return null;
+        } catch (NaoTemConexaoException e){
+            trataException(e, qualCon);
+            System.out.print("""
+                    ========================================================
+                    Não foi possível receber as informações do banco de
+                    dados devido a problemas com a conexão.
+                    Tente novamente mais tarde.
+                    ========================================================
+                    """);
+            return null;
         }
         return null;
     }
@@ -964,8 +1022,15 @@ public class Funcoes extends GerenciaBd {
                 compras.add(c);
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            System.out.print("""
+                    ========================================================
+                    Não foi possível receber as informações do banco de
+                    dados devido a problemas com a conexão.
+                    Tente novamente mais tarde.
+                    ========================================================
+                    """);
+            return null;
         }
 
         return compras;
