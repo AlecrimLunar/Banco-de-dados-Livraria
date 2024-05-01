@@ -348,7 +348,8 @@ public class Funcoes extends GerenciaBd {
             ResultSet rt = recuperaDono(user, senha);
             assert rt != null;
 
-            return new DonoLivraria(rt.getString("nome"), rt.getString("cpf"));
+            if (rt.next())
+                return new DonoLivraria(rt.getString("nome"), rt.getString("cpf"));
 
         } catch (NaoTemConexaoException e) {
             trataException(e, quem);
@@ -378,6 +379,7 @@ public class Funcoes extends GerenciaBd {
             return null;
 
         }
+        return null;
     }
     //=============================================================Livro=============================================================
     /**

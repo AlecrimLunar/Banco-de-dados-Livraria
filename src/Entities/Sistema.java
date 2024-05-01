@@ -158,7 +158,6 @@ public class Sistema extends Controle.GerenciaBd {
 
                 System.out.print("Senha: ");
                 senha = sc.nextLine();
-                user = "'" + user + "'";
 
                 int aux = login("'" + user + "'", senha, tabela);
 
@@ -182,6 +181,9 @@ public class Sistema extends Controle.GerenciaBd {
                 cliente.MenuCliente(sc, compra);
             } else {
                 DonoLivraria dono = fun.recuperaDono(user, senha, 2);
+
+                if (dono == null)
+                    return;
                 dono.MenuDono(sc);
             }
 

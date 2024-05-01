@@ -170,8 +170,8 @@ public abstract class GerenciaBd implements AutoCloseable{
                     funcionou += Insert(qualNomeTabelaBanco.get(tabela),
                             s, atributos, connection);
                 }
-                connection.setAutoCommit(true);
                 connection.commit();
+                connection.setAutoCommit(true);
 
                 return funcionou;
             } catch (SQLException e) {
@@ -494,8 +494,8 @@ public abstract class GerenciaBd implements AutoCloseable{
 
                     totalQuantosUpdates += quantosUpdates;
                 }
-                connection.setAutoCommit(true);
                 connection.commit();
+                connection.setAutoCommit(true);
 
                 return totalQuantosUpdates;
 
@@ -1019,8 +1019,8 @@ public abstract class GerenciaBd implements AutoCloseable{
 
                     totalUpdates += update(tabela, mudancas, condicao, connection);
                 }
-                connection.setAutoCommit(true);
                 connection.commit();
+                connection.setAutoCommit(true);
 
                 return totalUpdates;
 
@@ -1097,9 +1097,8 @@ public abstract class GerenciaBd implements AutoCloseable{
 
                     totalUpdates += update(tabela, mudancas, condicao, connection);
                 }
-                connection.setAutoCommit(true);
                 connection.commit();
-
+                connection.setAutoCommit(true);
                 return totalUpdates;
 
             } catch (SQLException e) {
@@ -1595,11 +1594,45 @@ public abstract class GerenciaBd implements AutoCloseable{
     protected ResultSet recuperaDono(String user, String senha)
             throws NaoTemConexaoException, ConexaoException {
 
+        try{
+            criaCon(2);
+        } catch (SQLException e){
+            /*
+             * Se der erro, vai tentar fechar a conexão atual.
+             */
+            try {
+                close();
+
+            } catch (SQLException f) {
+                /*
+                 * Se não conseguir ele informa
+                 * a quem o chamou que não foi possível
+                 * encerrar a conexão com o banco e que
+                 * ela é uma conexão defeituosa.
+                 */
+                throw new ConexaoException();
+            } try {
+                /*
+                 * O sistema tentar criar outra conexão.
+                 */
+
+                criaCon(usuarioBanco);
+            } catch (SQLException f){
+                /*
+                 * Caso ele não consiga, é necessário avisar
+                 * que existe um grave problema: não existe conexão
+                 * com o banco de dados.
+                 */
+                throw new NaoTemConexaoException();
+            }
+            return null;
+        }
+
         if (connection != null) {
 
             try {
-                return Select("Vendedores_info.Dono as d", "d.*", "d.usuario = " +
-                                user + "AND d.senha = " + senha,
+                return Select("Vendedores_info.donoLivraria as d", "d.*", "d.usuario = '" +
+                                user + "' AND d.senha = '" + senha + "'",
                         connection);
             } catch (SQLException e) {
                 /*
@@ -1630,6 +1663,40 @@ public abstract class GerenciaBd implements AutoCloseable{
                      * com o banco de dados.
                      */
                     throw new NaoTemConexaoException();
+                }
+            } finally {
+                try {
+                    criaCon(0);
+                } catch (SQLException e) {
+                    /*
+                     * Se der erro, vai tentar fechar a conexão atual.
+                     */
+                    try {
+                        close();
+
+                    } catch (SQLException f) {
+                        /*
+                         * Se não conseguir ele informa
+                         * a quem o chamou que não foi possível
+                         * encerrar a conexão com o banco e que
+                         * ela é uma conexão defeituosa.
+                         */
+                        throw new ConexaoException();
+                    }
+                    try {
+                        /*
+                         * O sistema tentar criar outra conexão.
+                         */
+
+                        criaCon(usuarioBanco);
+                    } catch (SQLException f) {
+                        /*
+                         * Caso ele não consiga, é necessário avisar
+                         * que existe um grave problema: não existe conexão
+                         * com o banco de dados.
+                         */
+                        throw new NaoTemConexaoException();
+                    }
                 }
             }
             /*

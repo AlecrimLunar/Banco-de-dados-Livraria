@@ -148,56 +148,50 @@ public class DonoLivraria extends GerenciaBd {
                                 """);
             }
 
+            String insert = "'" + nome + "', '" + user + "', '" + cpf + "', '" + senha + "'";
 
-            System.out.print("-------------------------------------------------------------------------" +
-                    "\n\nMUITO BEM, VERIFIQUE SE AS INFORMAÇÕES ESTÃO CORRETAS. SE SIM DIGITE " +
-                    "'Sim', SE NÃO DIGITE 'Não'\nNome: " + nome + "\ncpf: " + cpf + "\n");
+            ArrayList<String> infos = new ArrayList<>();
+            infos.add(insert);
 
-            if (tc.nextLine().equalsIgnoreCase("sim")) {
-                String insert = "'" + nome + "', '" + user + "', '" + cpf + "', '" + senha + "'";
-
-                ArrayList<String> infos = new ArrayList<>();
-                infos.add(insert);
-
-                int verificaInsert;
-                do {
-                    try {
-                        verificaInsert = Insert("vendedor", infos, "nome, usuario, cpf, senha");
-                    } catch (NaoTemConexaoException e) {
-                        funcoes.trataException(e, qualCon);
-                        System.out.print("""
+            int verificaInsert;
+            do {
+                try {
+                    verificaInsert = Insert("vendedor", infos, "nome, usuario, cpf, senha");
+                } catch (NaoTemConexaoException e) {
+                    funcoes.trataException(e, qualCon);
+                    System.out.print("""
                                 ========================================================
                                 Não foi possível inserir as informações no banco
                                 devido a problemas com a conexão.
                                 Tente novamente mais tarde.
                                 ========================================================
                                 """);
-                        return;
+                    return;
 
-                    } catch (ConexaoException e) {
-                        funcoes.trataException(e, qualCon);
-                        System.out.print("""
+                } catch (ConexaoException e) {
+                    funcoes.trataException(e, qualCon);
+                    System.out.print("""
                                 ========================================================
                                 Não foi possível atualizar as informações no banco
                                 devido a problemas com a conexão.
                                 Tente novamente mais tarde.
                                 ========================================================
                                 """);
-                        return;
-                    }
-                } while (verificaInsert == -1);
+                    return;
+                }
+            } while (verificaInsert == -1);
 
-                if (verificaInsert == 1) {
-                    System.out.println("CADASTRO CONCLUÍDO COM SUCESSO! PARA LOGAR, UTILIZE O USUÁRIO: " +
-                            user + " E A " +
-                            "SENHA INFORMADA.");
-                    break;
-                } else
-                    System.out.print("""
+            if (verificaInsert == 1) {
+                System.out.println("CADASTRO CONCLUÍDO COM SUCESSO! PARA LOGAR, UTILIZE O USUÁRIO: " +
+                        user + " E A " +
+                        "SENHA INFORMADA.");
+                break;
+            } else
+                System.out.print("""
                             NÃO FOI POSSÍVEL REALIZAR O CADASTRO!
                             TENTE NOVAMENTE MAIS TARDE.
                             """);
-            }
+
         }
     }
 
