@@ -26,6 +26,23 @@ public class Cliente extends GerenciaBd {
 
     public Cliente(String nome, String cpf, String rua, int numero, String email,
                    Boolean onePiece, Boolean flamengo, Boolean souza, String user,
+                   String senha, Carrinho carrinho, int id) {
+        this.nome = nome;
+        this.cpf = cpf;
+        this.rua = rua;
+        this.numero = numero;
+        this.email = email;
+        this.onePiece = onePiece;
+        this.flamengo = flamengo;
+        this.souza = souza;
+        this.user = user;
+        this.senha = senha;
+        Cliente.carrinho = carrinho;
+        this.id = id;
+        fun = new Funcoes(quem);
+    }
+    public Cliente(String nome, String cpf, String rua, int numero, String email,
+                   Boolean onePiece, Boolean flamengo, Boolean souza, String user,
                    String senha, Carrinho carrinho) {
         this.nome = nome;
         this.cpf = cpf;
@@ -38,7 +55,7 @@ public class Cliente extends GerenciaBd {
         this.user = user;
         this.senha = senha;
         Cliente.carrinho = carrinho;
-        fun = new Funcoes();
+        fun = new Funcoes(quem);
     }
 
     /**
@@ -48,7 +65,16 @@ public class Cliente extends GerenciaBd {
      */
     public void MenuCliente(Scanner sc, boolean compra) {
         setUsuarioBanco(quem);
-
+        try{
+            criaCon(quem);
+        } catch (SQLException e) {
+            System.out.print("""
+                             ========================================================
+                             Erro na conexão.
+                             Tente novamente mais tarde.
+                             ========================================================
+                             """);
+        }
         if(compra){
             fun.Compra(sc, carrinho, new boolean[]{getOnePiece(), getOnePiece(), getSouza()}, getId(), quem);
         }
@@ -68,7 +94,7 @@ public class Cliente extends GerenciaBd {
             System.out.print("livros em destaque:\n" +
                     fun.PrintDestaques(destaques) + "\n" +
                     "4 - Procurar livro\n" +
-                    "5 - Carrinho" +
+                    "5 - Carrinho\n" +
                     "6 - Minha conta\n" +
                     "7 - Realizar logout\n" +
                     "0 - Sair\n" +
@@ -106,10 +132,11 @@ public class Cliente extends GerenciaBd {
                 case 4 -> carrinho = fun.Pesquisa(sc, carrinho, quem);
                 case 5 -> {
                     carrinho = fun.Carrinho(sc, carrinho);
-
-                    System.out.print("Deseja finalizar a compra?\n");
-                    if(sc.nextLine().equalsIgnoreCase("sim")){
-                        fun.Compra(sc, carrinho, new boolean[]{getOnePiece(), getOnePiece(), getSouza()}, getId(), quem);
+                    if(carrinho.isEmpty()) {
+                        System.out.print("Deseja finalizar a compra?\n");
+                        if (sc.nextLine().equalsIgnoreCase("sim")) {
+                            fun.Compra(sc, carrinho, new boolean[]{getOnePiece(), getOnePiece(), getSouza()}, getId(), quem);
+                        }
                     }
                 }
                 case 6 -> {

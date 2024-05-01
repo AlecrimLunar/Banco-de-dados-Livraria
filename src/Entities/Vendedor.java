@@ -18,7 +18,7 @@ public class Vendedor extends GerenciaBd{
         this.id = id;
         this.nome = nome;
         this.cpf = cpf;
-        funcoes = new Funcoes();
+        funcoes = new Funcoes(qualCon);
     }
 
     public Vendedor(ResultSet rt) throws SQLException{
@@ -37,6 +37,17 @@ public class Vendedor extends GerenciaBd{
      */
     public void menuVendedor(Scanner tc){
 
+        setUsuarioBanco(qualCon);
+        try{
+            criaCon(qualCon);
+        } catch (SQLException e) {
+            System.out.print("""
+                             ========================================================
+                             Erro na conexão.
+                             Tente novamente mais tarde.
+                             ========================================================
+                             """);
+        }
 
         System.out.print("========================================================" + "\n" +
                 "BEM-VINDO AO MENU DE VENDEDOR");

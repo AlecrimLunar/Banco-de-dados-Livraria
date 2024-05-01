@@ -16,14 +16,26 @@ public class DonoLivraria extends GerenciaBd {
     private String nome;
     private String cpf;
     private static final int qualCon = 2;
-    private static final Funcoes funcoes = new Funcoes();
+    private static final Funcoes funcoes = new Funcoes(qualCon);
 
     public DonoLivraria(String nome, String cpf) {
         this.nome = nome;
         this.cpf = cpf;
     }
 
-    public void MenuDono(Scanner tc) {
+
+    public void MenuDono(Scanner tc){
+        setUsuarioBanco(qualCon);
+        try{
+            criaCon(qualCon);
+        } catch (SQLException e) {
+            System.out.print("""
+                             ========================================================
+                             Erro na conexão.
+                             Tente novamente mais tarde.
+                             ========================================================
+                             """);
+        }
         System.out.print("========================================================\n" +
                 "BEM-VINDO A SEU MENU, " + nome + "!\n");
 
@@ -75,7 +87,8 @@ public class DonoLivraria extends GerenciaBd {
         } while (true);
     }
 
-    private void cadastraVendedor(Scanner tc) {
+    public void cadastraVendedor(Scanner tc){
+
         while (true) {
             System.out.print("INSIRA AS INFORMAÇÕES:\nNome: ");
 
@@ -309,7 +322,8 @@ public class DonoLivraria extends GerenciaBd {
         }
     }
 
-    private void mostraRelatorio(Scanner tc){
+
+    private void mostraRelatorio(Scanner tc) {
         System.out.print("""
                 ========================================================
                 Qual o código do vendedor que deseja consultar

@@ -12,7 +12,7 @@ public class Sistema extends Controle.GerenciaBd {
     private static Funcoes fun;
     private static Carrinho carrinho;
     public Sistema() {
-        fun = new Funcoes();
+        fun = new Funcoes(0);
         carrinho = new Carrinho();
         setUsuarioBanco(0);
         try{
@@ -33,8 +33,17 @@ public class Sistema extends Controle.GerenciaBd {
     /**
      * Inicia o sistema, exibindo as opções disponíveis ao usuário.
      */
-    public void Iniciar() {
-        setUsuarioBanco(0);
+    public void Inicio() {
+        try{
+            criaCon(0);
+        } catch (SQLException e) {
+            System.out.print("""
+                             ========================================================
+                             Erro na conexão.
+                             Tente novamente mais tarde.
+                             ========================================================
+                             """);
+        }
         Scanner sc = new Scanner(System.in);
         LinkedList<Livro> destaques = fun.Destaques(0);
 
@@ -87,13 +96,15 @@ public class Sistema extends Controle.GerenciaBd {
                 case 5 -> {
                     carrinho = fun.Carrinho(sc, carrinho);
 
-                    System.out.print("Deseja finalizar a compra?\n");
-                    if (sc.nextLine().equalsIgnoreCase("sim")) {
-                        System.out.print("""
-                                Para finalizar a compra é necessário ter um conta criada.
-                                Por favor faça o login ou crie uma conta.
-                                """);
-                        Login(sc, true, true);
+                    if(!carrinho.isEmpty()) {
+                        System.out.print("Deseja finalizar a compra?\n");
+                        if (sc.nextLine().equalsIgnoreCase("sim")) {
+                            System.out.print("""
+                                    Para finalizar a compra é necessário ter um conta criada.
+                                    Por favor faça o login ou crie uma conta.
+                                    """);
+                            Login(sc, true, true);
+                        }
                     }
                 }
                 case 6 -> Login(sc, null, false);
@@ -133,8 +144,9 @@ public class Sistema extends Controle.GerenciaBd {
                 if ("2".equalsIgnoreCase(sc.nextLine()))
                     Cadastrar(sc, compra);
             } else if (tabela.equalsIgnoreCase("vendedor")) {
-                System.out.print("Deseja realizar [1]-login como vendedor ou [3}-login como dono da livraria?\n");
-                if ("3".equalsIgnoreCase(sc.nextLine()))
+
+                System.out.print("Deseja realizar [1]-login como vendedor ou [2}-login como dono da livraria?\n");
+                if ("2".equalsIgnoreCase(sc.nextLine()))
                     tabela = "donoLivraria";
             }
 
@@ -148,7 +160,7 @@ public class Sistema extends Controle.GerenciaBd {
                 senha = sc.nextLine();
                 user = "'" + user + "'";
 
-                int aux = login(user, senha, tabela);
+                int aux = login("'" + user + "'", senha, tabela);
 
                 switch (aux) {
                     case -1 -> System.out.println("Erro no banco");
@@ -215,7 +227,7 @@ public class Sistema extends Controle.GerenciaBd {
 
             for(String aux : nomes) {
                 if (!fun.regexNome(aux)) {
-                    System.out.print("Escreva um nome válido! Sem números.");
+                    System.out.print("Escreva um nome válido! Sem números ou caracteres especiais.\n");
                     foi = false;
                     break;
                 }
@@ -226,48 +238,76 @@ public class Sistema extends Controle.GerenciaBd {
 
         }
 
-        while(true) {
+        do {
             System.out.print("Digite seu CPF: ");
             cpf = sc.nextLine();
-
-            if(!fun.regexCPF(cpf))
-                System.out.print("Escreva um CPF válido! Somente números.");
-            else break;
-        }
+        }while(!fun.regexCPF(cpf));
 
         do {
             System.out.print("Digite seu email: ");
             email = sc.nextLine();
         } while (!fun.regexEmail(email));
 
-        System.out.print("Digite sua Rua: ");
-        rua = sc.nextLine();
+        do {
+            System.out.print("Digite sua Rua: ");
+            rua = sc.nextLine();
+        }while(!fun.verificaComandoSQL(rua));
 
-        System.out.print("Digite o número da sua casa: ");
-        numero = Integer.parseInt(sc.nextLine());
 
-        System.out.print("Digite seu usuário para o login: ");
-        user = sc.nextLine();
+        while(true) {
+            System.out.print("Digite o número da sua casa: ");
+            String s = sc.nextLine();
 
-        System.out.print("Digite sua senha: ");
-        senha = sc.nextLine();
+            if (fun.regexNum(s)) {
+                numero = Integer.parseInt(s);
+                break;
+            } else {
+                System.out.print("Escreva um CPF válido! Somente números.\n");
+            }
+        }
 
+        do {
+            System.out.print("Digite seu usuário para o login (MAX de 30 caracteres): ");
+            user = sc.nextLine();
+        }while(!fun.verificaComandoSQL(user));
+
+        do {
+            System.out.print("Digite sua senha (MAX de 15 caracteres): ");
+            senha = sc.nextLine();
+        }while(!fun.verificaComandoSQL(senha));
+
+        String resp;
         System.out.print("""
                 --As próximas perguntas responda com sim ou não!--
-                Você torce pro flamengo?
                 """);
-        isF = sc.nextLine().equalsIgnoreCase("sim");
+        do {
+            System.out.print("Você torce pro flamengo?\n");
+            resp = sc.nextLine();
+        }while(!fun.verificaComandoSQL(resp));
+        isF = resp.equalsIgnoreCase("sim");
 
-        System.out.print("Você é de Sousa?\n");
-        isS = sc.nextLine().equalsIgnoreCase("sim");
+        do{
+            System.out.print("Você é de Sousa?\n");
+            resp = sc.nextLine();
+        }while(!fun.verificaComandoSQL(resp));
+        isS = resp.equalsIgnoreCase("sim");
 
-        System.out.print("Você assiste one piece?\n");
-        one = sc.nextLine().equalsIgnoreCase("sim");
+        do{
+            System.out.print("Você assiste one piece?\n");
+            resp = sc.nextLine();
+        }while(!fun.verificaComandoSQL(resp));
+        one = resp.equalsIgnoreCase("sim");
 
         try{
             Cliente novoCliente = new Cliente(nome, cpf, rua, numero, email ,one, isF, isS, user, senha, carrinho);
-            int id = InsertRetornando("clientes_info.client", "senha, usuario, nome, cpf, rua, numero, email, is_flamengo, is_sousa, one_piece",
-                    senha + user + nome + cpf + rua + numero + email + isF + isS + one);
+            int id = InsertRetornando("cliente",
+                    "DEFAULT, '" + senha + "', '" + user + "', '" + nome + "', '" + cpf + "', '" + rua + "', " + numero + ", '"
+                            + email + "', " + isF + ", " + isS + ", " + one,
+                    "id_cliente, senha, usuario, nome, cpf, rua, numero, email, is_flamengo, is_sousa, one_piece");
+            if(id == -1){
+                System.out.println("Erro na inserção");
+                return;
+            }
             novoCliente.setId(id);
             Login(sc, true, compra);
         } catch (NaoTemConexaoException e) {

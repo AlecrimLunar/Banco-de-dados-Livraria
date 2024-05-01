@@ -12,6 +12,20 @@ import java.util.regex.Pattern;
 
 public class Funcoes extends GerenciaBd {
 
+    public Funcoes(int quem){
+        //setUsuario
+        try {
+            criaCon(quem);
+        } catch (SQLException e) {
+            System.out.print("""
+                             ========================================================
+                             Erro na conexão.
+                             Tente novamente mais tarde.
+                             ========================================================
+                             """);
+        }
+    }
+
     //=============================================================Destaques=============================================================
     /**
      * Esta função recupera os livros chamados 'Destaques', apenas os mais vendidos da livraria.
@@ -20,12 +34,7 @@ public class Funcoes extends GerenciaBd {
      * @return uma lista ligada de objetos Livro representando os livros destacados
      */
     public LinkedList<Livro> Destaques(int quem) {
-        setUsuarioBanco(quem);
-        try{
-            criaCon(0);
-        } catch (SQLException e){
-            e.printStackTrace();
-        }
+
         LinkedList<Livro> destaques;
 
         try {
@@ -41,6 +50,7 @@ public class Funcoes extends GerenciaBd {
                              Tente novamente mais tarde.
                              ========================================================
                              """);
+            System.out.println("amem2");
             return null;
         } catch (ConexaoException e) {
             trataException(e, quem);
@@ -50,6 +60,7 @@ public class Funcoes extends GerenciaBd {
                              Tente novamente mais tarde.
                              ========================================================
                              """);
+            System.out.println("amem3");
             return null;
         } catch (SQLException e) {
             System.out.print("""
@@ -59,6 +70,9 @@ public class Funcoes extends GerenciaBd {
                              ========================================================
                              """);
             return null;
+        }
+        if(destaques == null){
+            return new LinkedList<>();
         }
         return destaques;
     }
@@ -74,6 +88,9 @@ public class Funcoes extends GerenciaBd {
      * @return uma string contendo a tabela formatada de livros destaque
      */
     public String PrintDestaques(LinkedList<Livro> livros){
+        if(livros.isEmpty()){
+            return "";
+        }
         StringBuilder sb = new StringBuilder();
         sb.append("+=====================1=====================+=====================2=====================+=====================3=====================+\n");
 
@@ -260,6 +277,7 @@ public class Funcoes extends GerenciaBd {
      * @return  Um objeto Vendedor caso a consulta seja bem-sucedida, caso contrário, retorna null.
      */
     public Vendedor recuperaVendedorF(String user, String senha, int quem){
+        setUsuarioBanco(1);
         try {
             ResultSet rt = recuperaVendedor(user, senha);
 
@@ -307,45 +325,22 @@ public class Funcoes extends GerenciaBd {
      * @return Um novo objeto do tipo Cliente com os dados recuperados do banco de dados.
      * */
     public Cliente recuperaCliente(String user, String senha, Carrinho carrinho, int quem) {
-        try{
-            ResultSet rt = recuperaCliente(user, senha);
+        try {
+            ResultSet rt = recuperaCliente("'" + user + "'", "'" + senha + "'");
             assert rt != null;
+            if (rt.next()) {
+                return new Cliente(rt.getString("nome"), rt.getString("cpf"), rt.getString("rua"),
+                        rt.getInt("numero"), rt.getString("email"), rt.getBoolean("one_piece"), rt.getBoolean("is_flamengo"),
+                        rt.getBoolean("is_sousa"), rt.getString("usuario"), rt.getString("senha"), carrinho, rt.getInt("id_cliente"));
+            }
 
-            return new Cliente(rt.getString("nome"), rt.getString("cpf"), rt.getString("rua"),
-                    rt.getInt("numero"), rt.getString("email"),rt.getBoolean("one_piece"), rt.getBoolean("is_flamengo"),
-                    rt.getBoolean("is_sousa"), rt.getString("usuario"), rt.getString("senha"), carrinho);
-
-        } catch (NaoTemConexaoException e) {
-            trataException(e, quem);
-            System.out.print("""
-                             ========================================================
-                             Erro na conexão.
-                             Tente novamente mais tarde.
-                             ========================================================
-                             """);
-            return null;
-        } catch (ConexaoException e) {
-            trataException(e, quem);
-            System.out.print("""
-                             ========================================================
-                             Erro na conexão.
-                             Tente novamente mais tarde.
-                             ========================================================
-                             """);
-            return null;
-        } catch (SQLException e) {
-            System.out.print("""
-                             ========================================================
-                             Erro na conexão.
-                             Tente novamente mais tarde.
-                             ========================================================
-                             """);
-            return null;
-
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return null;
     }
 
-    //=============================================================Tratamento de Erro=============================================================
+    //=============================================================Dono=============================================================
 
     public DonoLivraria recuperaDono(String user, String senha, int quem) {
         setUsuarioBanco(2);
@@ -483,7 +478,9 @@ public class Funcoes extends GerenciaBd {
             return null;
 
         LinkedList<Livro> l = new LinkedList<>();
-
+        if(rt == null){
+            return new LinkedList<>();
+        }
         try{
 
             while(rt.next()) {
@@ -503,8 +500,7 @@ public class Funcoes extends GerenciaBd {
         } catch (SQLException e) {
             System.out.print("""
                              ========================================================
-                             Erro na conexão.
-                             Tente novamente mais tarde.
+                             Erro SQL
                              ========================================================
                              """);
             return null;
@@ -651,6 +647,10 @@ public class Funcoes extends GerenciaBd {
         try {
 
             ResultSet rt = carregaCarrinho(idC);
+
+            if(rt == null){
+                return new Carrinho();
+            }
 
             assert rt != null;
 
@@ -953,13 +953,13 @@ public class Funcoes extends GerenciaBd {
         //verifica se a string possui alguma palavra reservada sql
         if (verificaComandoSQL(s)) {
             //verifica se o email está dentro do padrão de emails
-            if (Pattern.matches("[a-zA-Z0-9.ÀÃÂÁÇÉÊÍÎÓÔÕÚÛÜàãâáçéêíîóôõúûü]+@(gmail.com|" +
+            if (Pattern.matches("[a-zA-Z0-9.ÀÃÂÁÇÉÊÍÎÓÔÕÚÛÜàãâáçéêíîóôõúûü\\-_*$#&%()/+]+@(gmail.com|" +
                     "yahoo.com.br|hotmail.com)", s))
                 return true;
             else {
                 System.out.println("O EMAIL NÃO ESTÁ NO FORMATO SUPORTADO! TENTE NOVAMENTE\n" +
                         "São suportados apenas: 'gmail.com', 'yahoo.com.br', " +
-                        "'hotmail.com.br'");
+                        "'hotmail.com'");
                 return false;
             }
         }
