@@ -103,7 +103,7 @@ public class Sistema extends Controle.GerenciaBd {
                 }
                 default -> System.out.println("Opção invalida");
             }
-
+            System.out.print("========================================================\n");
         }
     }
 
@@ -133,7 +133,7 @@ public class Sistema extends Controle.GerenciaBd {
             } else if (tabela.equalsIgnoreCase("vendedor")) {
                 System.out.print("Deseja realizar [1]-login como vendedor ou [2}-login como dono da livraria?\n");
                 if ("2".equalsIgnoreCase(sc.nextLine()))
-                    tabela = "donoLivraria";
+                    tabela = "donolivraria";
             }
 
             String user = "";

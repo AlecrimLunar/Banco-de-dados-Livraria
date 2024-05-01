@@ -562,9 +562,13 @@ public abstract class GerenciaBd implements AutoCloseable{
                        String condicao, Connection con) throws SQLException{
 
         String consulta = "DELETE FROM " + tabela + " WHERE " + condicao + ";";
+        System.out.println(consulta);
         try (PreparedStatement st = con.prepareStatement(consulta)){
             return st.executeUpdate();
+        } catch(Exception e){
+            e.printStackTrace();
         }
+        return -1;
     }
 
     /**
@@ -589,7 +593,7 @@ public abstract class GerenciaBd implements AutoCloseable{
             try {
 
                 condicao = montaCondicao(condicao, tabela);
-                return delete(tabela, condicao, connection);
+                return delete(qualNomeTabelaBanco.get(tabela), condicao, connection);
 
             } catch (SQLException e) {
                 /*
@@ -913,7 +917,7 @@ public abstract class GerenciaBd implements AutoCloseable{
         if (connection != null) {
 
             try {
-                return Select("estoque.livro as l", "l." + coluna, "l." + coluna + " LIKE '%" + str +
+                return Select("estoque.livro as l", "l.*", "l." + coluna + " LIKE '%" + str +
                         "%' AND l.quantidade_estoque > 0", connection);
             } catch (SQLException e) {
                 /*
@@ -1566,8 +1570,8 @@ public abstract class GerenciaBd implements AutoCloseable{
         if (connection != null) {
 
             try {
-                return Select("Vendedores_info.Dono as d", "d.*", "d.usuario = " +
-                                user + "AND d.senha = " + senha,
+                return Select("Vendedores_info.donolivraria as d", "d.*", "d.usuario = '" +
+                                user + "' AND d.senha = '" + senha + "'",
                         connection);
             } catch (SQLException e) {
                 /*

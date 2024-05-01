@@ -12,7 +12,9 @@ public class Livro {
     private String tipo;
     private Boolean mari;
 
-    public Livro(Integer id, String nome, Double preco, String autor, String genero, String tipo, Boolean mari) {
+    private int quantidade;
+
+    public Livro(Integer id, String nome, Double preco, String autor, String genero, String tipo, Boolean mari, int quantidade) {
         this.id = id;
         this.nome = nome;
         this.preco = preco;
@@ -20,6 +22,7 @@ public class Livro {
         this.genero = genero;
         this.tipo = tipo;
         this.mari = mari;
+        this.quantidade = quantidade;
     }
 
     public Livro(int idLivro, String nome, double preco){
@@ -60,9 +63,19 @@ public class Livro {
         return tipo;
     }
 
+    public int getQuantidade() {
+        return quantidade;
+    }
+
+    public void setQuantidade(){
+        quantidade--;
+    }
+
+
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(nome + ", " + autor + "\nR$ " + String.format("%.2f", preco) + "\n" + tipo + "\n");
+        sb.append("Nome: " + nome + ", " + autor + "\nPreço: R$ " + String.format("%.2f", preco) + ", " + tipo + "\nGenero: ");
         sb.append(getGeneroAndMari());
         return sb.toString();
     }

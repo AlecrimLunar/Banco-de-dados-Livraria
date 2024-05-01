@@ -76,7 +76,7 @@ public class Cliente extends GerenciaBd {
                              """);
         }
         if(compra){
-            fun.Compra(sc, carrinho, new boolean[]{getOnePiece(), getOnePiece(), getSouza()}, getId(), quem);
+            fun.Compra(sc, carrinho, new boolean[]{getOnePiece(), getFlamengo(), getSouza()}, getId(), quem);
         }
 
         carrinho = fun.CarregaCarrinho(carrinho, getId(), quem);
@@ -135,7 +135,7 @@ public class Cliente extends GerenciaBd {
                     if(carrinho.isEmpty()) {
                         System.out.print("Deseja finalizar a compra?\n");
                         if (sc.nextLine().equalsIgnoreCase("sim")) {
-                            fun.Compra(sc, carrinho, new boolean[]{getOnePiece(), getOnePiece(), getSouza()}, getId(), quem);
+                            fun.Compra(sc, carrinho, new boolean[]{getOnePiece(), getFlamengo(), getSouza()}, getId(), quem);
                         }
                     }
                 }
@@ -163,10 +163,10 @@ public class Cliente extends GerenciaBd {
      */
     public void MenuConta(Scanner sc) {
         int a;
-
+        String[] pNome = getNome().split(" ");
         loop:while(true) {
             System.out.println("========================================================\n" +
-                    "MENU CONTA - BEM VINDO " + getNome() + "!\n");
+                    "MENU CONTA - BEM VINDO " + pNome[0] + "!\n");
             System.out.println("""
                     ========================================================
                     1 - Ver meus pedidos
@@ -267,12 +267,11 @@ public class Cliente extends GerenciaBd {
         int a;
         try {
             loop: while (true) {
-                System.out.print("================================\n" +
-                        this + "\nDeseja Alterar alguma informação?");
+                System.out.print(this + "\nDeseja Alterar alguma informação? ");
                 if(tc.nextLine().equalsIgnoreCase("sim")){
 
                 System.out.println("""
-                        SELECIONE O CAMPO QUE DESEJA ALTERAR
+                        --SELECIONE O CAMPO QUE DESEJA ALTERAR--
                         1 - Nome
                         2 - CPF
                         3 - Rua
@@ -283,7 +282,7 @@ public class Cliente extends GerenciaBd {
                         8 - Assistir a One Piece
                         0 - Voltar ao menu principal""");
                 while(true) {
-
+                    System.out.println();
                     String resp = tc.nextLine();
 
                     if(fun.regexNum(resp)) {
@@ -338,14 +337,10 @@ public class Cliente extends GerenciaBd {
                         ArrayList<String> condicao = new ArrayList<>();
                         String novo;
 
-                        while (true) {
+                        do{
                             System.out.print("Insira o novo CPF: ");
                             novo = tc.nextLine();
-
-                            if (!fun.regexCPF(novo))
-                                System.out.print("Escreva um CPF válido! Somente números.");
-                            else break;
-                        }
+                        }while(!fun.regexCPF(novo));
 
                         coluna.add("cpf");
                         novoU.add("'" + novo + "'");
@@ -363,7 +358,6 @@ public class Cliente extends GerenciaBd {
                         do {
                             System.out.print("Insira a nova rua: ");
                             novo = tc.nextLine();
-
                         } while (!fun.verificaComandoSQL(novo));
 
                         coluna.add("rua");
@@ -387,6 +381,8 @@ public class Cliente extends GerenciaBd {
                             if(fun.regexNum(s)){
                                 novo = Integer.parseInt(s);
                                 break;
+                            } else {
+                                System.out.println("Digite apenas números!");
                             }
                         }
 
@@ -406,7 +402,7 @@ public class Cliente extends GerenciaBd {
                         do {
                             System.out.print("Insira o novo email: ");
                             novo = tc.nextLine();
-                        }while(fun.regexEmail(novo));
+                        }while(!fun.regexEmail(novo));
 
                         coluna.add("email");
                         novoU.add("'" + novo + "'");
@@ -419,9 +415,13 @@ public class Cliente extends GerenciaBd {
                         ArrayList<String> coluna = new ArrayList<>();
                         ArrayList<String> novoU = new ArrayList<>();
                         ArrayList<String> condicao = new ArrayList<>();
+                        String resp;
 
-                        System.out.print("RESPONDA COM 'sim' OU 'não'\nTorce para o flamengo? ");
-                        boolean novo = tc.nextLine().equalsIgnoreCase("sim");
+                        do{
+                            System.out.print("RESPONDA COM 'sim' OU 'não'\nTorce para o flamengo? ");
+                            resp = tc.nextLine();
+                        }while(!fun.verificaComandoSQL(resp));
+                        boolean novo = resp.equalsIgnoreCase("sim");
 
                         coluna.add("is_flamengo");
                         novoU.add("" + novo);
@@ -434,9 +434,12 @@ public class Cliente extends GerenciaBd {
                         ArrayList<String> coluna = new ArrayList<>();
                         ArrayList<String> novoU = new ArrayList<>();
                         ArrayList<String> condicao = new ArrayList<>();
-
-                        System.out.print("RESPONDA COM 'sim' OU 'não'\nNasceu em Sousa? ");
-                        boolean novo = tc.nextLine().equalsIgnoreCase("sim");
+                        String resp;
+                        do {
+                            System.out.print("RESPONDA COM 'sim' OU 'não'\nNasceu em Sousa? ");
+                            resp = tc.nextLine();
+                        }while(!fun.verificaComandoSQL(resp));
+                        boolean novo = resp.equalsIgnoreCase("sim");
 
                         coluna.add("is_sousa");
                         novoU.add("" + novo);
@@ -449,9 +452,13 @@ public class Cliente extends GerenciaBd {
                         ArrayList<String> coluna = new ArrayList<>();
                         ArrayList<String> novoU = new ArrayList<>();
                         ArrayList<String> condicao = new ArrayList<>();
+                        String resp;
 
-                        System.out.print("RESPONDA COM 'sim' OU 'não'\nAssiste a One Piece? ");
-                        boolean novo = tc.nextLine().equalsIgnoreCase("sim");
+                        do{
+                            System.out.print("RESPONDA COM 'sim' OU 'não'\nAssiste a One Piece? ");
+                            resp = tc.nextLine();
+                        }while(!fun.verificaComandoSQL(resp));
+                        boolean novo = resp.equalsIgnoreCase("sim");
 
                         coluna.add("one_piece");
                         novoU.add("" + novo);
@@ -494,18 +501,6 @@ public class Cliente extends GerenciaBd {
 
     public String getNome() {
         return nome;
-    }
-
-    public String getCpf() {
-        return cpf;
-    }
-
-    public String getrua() {
-        return rua;
-    }
-
-    public int getNumero(){
-        return numero;
     }
 
     public Boolean getOnePiece() {

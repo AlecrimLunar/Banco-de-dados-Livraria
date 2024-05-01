@@ -81,9 +81,9 @@ public class Carrinho {
         int x = quantidade.get(i).pop();
         livros.remove(x);
 
-        if(x <= quantidade.size() - 1){
-            quantidade.remove(x);
 
+        if(x <= quantidade.size() - 1 && quantidade.get(x).isEmpty()){
+            quantidade.remove(x);
         }
 
         if(!(x >= livros.size())){
@@ -105,11 +105,14 @@ public class Carrinho {
     }
 
     public String toString(){
-
+        int contador = 1, i = 0;
         StringBuilder sb = new StringBuilder();
-        for(int i = 0; i <quantidade.size(); i++){
-            sb.append((i + 1) + " - " + livros.get(i).toString()
-                    + "\nquantidade = " + quantidade.get(i).size());
+        for(Stack<Integer> integers : quantidade){
+            int x = quantidade.get(i).get(0);
+            sb.append(contador + " - " + livros.get(x).toString()
+                    + "\nquantidade = " + quantidade.get(i).size() + "\n");
+            contador++;
+            i++;
         }
         return sb.toString();
     }

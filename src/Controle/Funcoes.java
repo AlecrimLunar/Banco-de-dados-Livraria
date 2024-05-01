@@ -438,18 +438,40 @@ public class Funcoes extends GerenciaBd {
                         Deseja adicionar algum ao carrinho?
                         (Digite o número que se encontra antes do nome do livro caso deseje sair digite '0')
                         """);
-                aux = Integer.parseInt(sc.nextLine());
 
                 while(true) {
+                    String resp = sc.nextLine();
 
-                    if (aux > 0 && aux < l.size()) {
-                        carrinho.setLivro(l.get(aux - 1));
-                        System.out.println("""
-                                Livro adicionado ao carrinho!
-                                Deseja adicionar outro?
-                                (Digite o número que se encontra antes do nome do livro caso deseje sair digite '0')
-                                """);
-                        aux = Integer.parseInt(sc.nextLine());
+                    if(regexNum(resp)) {
+                        aux = Integer.parseInt(resp);
+                        break;
+                    }
+                    else
+                        System.out.println("Digite apenas números!");
+                }
+
+                while(true) {
+                    if (aux > 0 && aux <= l.size()) {
+                        if(l.get(aux-1).getQuantidade() == 0){
+                            System.out.println("Livro indisponível");
+                        } else {
+                            carrinho.setLivro(l.get(aux - 1));
+                            l.get(aux - 1).setQuantidade();
+                            System.out.print("Livro adicionado ao carrinho!\n");
+                        }
+                        System.out.print("""
+                                    Deseja adicionar outro?
+                                    (Digite o número que se encontra antes do nome do livro caso deseje sair digite '0')
+                                    """);
+                        while (true) {
+                            String resp = sc.nextLine();
+
+                            if (regexNum(resp)) {
+                                aux = Integer.parseInt(resp);
+                                break;
+                            } else
+                                System.out.println("Digite apenas números!");
+                        }
                     } else if (aux > l.size()) {
                         System.out.println("Livro inválido");
                     } else if(aux == 0){
@@ -480,7 +502,7 @@ public class Funcoes extends GerenciaBd {
                 Livro aux = new Livro(rt.getInt("id_livro"), rt.getString("nome"),
                         Double.parseDouble(rt.getString("preco").substring(3).replaceAll(",", ".")),
                         rt.getString("autor"), rt.getString("genero"), rt.getString("tipo"),
-                        rt.getBoolean("from_mari"));
+                        rt.getBoolean("from_mari"), rt.getInt("quantidade_estoque"));
                 if(carrinho){
                     for(int i = 1; i <= rt.getInt("qunatidade"); i++){
                         l.add(aux);
@@ -515,7 +537,7 @@ public class Funcoes extends GerenciaBd {
 
         try{
 
-            int aux = Existe("livro", coluna, str);
+            int aux = Existe("livro", "*", coluna + " LIKE '%" + str + "%'");
 
             if(aux > 0){
                 ResultSet rt = pesquisaLivro(str, coluna);
@@ -566,9 +588,11 @@ public class Funcoes extends GerenciaBd {
     public static void PrintLivro(LinkedList<Livro> l){
         int escolha = 1;
         for (Livro livro : l) {
-            System.out.println(escolha + " - " + livro.toString());
+            System.out.println("================================\n" +
+                    escolha + " - " + livro.toString() + "\nQuantidade no Estoque: " + livro.getQuantidade() + "\n");
             escolha++;
         }
+        System.out.println("================================\n");
     }
 
     //=============================================================Carrinho=============================================================
@@ -592,7 +616,8 @@ public class Funcoes extends GerenciaBd {
                                     ========================================================
                                     Seu carrinho:
                                     """);
-                    System.out.print(carrinho + "\n");
+                    System.out.print("================================\n" +
+                            carrinho + "================================\n");
                     System.out.print("""
                             Deseja retirar algum do carrinho?
                             (Digite o número que se encontra antes do nome do livro para retirá-lo)
@@ -610,7 +635,7 @@ public class Funcoes extends GerenciaBd {
                         else
                             System.out.println("Digite apenas números!");
                     }
-                    if (aux > 0 && aux < carrinho.getLivros().size()) {
+                    if (aux > 0 && aux <= carrinho.getLivros().size()) {
                         carrinho.removeLivro(aux - 1);
                         System.out.println("""
                                     Livro reirado do carrinho!
@@ -848,6 +873,7 @@ public class Funcoes extends GerenciaBd {
 
             } else {
                 System.out.println("""
+                        ========================================================
                         NENHUM PEDIDO ENCONTRADO!
                         ========================================================
                         """);
@@ -906,7 +932,9 @@ public class Funcoes extends GerenciaBd {
         LinkedList<Compra> compras = new LinkedList<>();
 
         try{
-
+            if(rt == null){
+                return new LinkedList<>();
+            }
             while(rt.next()){
                 Compra c = new Compra(rt.getInt("id_compra"), rt.getNString("forma_pagamento"),
                         rt.getDate("data"), rt.getInt("valor"), rt.getInt("id_Carrinho"),
