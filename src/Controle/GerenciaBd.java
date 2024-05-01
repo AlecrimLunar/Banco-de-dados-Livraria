@@ -856,14 +856,10 @@ public abstract class GerenciaBd implements AutoCloseable{
             throws NaoTemConexaoException, ConexaoException {
 
         if (connection != null) {
-
-            String coluna = "l.*";
-            String tabela = "estoque.livro as l";
-            String pesquisa = "WHERE l.id_livro >= 0 AND l.quantidade_estoque > 0 AND l.id_livro IN " +
-                    "(SELECT cl.id_livro FROM clientes_info.carrinho_livro as cl GROUP BY cl.id_livro ORDER BY COUNT(*) DESC LIMIT 3)";
-
-            try {
-                return Select(tabela, coluna, pesquisa, connection);
+            try (PreparedStatement st = connection.prepareStatement("SELECT * FROM ?")){
+                st.setString(1, "destaques");
+                
+                return st.executeQuery();
             } catch (SQLException e) {
                 /*
                  * Se der erro, vai tentar fechar a conexão atual.

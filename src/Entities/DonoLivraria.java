@@ -565,7 +565,7 @@ public class DonoLivraria extends GerenciaBd {
                     """);
         }
     }
-    
+
     private void criaRelatorios(Scanner tc){
         System.out.print("""
                 --------------------------------------------------------
