@@ -12,9 +12,9 @@ import java.util.HashMap;
  */
 public abstract class GerenciaBd implements AutoCloseable{
 
-    private static final HashMap<String, String> qualNomeTabelaBanco = null;
-    private Connection connection;
-    private int usuarioBanco;
+    private static final HashMap<String, String> qualNomeTabelaBanco = new HashMap<>();
+    protected Connection connection;
+    protected int usuarioBanco;
 
     //=============================================================Insert=============================================================
     /**
@@ -33,20 +33,21 @@ public abstract class GerenciaBd implements AutoCloseable{
      * @throws SQLException
      */
     private int InsertRetornando(String tabela, String infos,
-                                 String atributos, String retornando, Connection con) throws SQLException{
+                                 String atributos, String retornando, String tabelaOriginal, Connection con) throws SQLException{
 
         String consulta = "INSERT INTO " + tabela + " (" + atributos +
                 ") VALUES (" + infos + ") " + retornando + ";";
-
         try (PreparedStatement st = con.prepareStatement(consulta);
              ResultSet rt = st.executeQuery()){
-
             if (rt.next())
-                return rt.getInt("id_" + tabela);
+                return rt.getInt("id_" + tabelaOriginal);
             else
                 return -1;
 
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return -1;
     }
 
     /**
@@ -98,7 +99,7 @@ public abstract class GerenciaBd implements AutoCloseable{
             try {
                 String retornando = "RETURNING id_" + tabela;
                 return InsertRetornando(qualNomeTabelaBanco.get(tabela),
-                        infos, atributos, retornando, connection);
+                        infos, atributos, retornando, tabela, connection);
 
             } catch (SQLException e) {
                 /*
@@ -232,11 +233,11 @@ public abstract class GerenciaBd implements AutoCloseable{
 
         String consulta = "SELECT " + coluna + " FROM " + tabela +
                 " WHERE " + pesquisa + ";";
+        System.out.println(consulta);
 
-        try (PreparedStatement st = con.prepareStatement(consulta)){
-            return st.executeQuery(consulta);
+        PreparedStatement st = con.prepareStatement(consulta);
+        return st.executeQuery();
 
-        }
     }
 
     /**
@@ -666,6 +667,7 @@ public abstract class GerenciaBd implements AutoCloseable{
         qualNomeTabelaBanco.put("carrinho", "Clientes_Info.carrinho");
         qualNomeTabelaBanco.put("carrinho_livro", "Clientes_Info.carrinho_livro");
         qualNomeTabelaBanco.put("compra", "Compras_Info.compra");
+        qualNomeTabelaBanco.put("donoLivraria", "Vendedores_Info.donoLivraria");
     }
 
     /**
@@ -674,33 +676,39 @@ public abstract class GerenciaBd implements AutoCloseable{
      * retorna o erro de não ter conexão caso ele não consiga criar
      * a conexão
      */
-    protected void criaCon(int quem) throws SQLException{
+    protected void criaCon(int quem) throws SQLException {
+        String dbURL = "jdbc:postgresql://localhost:5432/livraria";
+        String login;
+        String password;
 
-        String dbURL = "";
-        String login = "";
-        String password = "";
-
-        switch (quem){
-            case 0 -> {
-                dbURL = "jdbc:postgresql://localhost:5432/livraria";
+        switch (quem) {
+            case 0:
                 login = "cliente_role";
                 password = "12345678";
-            }
+                break;
 
-            case 1 -> {
-                dbURL = "jdbc:postgresql://localhost:5432/livraria";
+            case 1:
                 login = "vendedor_role";
                 password = "123456";
-            }
+                break;
+
+            case 2:
+                login = "dono_livraria";
+                password = "1234";
+                break;
+
+            default:
+                throw new IllegalArgumentException("Valor inválido para 'quem'");
         }
 
-        if (qualNomeTabelaBanco == null){
+        if (qualNomeTabelaBanco.isEmpty()) {
             criaQualNomeTabelaBanco();
         }
+
         try {
             connection = DriverManager.getConnection(dbURL, login, password);
-        } finally {
-            connection = null;
+        } catch (SQLException e) {
+            throw e;
         }
     }
 
@@ -728,19 +736,86 @@ public abstract class GerenciaBd implements AutoCloseable{
     protected int login(String user, String password, String tabela)
             throws NaoTemConexaoException, ConexaoException {
 
-        if (connection != null){
-            String pesquisa = "usuario = " + user;
-            try (ResultSet rt = Select(qualNomeTabelaBanco.get(tabela), "*",
-                    pesquisa, connection)){
+        String pesquisa = "usuario = " + user;
 
-                if (rt.next()){
-                    if (password.equalsIgnoreCase(rt.getString("senha")))
-                        return 1;
-                    else
-                        return 2;
-                }
-                return 0;
+        try{
+            criaCon(2);
+        } catch (SQLException e) {
+            /*
+             * Se der erro, vai tentar fechar a conexão atual.
+             */
+            try {
+                close();
 
+            } catch (SQLException f) {
+                /*
+                 * Se não conseguir ele informa
+                 * a quem o chamou que não foi possível
+                 * encerrar a conexão com o banco e que
+                 * ela é uma conexão defeituosa.
+                 */
+                throw new ConexaoException();
+            } try {
+                /*
+                 * O sistema tentar criar outra conexão.
+                 */
+
+                criaCon(usuarioBanco);
+            } catch (SQLException f){
+                /*
+                 * Caso ele não consiga, é necessário avisar
+                 * que existe um grave problema: não existe conexão
+                 * com o banco de dados.
+                 */
+                throw new NaoTemConexaoException();
+            }
+            return -1;
+        }
+
+        try{
+
+            ResultSet rt = Select(qualNomeTabelaBanco.get(tabela), "*", pesquisa, connection);
+
+            if (rt.next()) {
+                if (password.equalsIgnoreCase(rt.getString("senha")))
+                    return 1;
+                else
+                    return 2;
+            }
+            return 0;
+
+        } catch (SQLException e) {
+            /*
+             * Se der erro, vai tentar fechar a conexão atual.
+             */
+            try {
+                close();
+
+            } catch (SQLException f) {
+                /*
+                 * Se não conseguir ele informa
+                 * a quem o chamou que não foi possível
+                 * encerrar a conexão com o banco e que
+                 * ela é uma conexão defeituosa.
+                 */
+                throw new ConexaoException();
+            } try {
+                /*
+                 * O sistema tentar criar outra conexão.
+                 */
+
+                criaCon(usuarioBanco);
+            } catch (SQLException f){
+                /*
+                 * Caso ele não consiga, é necessário avisar
+                 * que existe um grave problema: não existe conexão
+                 * com o banco de dados.
+                 */
+                throw new NaoTemConexaoException();
+            }
+        } finally {
+            try {
+                criaCon(0);
             } catch (SQLException e) {
                 /*
                  * Se der erro, vai tentar fechar a conexão atual.
@@ -771,24 +846,22 @@ public abstract class GerenciaBd implements AutoCloseable{
                     throw new NaoTemConexaoException();
                 }
             }
-            /*
-             * Caso tenha sido possível resolver os erros, a função avisa que ela
-             * teve um comportamento inesperado e foi possível resolver ele,
-             * por isso ela pode ser chamada novamente.
-             */
-            return -1;
         }
-        throw new NaoTemConexaoException();
+        /*
+         * Caso tenha sido possível resolver os erros, a função avisa que ela
+         * teve um comportamento inesperado e foi possível resolver ele,
+         * por isso ela pode ser chamada novamente.
+         */
+        return -1;
     }
 
     protected ResultSet Destaques()
             throws NaoTemConexaoException, ConexaoException {
-
         if (connection != null) {
 
             String coluna = "l.*";
             String tabela = "estoque.livro as l";
-            String pesquisa = "WHERE l.id_livro >= 0 AND l.quantidade_estoque > 0 AND l.id_livro IN " +
+            String pesquisa = "l.id_livro >= 0 AND l.quantidade_estoque > 0 AND l.id_livro IN " +
                     "(SELECT cl.id_livro FROM clientes_info.carrinho_livro as cl GROUP BY cl.id_livro ORDER BY COUNT(*) DESC LIMIT 3)";
 
             try {
@@ -1188,7 +1261,7 @@ public abstract class GerenciaBd implements AutoCloseable{
         if (connection != null){
             try{
                 String retornando = "RETURNING id_" + tabela;
-                return InsertRetornando(tabela, info, atributos, retornando,connection);
+                return InsertRetornando(qualNomeTabelaBanco.get(tabela), info, atributos, retornando, tabela, connection);
             } catch (SQLException e) {
                 /*
                  * Se der erro, vai tentar fechar a conexão atual.
@@ -1443,8 +1516,8 @@ public abstract class GerenciaBd implements AutoCloseable{
         if (connection != null) {
 
             try {
-                return Select("clientes_info.Cliente as c", "c.*", "c.usuario = " +
-                                user + "AND c.senha = " + senha,
+                return Select("clientes_info.Cliente AS c", "c.*", "c.usuario = " +
+                                user + " AND c.senha = " + senha,
                         connection);
             } catch (SQLException e) {
                 /*
@@ -1782,6 +1855,10 @@ public abstract class GerenciaBd implements AutoCloseable{
 
     protected void setUsuarioBanco(int usuarioBanco) {
         this.usuarioBanco = usuarioBanco;
+    }
+
+    public Connection getConnection() {
+        return connection;
     }
 
     @Override

@@ -15,7 +15,7 @@ public class DonoLivraria extends GerenciaBd {
     private String nome;
     private String cpf;
     private static final int qualCon = 2;
-    private static final Funcoes funcoes = new Funcoes();
+    private static final Funcoes funcoes = new Funcoes(qualCon);
 
     public DonoLivraria(String nome, String cpf) {
         this.nome = nome;
@@ -23,6 +23,17 @@ public class DonoLivraria extends GerenciaBd {
     }
 
     public void MenuDono(Scanner tc){
+        setUsuarioBanco(qualCon);
+        try{
+            criaCon(qualCon);
+        } catch (SQLException e) {
+            System.out.print("""
+                             ========================================================
+                             Erro na conexão.
+                             Tente novamente mais tarde.
+                             ========================================================
+                             """);
+        }
         System.out.print("========================================================\n" +
                 "BEM-VINDO A SEU MENU, " + nome + "!\n");
 
@@ -55,6 +66,7 @@ public class DonoLivraria extends GerenciaBd {
 
             switch (a){
                 case 1 -> alteraDono(tc);
+
                 case 2 -> cadastraVendedor(tc);
 
                 case 3 -> removeVendedor(tc);
@@ -68,10 +80,12 @@ public class DonoLivraria extends GerenciaBd {
 
                 default -> System.out.println("OPÇÃO INVÁLIDA!");
             }
+
         }while(true);
     }
 
     public void cadastraVendedor(Scanner tc){
+
         while (true) {
             System.out.print("INSIRA AS INFORMAÇÕES:\nNome: ");
 
@@ -308,8 +322,116 @@ public class DonoLivraria extends GerenciaBd {
     }
 
     private void alteraDono(Scanner tc){
-        /*altera nome/cpf do dono da livraria
-        só pq sim.*/
+        int a;
+        try {
+            loop: while (true) {
+                System.out.print("================================\n" +
+                        this + "\nDeseja Alterar alguma informação?");
+                if (tc.nextLine().equalsIgnoreCase("sim")) {
+
+                    System.out.println("""
+                            SELECIONE O CAMPO QUE DESEJA ALTERAR
+                            1 - Nome
+                            2 - CPF
+                            0 - Voltar ao menu principal""");
+                    while (true) {
+
+                        String resp = tc.nextLine();
+
+                        if (funcoes.regexNum(resp)) {
+                            a = Integer.parseInt(resp);
+                            break;
+                        } else
+                            System.out.println("Digite apenas números!");
+                    }
+
+
+                    System.out.println("===========================================================================");
+
+                    switch (a) {
+                        case 1 -> {
+                            ArrayList<String> coluna = new ArrayList<>();
+                            ArrayList<String> novoU = new ArrayList<>();
+                            ArrayList<String> condicao = new ArrayList<>();
+                            String novo;
+
+                            while (true) {
+
+                                System.out.print("Insira o novo nome: ");
+                                novo = tc.nextLine();
+
+                                String[] nomes = nome.split(" ");
+                                boolean foi = true;
+
+                                for (String aux : nomes) {
+                                    if (!funcoes.regexNome(aux)) {
+                                        System.out.print("Escreva um nome válido! Sem números.");
+                                        foi = false;
+                                        break;
+                                    }
+                                }
+                                if (foi) {
+                                    break;
+                                }
+
+                            }
+
+                            coluna.add("nome");
+                            novoU.add("'" + novo + "'");
+                            condicao.add("cpf = " + cpf);
+                            variosUpdates("donoLivraria", coluna, novoU, condicao);
+                            nome = novo;
+                        }
+
+                        case 2 -> {
+                            ArrayList<String> coluna = new ArrayList<>();
+                            ArrayList<String> novoU = new ArrayList<>();
+                            ArrayList<String> condicao = new ArrayList<>();
+                            String novo;
+
+                            while (true) {
+                                System.out.print("Insira o novo CPF: ");
+                                novo = tc.nextLine();
+
+                                if (!funcoes.regexCPF(novo))
+                                    System.out.print("Escreva um CPF válido! Somente números.");
+                                else break;
+                            }
+
+                            coluna.add("cpf");
+                            novoU.add("'" + novo + "'");
+                            condicao.add("cpf = " + cpf);
+                            variosUpdates("donoLivraria", coluna, novoU, condicao);
+                            cpf = novo;
+                        }
+                        case 0 -> {
+                            break loop;
+                        }
+                        default -> System.out.println("OPÇÃO INVÁLIDA!");
+                    }
+                }
+            }
+        } catch (NaoTemConexaoException e) {
+            funcoes.trataException(e, 2);
+            System.out.print("""
+                             ========================================================
+                             Erro na conexão.
+                             Tente novamente mais tarde.
+                             ========================================================
+                             """);
+        } catch (ConexaoException e) {
+            funcoes.trataException(e, 2);
+            System.out.print("""
+                             ========================================================
+                             Erro na conexão.
+                             Tente novamente mais tarde.
+                             ========================================================
+                             """);
+        }
+    }
+
+    public String toStrting() {
+        return "Nome: " + nome + "\nCPF: " + cpf + "\n";
     }
 
 }
